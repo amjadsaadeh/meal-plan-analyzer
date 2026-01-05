@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from meals.views import index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('meals.urls')),
+    path('client/', index, name='client-search'),
+    path('', index), # Also serve it at root for convenience
 ]
