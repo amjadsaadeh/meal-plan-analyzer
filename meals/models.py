@@ -6,6 +6,9 @@ class Food(models.Model):
     energy_in_kj_per_100g = models.FloatField()
     energy_in_kcal_per_100g = models.FloatField()
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
@@ -14,6 +17,9 @@ class MealPlan(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
     foods = models.ManyToManyField(Food, through='MealPlanFood', related_name='meal_plans')
+
+    class Meta:
+        ordering = ['-creation_date']
 
     def __str__(self):
         return self.name
