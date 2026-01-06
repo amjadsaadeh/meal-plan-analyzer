@@ -86,6 +86,36 @@
             color: var(--text-main);
         }
 
+        .title-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .edit-icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px;
+            opacity: 0.3;
+        }
+
+        .edit-icon-btn:hover {
+            color: var(--primary);
+            background: rgba(59, 163, 143, 0.1);
+            opacity: 1;
+        }
+
+        .title-container:hover .edit-icon-btn {
+            opacity: 0.8;
+        }
+
         .header-info {
             display: flex;
             flex-direction: column;
@@ -358,8 +388,16 @@
 
         <div class="header-top">
             <div class="plan-title-wrapper">
-                <h1 class="editable-title" contenteditable="true" id="planName" placeholder="Enter plan name...">
-                    {{ plan.name }}</h1>
+                <div class="title-container">
+                    <h1 class="editable-title" contenteditable="true" id="planName" placeholder="Enter plan name...">
+                        {{ plan.name }}</h1>
+                    <button class="edit-icon-btn" onclick="document.getElementById('planName').focus()" title="Edit name">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div class="header-info">
                 <span class="plan-id">Plan Nr. {{ plan.id }}</span>
@@ -390,7 +428,7 @@
                     <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal-per-100="{{ item.food.energy_in_kcal_per_100g }}">
                         <td>
                             <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)">
-                                <span></span>{{ item.food.name }}</span>
+                                <span>{{ item.food.name }}</span>
                                 <span class="bls-code">{{ item.food.bls_code }}</span>
                             </div>
                             <div class="search-dropdown"></div>
@@ -590,20 +628,33 @@
                 } catch (e) { }
             });
 
+            const restoreCell = () => {
+                if (!cell.closest('tr').dataset.foodId) {
+                    cell.innerHTML = '<span>Search Food...</span>';
+                } else {
+                    const name = cell.dataset.selectedName || originalName;
+                    const bls = cell.dataset.selectedBls || originalBls;
+                    cell.innerHTML = `<span>${name}</span><span class="bls-code">${bls}</span>`;
+                }
+                dropdown.classList.remove('active');
+            };
+
             const blurHandler = (e) => {
                 setTimeout(() => {
                     if (!dropdown.contains(document.activeElement)) {
-                        if (!cell.closest('tr').dataset.foodId) {
-                            cell.innerHTML = '<span>Search Food...</span>';
-                        } else {
-                            const name = cell.dataset.selectedName || originalName;
-                            const bls = cell.dataset.selectedBls || originalBls;
-                            cell.innerHTML = `<span>${name}</span><span class="bls-code">${bls}</span>`;
-                        }
-                        dropdown.classList.remove('active');
+                        restoreCell();
                     }
                 }, 200);
             };
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    // Remove listeners so blur doesn't trigger twice or conflict
+                    input.removeEventListener('blur', blurHandler);
+                    restoreCell();
+                }
+            });
+
             input.addEventListener('blur', blurHandler);
         }
 
