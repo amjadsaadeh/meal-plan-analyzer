@@ -2,11 +2,61 @@ import re
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from rest_framework import viewsets, filters
-from .models import Food, MealPlan
-from .serializers import FoodSerializer, MealPlanSerializer
+from .models import Food, MealPlan, MealPlanFood
+from .serializers import FoodSerializer, MealPlanSerializer, MealPlanFoodSerializer
+
+from django.core.paginator import Paginator
 
 def index(request):
     return render(request, 'meals/index.html')
+
+def meal_plan_list(request):
+    search_query = request.GET.get('search', '').strip()
+    queryset = MealPlan.objects.all()
+    
+    if search_query:
+        # Semantic/Fuzzy Search logic (simplified for names)
+        terms = search_query.split()
+        name_query = Q(name__icontains=search_query)
+        for term in terms:
+            if len(term) >= 2:
+                name_query |= Q(name__icontains=term)
+        
+        queryset = queryset.filter(name_query)
+        
+        # Weighted Relevance Ranking
+        queryset = queryset.annotate(
+            relevance=Case(
+                When(name__iexact=search_query, then=Value(100)),
+                When(name__istartswith=search_query, then=Value(50)),
+                When(name__icontains=f" {search_query}", then=Value(40)),
+                default=Value(1),
+                output_field=IntegerField(),
+            )
+        ).order_by('-relevance', '-change_date')
+    else:
+        queryset = queryset.order_by('-change_date')
+
+    paginator = Paginator(queryset, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'meals/mealplan_list.html', {
+        'page_obj': page_obj,
+        'search_query': search_query
+    })
+
+def meal_plan_detail(request, pk=None):
+    if pk is None:
+        # Create a new empty meal plan and redirect to its detail page
+        plan = MealPlan.objects.create(name="Neuer Plan")
+        from django.shortcuts import redirect
+        return redirect('meal-plan-detail', pk=plan.pk)
+    
+    plan = MealPlan.objects.prefetch_related('mealplanfood_set__food').get(pk=pk)
+    return render(request, 'meals/mealplan_detail.html', {
+        'plan': plan
+    })
 
 class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
@@ -69,3 +119,7 @@ class FoodViewSet(viewsets.ModelViewSet):
 class MealPlanViewSet(viewsets.ModelViewSet):
     queryset = MealPlan.objects.all()
     serializer_class = MealPlanSerializer
+
+class MealPlanFoodViewSet(viewsets.ModelViewSet):
+    queryset = MealPlanFood.objects.all()
+    serializer_class = MealPlanFoodSerializer

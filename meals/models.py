@@ -13,7 +13,7 @@ class Food(models.Model):
         return self.name
 
 class MealPlan(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, default="Neuer Plan")
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
     foods = models.ManyToManyField(Food, through='MealPlanFood', related_name='meal_plans')
@@ -27,6 +27,7 @@ class MealPlan(models.Model):
 class MealPlanFood(models.Model):
     meal_plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE)
     food = models.ForeignKey(Food, on_delete=models.CASCADE)
+    amount_in_g = models.FloatField()
     
     class Meta:
         unique_together = ('meal_plan', 'food')
