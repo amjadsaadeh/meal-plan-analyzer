@@ -213,9 +213,19 @@
             padding: 1rem 1.5rem;
         }
 
-        .kcal-cell {
+        .kcal-cell,
+        .protein-cell,
+        .fat-cell,
+        .fibre-cell,
+        .iron-cell,
+        .sugar-cell {
             color: var(--text-dim);
             font-weight: 400;
+            white-space: nowrap;
+        }
+
+        .nutrient-header {
+            font-size: 0.75rem !important;
         }
 
         /* Search Dropdown in Table */
@@ -417,15 +427,20 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 45%;">Zutatenname</th>
-                        <th style="width: 20%;">Menge in g</th>
-                        <th style="width: 20%;">kcal</th>
+                        <th style="width: 25%;">Zutatenname</th>
+                        <th style="width: 10%;">Menge (g)</th>
+                        <th style="width: 9%;" class="nutrient-header">kcal</th>
+                        <th style="width: 9%;" class="nutrient-header">Prot. (g)</th>
+                        <th style="width: 9%;" class="nutrient-header">Fett (g)</th>
+                        <th style="width: 9%;" class="nutrient-header">Ball. (g)</th>
+                        <th style="width: 9%;" class="nutrient-header">Eisen (mg)</th>
+                        <th style="width: 9%;" class="nutrient-header">Zucker (g)</th>
                         <th class="actions-cell"></th>
                     </tr>
                 </thead>
                 <tbody id="ingredientsBody">
                     {% for item in plan.mealplanfood_set.all %}
-                    <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal-per-100="{{ item.food.energy_in_kcal_per_100g }}">
+                    <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein="{{ item.food.protein_in_g_per_100g }}" data-fat="{{ item.food.fat_in_g_per_100g }}" data-fibre="{{ item.food.fibre_in_g_per_100g }}" data-iron="{{ item.food.iron_in_mg_per_100g }}" data-sugar="{{ item.food.sugar_in_g_per_100g }}">
                         <td>
                             <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)">
                                 <span>{{ item.food.name }}</span>
@@ -434,11 +449,36 @@
                             <div class="search-dropdown"></div>
                         </td>
                         <td>
-                            <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateKcal(this)" onblur="saveRow(this)">
+                            <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)">
                         </td>
                         <td>
                             <div class="cell-content kcal-cell">
                                 {{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content protein-cell">
+                                {{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content fat-cell">
+                                {{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content fibre-cell">
+                                {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content iron-cell">
+                                {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="cell-content sugar-cell">
+                                {{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}
                             </div>
                         </td>
                         <td class="actions-cell">
@@ -457,9 +497,24 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="2" class="total-label">Gesamt Energie</td>
+                        <td colspan="2" class="total-label">Gesamtwerte</td>
                         <td>
                             <div class="cell-content total-value" id="totalKcal">0.0</div>
+                        </td>
+                        <td>
+                            <div class="cell-content total-value" id="totalProtein" style="font-size: 0.9rem;">0.0</div>
+                        </td>
+                        <td>
+                            <div class="cell-content total-value" id="totalFat" style="font-size: 0.9rem;">0.0</div>
+                        </td>
+                        <td>
+                            <div class="cell-content total-value" id="totalFibre" style="font-size: 0.9rem;">0.0</div>
+                        </td>
+                        <td>
+                            <div class="cell-content total-value" id="totalIron" style="font-size: 0.9rem;">0.0</div>
+                        </td>
+                        <td>
+                            <div class="cell-content total-value" id="totalSugar" style="font-size: 0.9rem;">0.0</div>
                         </td>
                         <td></td>
                     </tr>
@@ -520,26 +575,33 @@
         }
 
         // --- Table Logic ---
-        function updateKcal(input) {
+        function updateNutrients(input) {
             const row = input.closest('tr');
             const amount = parseFloat(input.value) || 0;
-            const kcalPer100 = parseFloat(row.dataset.kcalPer100) || 0;
-            const kcalCell = row.querySelector('.kcal-cell');
+            const factor = amount / 100;
 
-            const totalKcal = (amount / 100) * kcalPer100;
-            kcalCell.innerText = totalKcal.toFixed(1);
+            const nutrients = ['kcal', 'protein', 'fat', 'fibre', 'iron', 'sugar'];
+            nutrients.forEach(n => {
+                const per100 = parseFloat(row.dataset[n]) || 0;
+                const cell = row.querySelector(`.${n}-cell`);
+                if (cell) cell.innerText = (factor * per100).toFixed(1);
+            });
 
             setSyncStatus(false);
-            calculateTotalKcal();
+            calculateTotals();
             checkAndAddBlankRow();
         }
 
-        function calculateTotalKcal() {
-            let total = 0;
-            document.querySelectorAll('.kcal-cell').forEach(cell => {
-                total += parseFloat(cell.innerText) || 0;
+        function calculateTotals() {
+            const nutrients = ['kcal', 'protein', 'fat', 'fibre', 'iron', 'sugar'];
+            nutrients.forEach(n => {
+                let total = 0;
+                document.querySelectorAll(`.${n}-cell`).forEach(cell => {
+                    total += parseFloat(cell.innerText) || 0;
+                });
+                const totalEl = document.getElementById(`total${n.charAt(0).toUpperCase() + n.slice(1)}`);
+                if (totalEl) totalEl.innerText = total.toFixed(1);
             });
-            document.getElementById('totalKcal').innerText = total.toFixed(1);
         }
 
         async function deleteRow(btn) {
@@ -563,7 +625,7 @@
             }
 
             row.remove();
-            calculateTotalKcal();
+            calculateTotals();
             checkAndAddBlankRow();
         }
 
@@ -691,14 +753,19 @@
                     item.addEventListener('mousedown', () => {
                         const row = cell.closest('tr');
                         row.dataset.foodId = food.id;
-                        row.dataset.kcalPer100 = food.energy_in_kcal_per_100g;
+                        row.dataset.kcal = food.energy_in_kcal_per_100g;
+                        row.dataset.protein = food.protein_in_g_per_100g;
+                        row.dataset.fat = food.fat_in_g_per_100g;
+                        row.dataset.fibre = food.fibre_in_g_per_100g;
+                        row.dataset.iron = food.iron_in_mg_per_100g;
+                        row.dataset.sugar = food.sugar_in_g_per_100g;
+
                         cell.innerHTML = `<span>${food.name}</span><span class="bls-code">${food.bls_code}</span>`;
                         cell.dataset.selectedName = food.name;
                         cell.dataset.selectedBls = food.bls_code;
-                        cell.dataset.selectedBls = food.bls_code;
-                        updateKcal(row.querySelector('.amount-input'));
+                        updateNutrients(row.querySelector('.amount-input'));
                         saveRow(cell);
-                        calculateTotalKcal();
+                        calculateTotals();
                         dropdown.classList.remove('active');
                     });
                     dropdown.appendChild(item);
@@ -731,11 +798,14 @@
                     <div class="search-dropdown"></div>
                 </td>
                 <td>
-                    <input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateKcal(this)" onblur="saveRow(this)">
+                    <input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)">
                 </td>
-                <td>
-                    <div class="cell-content kcal-cell">0.0</div>
-                </td>
+                <td><div class="cell-content kcal-cell">0.0</div></td>
+                <td><div class="cell-content protein-cell">0.0</div></td>
+                <td><div class="cell-content fat-cell">0.0</div></td>
+                <td><div class="cell-content fibre-cell">0.0</div></td>
+                <td><div class="cell-content iron-cell">0.0</div></td>
+                <td><div class="cell-content sugar-cell">0.0</div></td>
                 <td class="actions-cell">
                     <button class="delete-btn" onclick="deleteRow(this)">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -752,7 +822,7 @@
             // Check if last one is already filled
             checkAndAddBlankRow();
         }
-        calculateTotalKcal();
+        calculateTotals();
     </script>
 </body>
 
