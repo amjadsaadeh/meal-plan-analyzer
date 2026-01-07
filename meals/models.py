@@ -40,9 +40,19 @@ class MealPlan(models.Model):
         return self.name
 
 class MealPlanFood(models.Model):
+    class MealType(models.TextChoices):
+        BREAKFAST = "breakfast", "Breakfast"
+        LUNCH = "lunch", "Lunch"
+        DINNER = "dinner", "Dinner"
+
     meal_plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE)
     food = models.ForeignKey(Food, on_delete=models.CASCADE)
     amount_in_g = models.FloatField()
+    meal_type = models.CharField(
+        max_length=20,
+        choices=MealType.choices,
+        default=MealType.BREAKFAST
+    )
     
     class Meta:
-        unique_together = ('meal_plan', 'food')
+        unique_together = ('meal_plan', 'food', 'meal_type')

@@ -403,18 +403,76 @@
             font-weight: 600;
         }
 
-        .total-label {
-            text-align: right;
-            padding-right: 1.5rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
-        }
-
         .total-value {
             color: var(--primary);
             font-size: 1.1rem;
+        }
+
+        .meal-section {
+            margin-bottom: 4rem;
+        }
+
+        .meal-header {
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary);
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .meal-header svg {
+            opacity: 0.7;
+        }
+
+        .grand-summary {
+            margin-top: 4rem;
+            padding: 2.5rem;
+            background: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        }
+
+        .summary-title {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-main);
+            text-align: center;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 16px;
+            transition: transform 0.2s;
+        }
+
+        .summary-item:hover {
+            transform: translateY(-5px);
+            background: var(--row-hover);
+        }
+
+        .summary-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .summary-val {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
         }
 
         /* Toolbar & Column Selection */
@@ -549,176 +607,225 @@
             </div>
         </div>
 
-        <div class="table-card">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 350px;">Zutatenname</th>
-                            <th style="width: 180px;">Menge (g)</th>
-                            <th style="width: 100px;" class="nutrient-header">kcal</th>
-                            <th style="width: 100px;" class="nutrient-header col-protein">Prot (g)</th>
-                            <th style="width: 100px;" class="nutrient-header col-fat">Fett (g)</th>
-                            <th style="width: 100px;" class="nutrient-header col-omega3">Omega 3 (g)</th>
-                            <th style="width: 100px;" class="nutrient-header col-sugar">Zucker (g)</th>
-                            <th style="width: 100px;" class="nutrient-header col-fibre">Bst. (g)</th>
-                            <th style="width: 100px;" class="nutrient-header col-iron">Eisen (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header col-vitc">Vit C (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header col-magnesium">Mag. (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header col-zinc">Zink (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header col-vitb12">Vit B12 (µg)</th>
-                            <th style="width: 100px;" class="nutrient-header col-vita">Vit A (µg)</th>
-                            <th style="width: 100px;" class="nutrient-header col-calcium">Calcium (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header col-vitd">Vit D (µg)</th>
-                            <th style="width: 50px;" class="actions-cell"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="ingredientsBody">
-                        {% for item in plan.mealplanfood_set.all %}
-                        <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein="{{ item.food.protein_in_g_per_100g }}" data-fat="{{ item.food.fat_in_g_per_100g }}" data-fibre="{{ item.food.fibre_in_g_per_100g }}" data-iron="{{ item.food.iron_in_mg_per_100g }}" data-sugar="{{ item.food.sugar_in_g_per_100g }}" data-omega3="{{ item.food.omega3_in_g_per_100g }}" data-vitc="{{ item.food.vitc_in_mg_per_100g }}" data-magnesium="{{ item.food.magnesium_in_mg_per_100g }}" data-zinc="{{ item.food.zinc_in_mg_per_100g }}" data-vitb12="{{ item.food.vitb12_in_mug_per_100g }}" data-vita="{{ item.food.vita_in_mug_per_100g }}" data-calcium="{{ item.food.calcium_in_mg_per_100g }}" data-vitd="{{ item.food.vitd_in_mug_per_100g }}">
-                            <td>
-                                <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)">
-                                    <span>{{ item.food.name }}</span>
-                                    <span class="bls-code">{{ item.food.bls_code }}</span>
-                                </div>
-                                <div class="search-dropdown"></div>
-                            </td>
-                            <td>
-                                <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)">
-                            </td>
-                            <td>
-                                <div class="cell-content kcal-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-protein">
-                                <div class="cell-content protein-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-fat">
-                                <div class="cell-content fat-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-omega3">
-                                <div class="cell-content omega3-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}
-                                </div>
-                            </td>
-                            <td class="col-sugar">
-                                <div class="cell-content sugar-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-fibre">
-                                <div class="cell-content fibre-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-iron">
-                                <div class="cell-content iron-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-vitc">
-                                <div class="cell-content vitc-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.vitc_in_mg_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-magnesium">
-                                <div class="cell-content magnesium-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.magnesium_in_mg_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-zinc">
-                                <div class="cell-content zinc-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.zinc_in_mg_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-vitb12">
-                                <div class="cell-content vitb12-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.vitb12_in_mug_per_100g|floatformat:2 }}
-                                </div>
-                            </td>
-                            <td class="col-vita">
-                                <div class="cell-content vita-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.vita_in_mug_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-calcium">
-                                <div class="cell-content calcium-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.calcium_in_mg_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td class="col-vitd">
-                                <div class="cell-content vitd-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.vitd_in_mug_per_100g|floatformat:2 }}
-                                </div>
-                            </td>
-                            <td class="actions-cell">
-                                <button class="delete-btn" onclick="deleteRow(this)">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        <!-- Blank Row Triggered by JS if not present or after last filled -->
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="2" class="total-label">Gesamtwerte</td>
-                            <td>
-                                <div class="cell-content total-value" id="totalKcal">0.0</div>
-                            </td>
-                            <td class="col-protein">
-                                <div class="cell-content total-value" id="totalProtein" style="font-size: 0.9rem;">0.0</div>
-                            </td>
-                            <td class="col-fat">
-                                <div class="cell-content total-value" id="totalFat" style="font-size: 0.9rem;">0.0</div>
-                            </td>
-                            <td class="col-omega3">
-                                <div class="cell-content total-value" id="totalOmega3" style="font-size: 0.8rem;">0.0</div>
-                            </td>
-                            <td class="col-sugar">
-                                <div class="cell-content total-value" id="totalSugar" style="font-size: 0.9rem;">0.0</div>
-                            </td>
-                            <td class="col-fibre">
-                                <div class="cell-content total-value" id="totalFibre" style="font-size: 0.9rem;">0.0</div>
-                            </td>
-                            <td class="col-iron">
-                                <div class="cell-content total-value" id="totalIron" style="font-size: 0.9rem;">0.0</div>
-                            </td>
-                            <td class="col-vitc">
-                                <div class="cell-content total-value" id="totalVitc" style="font-size: 0.8rem;">0.0</div>
-                            </td>
-                            <td class="col-magnesium">
-                                <div class="cell-content total-value" id="totalMagnesium" style="font-size: 0.8rem;">0.0</div>
-                            </td>
-                            <td class="col-zinc">
-                                <div class="cell-content total-value" id="totalZinc" style="font-size: 0.8rem;">0.0</div>
-                            </td>
-                            <td class="col-vitb12">
-                                <div class="cell-content total-value" id="totalVitb12" style="font-size: 0.8rem;">0.0</div>
-                            </td>
-                            <td class="col-vita">
-                                <div class="cell-content total-value" id="totalVita" style="font-size: 0.8rem;">0.0</div>
-                            </td>
-                            <td class="col-calcium">
-                                <div class="cell-content total-value" id="totalCalcium" style="font-size: 0.8rem;">0.0</div>
-                            </td>
-                            <td class="col-vitd">
-                                <div class="cell-content total-value" id="totalVitd" style="font-size: 0.8rem;">0.0</div>
-                            </td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
+        {% for meal_slug, meal_label in meal_types %}
+        <div class="meal-section">
+            <h2 class="meal-header">
+                {% if meal_slug == 'breakfast' %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11h.01"></path><path d="M11 11h.01"></path><path d="M7 11h.01"></path><path d="M12 2A10 10 0 0 1 22 12c0 1.25-.23 2.44-.65 3.54a5 5 0 0 1-7.81 0A10 10 0 0 1 3.12 11.23a5 5 0 0 1 1-6.11A10 10 0 0 1 12 2z"></path></svg>
+                {% elif meal_slug == 'lunch' %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                {% else %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path></svg>
+                {% endif %}
+                {{ meal_label }}
+            </h2>
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table data-meal-type="{{ meal_slug }}">
+                        <thead>
+                            <tr>
+                                <th style="width: 350px;">Zutatenname</th>
+                                <th style="width: 180px;">Menge (g)</th>
+                                <th style="width: 100px;" class="nutrient-header">kcal</th>
+                                <th style="width: 100px;" class="nutrient-header col-protein">Prot (g)</th>
+                                <th style="width: 100px;" class="nutrient-header col-fat">Fett (g)</th>
+                                <th style="width: 100px;" class="nutrient-header col-omega3">Omega 3 (g)</th>
+                                <th style="width: 100px;" class="nutrient-header col-sugar">Zucker (g)</th>
+                                <th style="width: 100px;" class="nutrient-header col-fibre">Bst. (g)</th>
+                                <th style="width: 100px;" class="nutrient-header col-iron">Eisen (mg)</th>
+                                <th style="width: 100px;" class="nutrient-header col-vitc">Vit C (mg)</th>
+                                <th style="width: 100px;" class="nutrient-header col-magnesium">Mag. (mg)</th>
+                                <th style="width: 100px;" class="nutrient-header col-zinc">Zink (mg)</th>
+                                <th style="width: 100px;" class="nutrient-header col-vitb12">Vit B12 (µg)</th>
+                                <th style="width: 100px;" class="nutrient-header col-vita">Vit A (µg)</th>
+                                <th style="width: 100px;" class="nutrient-header col-calcium">Calcium (mg)</th>
+                                <th style="width: 100px;" class="nutrient-header col-vitd">Vit D (µg)</th>
+                                <th style="width: 50px;" class="actions-cell"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="ingredientsBody-{{ meal_slug }}" class="ingredientsBody" data-meal-type="{{ meal_slug }}">
+                            {% for item in plan.mealplanfood_set.all %}
+                            {% if item.meal_type == meal_slug %}
+                            <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein="{{ item.food.protein_in_g_per_100g }}" data-fat="{{ item.food.fat_in_g_per_100g }}" data-fibre="{{ item.food.fibre_in_g_per_100g }}" data-iron="{{ item.food.iron_in_mg_per_100g }}" data-sugar="{{ item.food.sugar_in_g_per_100g }}" data-omega3="{{ item.food.omega3_in_g_per_100g }}" data-vitc="{{ item.food.vitc_in_mg_per_100g }}" data-magnesium="{{ item.food.magnesium_in_mg_per_100g }}" data-zinc="{{ item.food.zinc_in_mg_per_100g }}" data-vitb12="{{ item.food.vitb12_in_mug_per_100g }}" data-vita="{{ item.food.vita_in_mug_per_100g }}" data-calcium="{{ item.food.calcium_in_mg_per_100g }}" data-vitd="{{ item.food.vitd_in_mug_per_100g }}">
+                                <td>
+                                    <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)">
+                                        <span>{{ item.food.name }}</span>
+                                        <span class="bls-code">{{ item.food.bls_code }}</span>
+                                    </div>
+                                    <div class="search-dropdown"></div>
+                                </td>
+                                <td>
+                                    <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)">
+                                </td>
+                                <td>
+                                    <div class="cell-content kcal-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-protein">
+                                    <div class="cell-content protein-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-fat">
+                                    <div class="cell-content fat-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-omega3">
+                                    <div class="cell-content omega3-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}
+                                    </div>
+                                </td>
+                                <td class="col-sugar">
+                                    <div class="cell-content sugar-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-fibre">
+                                    <div class="cell-content fibre-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-iron">
+                                    <div class="cell-content iron-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-vitc">
+                                    <div class="cell-content vitc-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.vitc_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-magnesium">
+                                    <div class="cell-content magnesium-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.magnesium_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-zinc">
+                                    <div class="cell-content zinc-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.zinc_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-vitb12">
+                                    <div class="cell-content vitb12-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.vitb12_in_mug_per_100g|floatformat:2 }}
+                                    </div>
+                                </td>
+                                <td class="col-vita">
+                                    <div class="cell-content vita-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.vita_in_mug_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-calcium">
+                                    <div class="cell-content calcium-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.calcium_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-vitd">
+                                    <div class="cell-content vitd-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.vitd_in_mug_per_100g|floatformat:2 }}
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="delete-btn" onclick="deleteRow(this)">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" style="text-align: right; padding-right: 1.5rem; color: var(--text-dim); text-transform: uppercase; font-size: 0.7rem;">Subeinheit:</td>
+                                <td><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="kcal">0.0</div></td>
+                                <td class="col-protein"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="protein">0.0</div></td>
+                                <td class="col-fat"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="fat">0.0</div></td>
+                                <td class="col-omega3"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="omega3">0.0</div></td>
+                                <td class="col-sugar"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="sugar">0.0</div></td>
+                                <td class="col-fibre"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="fibre">0.0</div></td>
+                                <td class="col-iron"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="iron">0.0</div></td>
+                                <td class="col-vitc"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="vitc">0.0</div></td>
+                                <td class="col-magnesium"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="magnesium">0.0</div></td>
+                                <td class="col-zinc"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="zinc">0.0</div></td>
+                                <td class="col-vitb12"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="vitb12">0.0</div></td>
+                                <td class="col-vita"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="vita">0.0</div></td>
+                                <td class="col-calcium"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="calcium">0.0</div></td>
+                                <td class="col-vitd"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="vitd">0.0</div></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="grand-summary">
+            <h3 class="summary-title">Tagesübersicht Gesamt</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">kcal</span>
+                    <span class="summary-val" id="totalKcal">0.0</span>
+                </div>
+                <div class="summary-item col-protein">
+                    <span class="summary-label">Protein</span>
+                    <span class="summary-val" id="totalProtein">0.0</span>
+                </div>
+                <div class="summary-item col-fat">
+                    <span class="summary-label">Fett</span>
+                    <span class="summary-val" id="totalFat">0.0</span>
+                </div>
+                <div class="summary-item col-omega3">
+                    <span class="summary-label">Omega 3</span>
+                    <span class="summary-val" id="totalOmega3">0.0</span>
+                </div>
+                <div class="summary-item col-sugar">
+                    <span class="summary-label">Zucker</span>
+                    <span class="summary-val" id="totalSugar">0.0</span>
+                </div>
+                <div class="summary-item col-fibre">
+                    <span class="summary-label">Ballastst.</span>
+                    <span class="summary-val" id="totalFibre">0.0</span>
+                </div>
+                <div class="summary-item col-iron">
+                    <span class="summary-label">Eisen</span>
+                    <span class="summary-val" id="totalIron">0.0</span>
+                </div>
+                <div class="summary-item col-vitc">
+                    <span class="summary-label">Vit C</span>
+                    <span class="summary-val" id="totalVitc">0.0</span>
+                </div>
+                <div class="summary-item col-magnesium">
+                    <span class="summary-label">Magnesium</span>
+                    <span class="summary-val" id="totalMagnesium">0.0</span>
+                </div>
+                <div class="summary-item col-zinc">
+                    <span class="summary-label">Zink</span>
+                    <span class="summary-val" id="totalZinc">0.0</span>
+                </div>
+                <div class="summary-item col-vitb12">
+                    <span class="summary-label">Vit B12</span>
+                    <span class="summary-val" id="totalVitb12">0.0</span>
+                </div>
+                <div class="summary-item col-vita">
+                    <span class="summary-label">Vit A</span>
+                    <span class="summary-val" id="totalVita">0.0</span>
+                </div>
+                <div class="summary-item col-calcium">
+                    <span class="summary-label">Calcium</span>
+                    <span class="summary-val" id="totalCalcium">0.0</span>
+                </div>
+                <div class="summary-item col-vitd">
+                    <span class="summary-label">Vit D</span>
+                    <span class="summary-val" id="totalVitd">0.0</span>
+                </div>
             </div>
         </div>
     </div>
@@ -756,7 +863,9 @@
             // Adjust table min-width dynamically based on visible columns
             const visibleCount = ALL_NUTRIENTS.filter(n => visibleNutrients.includes(n)).length;
             const newMinWidth = 350 + 180 + 100 + (visibleCount * 100) + 50;
-            document.querySelector('table').style.minWidth = `${newMinWidth}px`;
+            document.querySelectorAll('table').forEach(table => {
+                table.style.minWidth = `${newMinWidth}px`;
+            });
         }
 
         async function saveVisibility() {
@@ -775,8 +884,18 @@
             document.getElementById('colDropdown').classList.toggle('active');
         });
 
-        document.addEventListener('click', () => {
+        document.addEventListener('click', (e) => {
             document.getElementById('colDropdown').classList.remove('active');
+            
+            // Close all search dropdowns if clicking outside
+            if (!e.target.closest('td')) {
+                document.querySelectorAll('.search-dropdown.active').forEach(d => {
+                    const cell = d.closest('td').querySelector('.ingredient-name-cell');
+                    if (cell && cell.querySelector('input')) {
+                        restoreCell(cell);
+                    }
+                });
+            }
         });
 
         document.getElementById('colDropdown').addEventListener('click', (e) => e.stopPropagation());
@@ -805,37 +924,37 @@
             isPending = !saved;
             const text = document.getElementById('syncText');
             const icon = document.getElementById('syncIcon');
-            text.innerText = saved ? 'Saved' : 'Unsaved changes';
-            icon.innerHTML = saved ? ICON_SAVED : ICON_PENDING;
+            if (text) text.innerText = saved ? 'Saved' : 'Unsaved changes';
+            if (icon) icon.innerHTML = saved ? ICON_SAVED : ICON_PENDING;
         }
 
         // --- Heading Sync ---
-        document.getElementById('planName').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                e.target.blur();
-            }
-        });
+        const planNameEl = document.getElementById('planName');
+        if (planNameEl) {
+            planNameEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.target.blur();
+                }
+            });
 
-        document.getElementById('planName').addEventListener('input', () => {
-            setSyncStatus(false);
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(savePlanName, 1000);
-        });
+            planNameEl.addEventListener('input', () => {
+                setSyncStatus(false);
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(savePlanName, 1000);
+            });
 
-        document.getElementById('planName').addEventListener('blur', () => {
-            savePlanName();
-        });
+            planNameEl.addEventListener('blur', () => {
+                savePlanName();
+            });
+        }
 
         async function savePlanName() {
             const name = document.getElementById('planName').innerText.trim();
             try {
                 const response = await fetch(`/api/mealplans/${PLAN_ID}/`, {
                     method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': CSRF_TOKEN
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
                     body: JSON.stringify({ name })
                 });
                 if (response.ok) setSyncStatus(true);
@@ -860,36 +979,64 @@
 
             setSyncStatus(false);
             calculateTotals();
-            checkAndAddBlankRow();
+            const mealType = row.closest('tbody').dataset.mealType;
+            checkAndAddBlankRow(mealType);
         }
 
         function calculateTotals() {
             const nutrients = ['kcal', 'protein', 'fat', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
-            nutrients.forEach(n => {
-                let total = 0;
-                document.querySelectorAll(`.${n}-cell`).forEach(cell => {
-                    total += parseFloat(cell.innerText) || 0;
+            
+            // Grand totals
+            const grandTotals = {};
+            nutrients.forEach(n => grandTotals[n] = 0);
+
+            // Per meal totals
+            const mealTypes = ['breakfast', 'lunch', 'dinner'];
+            const mealTotals = {};
+            mealTypes.forEach(m => {
+                mealTotals[m] = {};
+                nutrients.forEach(n => mealTotals[m][n] = 0);
+            });
+
+            document.querySelectorAll('.ingredient-row').forEach(row => {
+                const mealType = row.closest('tbody').dataset.mealType;
+                nutrients.forEach(n => {
+                    const cell = row.querySelector(`.${n}-cell`);
+                    if (cell) {
+                        const val = parseFloat(cell.innerText) || 0;
+                        grandTotals[n] += val;
+                        if (mealTotals[mealType]) mealTotals[mealType][n] += val;
+                    }
                 });
-                const totalEl = document.getElementById(`total${n.charAt(0).toUpperCase() + n.slice(1)}`);
-                if (totalEl) {
-                    const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
-                    totalEl.innerText = total.toFixed(precision);
-                }
+            });
+
+            // Update DOM
+            nutrients.forEach(n => {
+                const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
+                
+                // Update grand summary
+                const grandEl = document.getElementById(`total${n.charAt(0).toUpperCase() + n.slice(1)}`);
+                if (grandEl) grandEl.innerText = grandTotals[n].toFixed(precision);
+
+                // Update per-meal footers
+                mealTypes.forEach(m => {
+                    const mealEl = document.querySelector(`.total-value-meal[data-meal="${m}"][data-nut="${n}"]`);
+                    if (mealEl) mealEl.innerText = mealTotals[m][n].toFixed(precision);
+                });
             });
         }
 
         async function deleteRow(btn) {
             const row = btn.closest('tr');
             const id = row.dataset.id;
+            const mealType = row.closest('tbody').dataset.mealType;
 
             if (id) {
                 if (!confirm('Are you sure you want to remove this ingredient?')) return;
                 try {
                     const response = await fetch(`/api/mealplan-foods/${id}/`, {
                         method: 'DELETE',
-                        headers: {
-                            'X-CSRFToken': CSRF_TOKEN
-                        }
+                        headers: { 'X-CSRFToken': CSRF_TOKEN }
                     });
                     if (!response.ok) {
                         alert('Error deleting row');
@@ -900,7 +1047,7 @@
 
             row.remove();
             calculateTotals();
-            checkAndAddBlankRow();
+            checkAndAddBlankRow(mealType);
         }
 
         async function saveRow(el) {
@@ -908,6 +1055,7 @@
             const foodId = row.dataset.foodId;
             const amount = parseFloat(row.querySelector('.amount-input').value);
             const id = row.dataset.id;
+            const mealType = row.closest('tbody').dataset.mealType;
 
             if (!foodId || isNaN(amount)) return;
 
@@ -917,7 +1065,8 @@
             const body = {
                 meal_plan: PLAN_ID,
                 food: foodId,
-                amount_in_g: amount
+                amount_in_g: amount,
+                meal_type: mealType
             };
 
             try {
@@ -941,86 +1090,80 @@
             if (cell.querySelector('input')) return;
 
             const nameSpan = cell.querySelector('span:first-child');
+            const blsSpan = cell.querySelector('.bls-code');
             const originalName = nameSpan ? nameSpan.innerText.trim() : 'Search Food...';
-            const originalBls = cell.querySelector('.bls-code')?.innerText.trim() || '';
+            const originalBls = blsSpan ? blsSpan.innerText.trim() : '';
+
+            // Store original data to restore if search cancelled
+            cell.dataset.prevName = originalName;
+            cell.dataset.prevBls = originalBls;
 
             cell.innerHTML = `<input type="text" class="table-input" placeholder="Search food..." value="${originalName === 'Search Food...' ? '' : originalName}" autocomplete="off">`;
             const input = cell.querySelector('input');
             input.focus();
 
-            const dropdown = cell.nextElementSibling;
-
-            input.addEventListener('input', async (e) => {
-                const query = e.target.value.trim();
-                if (query.length < 2) {
-                    dropdown.classList.remove('active');
-                    return;
-                }
-
-                try {
-                    const res = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`);
-                    const data = await res.json();
-                    renderDropdown(dropdown, data.results, cell);
-                } catch (e) { }
+            input.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => searchFood(input), 300);
             });
-
-            const restoreCell = () => {
-                if (!cell.closest('tr').dataset.foodId) {
-                    cell.innerHTML = '<span>Search Food...</span>';
-                } else {
-                    const name = cell.dataset.selectedName || originalName;
-                    const bls = cell.dataset.selectedBls || originalBls;
-                    cell.innerHTML = `<span>${name}</span><span class="bls-code">${bls}</span>`;
-                }
-                dropdown.classList.remove('active');
-            };
-
-            const blurHandler = (e) => {
-                setTimeout(() => {
-                    if (!dropdown.contains(document.activeElement)) {
-                        restoreCell();
-                    }
-                }, 200);
-            };
 
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    // Remove listeners so blur doesn't trigger twice or conflict
-                    input.removeEventListener('blur', blurHandler);
-                    restoreCell();
+                    restoreCell(cell);
                 }
             });
 
-            input.addEventListener('blur', blurHandler);
+            // Handle clicking outside or losing focus
+            input.addEventListener('blur', (e) => {
+                // Delay slightly to allow mousedown on search items to trigger first
+                setTimeout(() => {
+                    if (cell.querySelector('input') && !cell.querySelector('.search-dropdown:hover')) {
+                        restoreCell(cell);
+                    }
+                }, 200);
+            });
         }
 
-        function highlightMatch(text, query) {
-            if (!query) return text;
-            const semanticKeywords = ['low', 'high', 'energy', 'cal', 'kcal', 'kj'];
-            const tokens = query.toLowerCase().split(/\s+/)
-                .filter(t => t.length >= 2 && !semanticKeywords.includes(t));
-            if (tokens.length === 0) return text;
-            const pattern = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-            if (!pattern) return text;
-            const regex = new RegExp(`(${pattern})`, 'gi');
-            return text.replace(regex, '<strong>$1</strong>');
+        function restoreCell(cell) {
+            const name = cell.dataset.prevName || 'Search Food...';
+            const bls = cell.dataset.prevBls || '';
+            const blsHtml = bls ? `<span class="bls-code">${bls}</span>` : '';
+            cell.innerHTML = `<span>${name}</span>${blsHtml}`;
+            
+            // Dropdown is a sibling of the 'cell' (.ingredient-name-cell)
+            const dropdown = cell.parentNode.querySelector('.search-dropdown');
+            if (dropdown) dropdown.classList.remove('active');
+        }
+
+        async function searchFood(input) {
+            const query = input.value.trim();
+            const cell = input.closest('td');
+            const dropdown = cell.querySelector('.search-dropdown');
+
+            if (query.length < 2) {
+                dropdown.classList.remove('active');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`);
+                const results = await response.json();
+                renderDropdown(dropdown, results, cell);
+            } catch (e) { console.error(e); }
         }
 
         function renderDropdown(dropdown, results, cell) {
-            const query = cell.querySelector('input').value.trim();
             dropdown.innerHTML = '';
             if (results.length === 0) {
                 dropdown.innerHTML = '<div class="search-item">No results</div>';
             } else {
                 results.forEach(food => {
-                    const highlightedName = highlightMatch(food.name, query);
-                    const highlightedCode = highlightMatch(food.bls_code, query);
                     const item = document.createElement('div');
                     item.className = 'search-item';
                     item.innerHTML = `
                         <div>
-                            <span class="name">${highlightedName}</span>
-                            <span class="code">Code: ${highlightedCode}</span>
+                            <span class="name">${food.name}</span>
+                            <span class="code">Code: ${food.bls_code}</span>
                         </div>
                         <div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>
                     `;
@@ -1042,10 +1185,11 @@
                         row.dataset.calcium = food.calcium_in_mg_per_100g;
                         row.dataset.vitd = food.vitd_in_mug_per_100g;
 
-                        cell.innerHTML = `<span>${food.name}</span><span class="bls-code">${food.bls_code}</span>`;
-                        cell.dataset.selectedName = food.name;
-                        cell.dataset.selectedBls = food.bls_code;
-                        updateNutrients(row.querySelector('.amount-input'));
+                        const nameCell = cell.querySelector('.ingredient-name-cell');
+                        if (nameCell) {
+                            nameCell.innerHTML = `<span>${food.name}</span><span class="bls-code">${food.bls_code}</span>`;
+                            updateNutrients(row.querySelector('.amount-input'));
+                        }
                         saveRow(cell);
                         calculateTotals();
                         dropdown.classList.remove('active');
@@ -1056,21 +1200,29 @@
             dropdown.classList.add('active');
         }
 
-        function checkAndAddBlankRow() {
-            const rows = document.querySelectorAll('.ingredient-row');
+        function checkAndAddBlankRow(mealType) {
+            const tbody = document.getElementById(`ingredientsBody-${mealType}`);
+            if (!tbody) return;
+            const rows = tbody.querySelectorAll('.ingredient-row');
             const lastRow = rows[rows.length - 1];
+
+            if (!lastRow) {
+                addBlankRow(mealType);
+                return;
+            }
 
             const hasFood = lastRow.dataset.foodId;
             const hasAmount = lastRow.querySelector('.amount-input').value !== "";
 
             if (hasFood && hasAmount) {
-                addBlankRow();
-                initVisibility(); // Apply visibility to the new row
+                addBlankRow(mealType);
+                initVisibility();
             }
         }
 
-        function addBlankRow() {
-            const tbody = document.getElementById('ingredientsBody');
+        function addBlankRow(mealType) {
+            const tbody = document.getElementById(`ingredientsBody-${mealType}`);
+            if (!tbody) return;
             const tr = document.createElement('tr');
             tr.className = 'ingredient-row';
             tr.innerHTML = `
@@ -1106,13 +1258,11 @@
             tbody.appendChild(tr);
         }
 
-        // Initial blank row if empty
-        if (document.querySelectorAll('.ingredient-row').length === 0) {
-            addBlankRow();
-        } else {
-            // Check if last one is already filled
-            checkAndAddBlankRow();
-        }
+        // Initial blank rows for all sections
+        ['breakfast', 'lunch', 'dinner'].forEach(m => {
+            checkAndAddBlankRow(m);
+        });
+
         calculateTotals();
     </script>
 </body>

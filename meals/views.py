@@ -54,13 +54,20 @@ def meal_plan_detail(request, pk=None):
         return redirect('meal-plan-detail', pk=plan.pk)
     
     plan = MealPlan.objects.prefetch_related('mealplanfood_set__food').get(pk=pk)
+    meal_types = [
+        ('breakfast', 'Frühstück'),
+        ('lunch', 'Mittagessen'),
+        ('dinner', 'Abendessen'),
+    ]
     return render(request, 'meals/mealplan_detail.html', {
-        'plan': plan
+        'plan': plan,
+        'meal_types': meal_types
     })
 
 class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
+    pagination_class = None
     
     def get_queryset(self):
         queryset = Food.objects.all()
