@@ -263,18 +263,16 @@
 
         /* Search Dropdown in Table */
         .search-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
+            position: fixed;
             background: white;
             border: 1px solid var(--glass-border);
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            max-height: 250px;
+            z-index: 2000;
+            max-height: 400px;
             overflow-y: auto;
             display: none;
+            /* width and position set via JS */
         }
 
         .search-dropdown.active {
@@ -648,14 +646,13 @@
                             {% if item.meal_type == meal_slug %}
                             <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein="{{ item.food.protein_in_g_per_100g }}" data-fat="{{ item.food.fat_in_g_per_100g }}" data-fibre="{{ item.food.fibre_in_g_per_100g }}" data-iron="{{ item.food.iron_in_mg_per_100g }}" data-sugar="{{ item.food.sugar_in_g_per_100g }}" data-omega3="{{ item.food.omega3_in_g_per_100g }}" data-vitc="{{ item.food.vitc_in_mg_per_100g }}" data-magnesium="{{ item.food.magnesium_in_mg_per_100g }}" data-zinc="{{ item.food.zinc_in_mg_per_100g }}" data-vitb12="{{ item.food.vitb12_in_mug_per_100g }}" data-vita="{{ item.food.vita_in_mug_per_100g }}" data-calcium="{{ item.food.calcium_in_mg_per_100g }}" data-vitd="{{ item.food.vitd_in_mug_per_100g }}">
                                 <td>
-                                    <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)">
+                                    <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0">
                                         <span>{{ item.food.name }}</span>
                                         <span class="bls-code">{{ item.food.bls_code }}</span>
                                     </div>
-                                    <div class="search-dropdown"></div>
                                 </td>
                                 <td>
-                                    <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)">
+                                    <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)">
                                 </td>
                                 <td>
                                     <div class="cell-content kcal-cell">
@@ -830,11 +827,14 @@
         </div>
     </div>
 
+    <div id="globalSearchDropdown" class="search-dropdown"></div>
+
     <script>
         const PLAN_ID = "{{ plan.id }}";
         const CSRF_TOKEN = "{{ csrf_token }}";
         let isPending = false;
         let debounceTimer;
+        let activeSearchCell = null;
 
         // Nutrients for visibility tracking
         const ALL_NUTRIENTS = ['protein', 'fat', 'omega3', 'sugar', 'fibre', 'iron', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
@@ -887,14 +887,24 @@
         document.addEventListener('click', (e) => {
             document.getElementById('colDropdown').classList.remove('active');
             
-            // Close all search dropdowns if clicking outside
-            if (!e.target.closest('td')) {
-                document.querySelectorAll('.search-dropdown.active').forEach(d => {
-                    const cell = d.closest('td').querySelector('.ingredient-name-cell');
-                    if (cell && cell.querySelector('input')) {
-                        restoreCell(cell);
-                    }
-                });
+            const globalDropdown = document.getElementById('globalSearchDropdown');
+            //Terminology: focus is lost if clicked outside any focusable element
+            const isFocusable = e.target.closest('.ingredient-name-cell') || e.target.closest('.amount-input') || e.target.closest('.search-dropdown');
+            
+            if (activeSearchCell && e.target.isConnected && !isFocusable) {
+                restoreCell(activeSearchCell);
+            }
+        });
+
+        // Handle focus moving between fields (e.g. via Tab)
+        document.addEventListener('focusin', (e) => {
+            if (activeSearchCell && !activeSearchCell.contains(e.target)) {
+                // If focus moved to a different ingredient name cell, 
+                // initSearch will handle restoration.
+                // If focus moved to an amount field or elsewhere, we restore here.
+                if (!e.target.closest('.search-dropdown')) {
+                    restoreCell(activeSearchCell);
+                }
             }
         });
 
@@ -1087,8 +1097,13 @@
         }
 
         function initSearch(cell) {
+            // Restore any other active search first
+            if (activeSearchCell && activeSearchCell !== cell) {
+                restoreCell(activeSearchCell);
+            }
             if (cell.querySelector('input')) return;
 
+            activeSearchCell = cell;
             const nameSpan = cell.querySelector('span:first-child');
             const blsSpan = cell.querySelector('.bls-code');
             const originalName = nameSpan ? nameSpan.innerText.trim() : 'Search Food...';
@@ -1110,18 +1125,51 @@
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     restoreCell(cell);
+                    input.blur();
                 }
             });
 
-            // Handle clicking outside or losing focus
-            input.addEventListener('blur', (e) => {
-                // Delay slightly to allow mousedown on search items to trigger first
-                setTimeout(() => {
-                    if (cell.querySelector('input') && !cell.querySelector('.search-dropdown:hover')) {
-                        restoreCell(cell);
-                    }
-                }, 200);
+            // Keep dropdown positioned
+            window.addEventListener('scroll', updateDropdownPosition, true);
+            window.addEventListener('resize', updateDropdownPosition);
+            document.querySelectorAll('.table-responsive').forEach(el => {
+                el.addEventListener('scroll', updateDropdownPosition, true);
             });
+
+            // Trigger initial search if there's already a value
+            if (input.value.length >= 2) {
+                searchFood(input);
+            }
+        }
+
+        function handleAmountKey(e, input) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                input.blur();
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                input.blur(); // Save
+                
+                // Focus the blank line "search food" field
+                const tbody = input.closest('tbody');
+                const lastRow = tbody.querySelector('.ingredient-row:last-child');
+                const nameCell = lastRow.querySelector('.ingredient-name-cell');
+                if (nameCell) {
+                    initSearch(nameCell);
+                }
+            }
+        }
+
+        function updateDropdownPosition() {
+            if (!activeSearchCell) return;
+            const dropdown = document.getElementById('globalSearchDropdown');
+            if (!dropdown.classList.contains('active')) return;
+            
+            const rect = activeSearchCell.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + 5) + 'px';
+            dropdown.style.left = rect.left + 'px';
+            dropdown.style.width = rect.width + 'px';
         }
 
         function restoreCell(cell) {
@@ -1130,15 +1178,20 @@
             const blsHtml = bls ? `<span class="bls-code">${bls}</span>` : '';
             cell.innerHTML = `<span>${name}</span>${blsHtml}`;
             
-            // Dropdown is a sibling of the 'cell' (.ingredient-name-cell)
-            const dropdown = cell.parentNode.querySelector('.search-dropdown');
-            if (dropdown) dropdown.classList.remove('active');
+            const dropdown = document.getElementById('globalSearchDropdown');
+            dropdown.classList.remove('active');
+            activeSearchCell = null;
+
+            window.removeEventListener('scroll', updateDropdownPosition, true);
+            window.removeEventListener('resize', updateDropdownPosition);
+            document.querySelectorAll('.table-responsive').forEach(el => {
+                el.removeEventListener('scroll', updateDropdownPosition, true);
+            });
         }
 
         async function searchFood(input) {
             const query = input.value.trim();
-            const cell = input.closest('td');
-            const dropdown = cell.querySelector('.search-dropdown');
+            const dropdown = document.getElementById('globalSearchDropdown');
 
             if (query.length < 2) {
                 dropdown.classList.remove('active');
@@ -1148,11 +1201,11 @@
             try {
                 const response = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`);
                 const results = await response.json();
-                renderDropdown(dropdown, results, cell);
+                renderDropdown(dropdown, results);
             } catch (e) { console.error(e); }
         }
 
-        function renderDropdown(dropdown, results, cell) {
+        function renderDropdown(dropdown, results) {
             dropdown.innerHTML = '';
             if (results.length === 0) {
                 dropdown.innerHTML = '<div class="search-item">No results</div>';
@@ -1168,6 +1221,8 @@
                         <div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>
                     `;
                     item.addEventListener('mousedown', () => {
+                        if (!activeSearchCell) return;
+                        const cell = activeSearchCell;
                         const row = cell.closest('tr');
                         row.dataset.foodId = food.id;
                         row.dataset.kcal = food.energy_in_kcal_per_100g;
@@ -1184,20 +1239,37 @@
                         row.dataset.vita = food.vita_in_mug_per_100g;
                         row.dataset.calcium = food.calcium_in_mg_per_100g;
                         row.dataset.vitd = food.vitd_in_mug_per_100g;
+                        // Update backup data so future restorations keep this selection
+                        cell.dataset.prevName = food.name;
+                        cell.dataset.prevBls = food.bls_code;
 
-                        const nameCell = cell.querySelector('.ingredient-name-cell');
-                        if (nameCell) {
-                            nameCell.innerHTML = `<span>${food.name}</span><span class="bls-code">${food.bls_code}</span>`;
-                            updateNutrients(row.querySelector('.amount-input'));
-                        }
+                        cell.innerHTML = `<span>${food.name}</span><span class="bls-code">${food.bls_code}</span>`;
+                        const amountInput = row.querySelector('.amount-input');
+                        updateNutrients(amountInput);
+                        
                         saveRow(cell);
                         calculateTotals();
+                        
+                        // Clear active state and hide dropdown
+                        const currentCell = activeSearchCell;
+                        activeSearchCell = null;
                         dropdown.classList.remove('active');
+                        window.removeEventListener('scroll', updateDropdownPosition, true);
+
+                        // Use setTimeout to ensure the focus jump happens after all current 
+                        // event handling (like blurs from the removed input) is complete
+                        if (amountInput) {
+                            setTimeout(() => {
+                                amountInput.focus();
+                                amountInput.select();
+                            }, 10);
+                        }
                     });
                     dropdown.appendChild(item);
                 });
             }
             dropdown.classList.add('active');
+            updateDropdownPosition();
         }
 
         function checkAndAddBlankRow(mealType) {
@@ -1227,13 +1299,12 @@
             tr.className = 'ingredient-row';
             tr.innerHTML = `
                 <td>
-                    <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)">
+                    <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0">
                         <span>Search Food...</span>
                     </div>
-                    <div class="search-dropdown"></div>
                 </td>
                 <td>
-                    <input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)">
+                    <input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)">
                 </td>
                 <td><div class="cell-content kcal-cell">0.0</div></td>
                 <td class="col-protein"><div class="cell-content protein-cell">0.0</div></td>
