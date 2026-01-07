@@ -37,6 +37,14 @@ class Command(BaseCommand):
             IDX_FIBRE = col_to_idx('V')
             IDX_IRON = col_to_idx('EO')
             IDX_SUGAR = col_to_idx('HL')
+            IDX_OMEGA3 = col_to_idx('LA')
+            IDX_VITC = col_to_idx('DO')
+            IDX_MAGNESIUM = col_to_idx('EF')
+            IDX_ZINC = col_to_idx('ER')
+            IDX_VITB12 = col_to_idx('DK')
+            IDX_VITA = col_to_idx('AH')
+            IDX_CALCIUM = col_to_idx('EC')
+            IDX_VITD = col_to_idx('AW')
 
             count = 0
             rows = list(sheet.iter_rows(min_row=2, values_only=True))
@@ -61,6 +69,14 @@ class Command(BaseCommand):
                 fibre = parse_float(row[IDX_FIBRE])
                 iron = parse_float(row[IDX_IRON])
                 sugar = parse_float(row[IDX_SUGAR])
+                omega3 = parse_float(row[IDX_OMEGA3])
+                vitc = parse_float(row[IDX_VITC])
+                magnesium = parse_float(row[IDX_MAGNESIUM])
+                zinc = parse_float(row[IDX_ZINC])
+                vitb12 = parse_float(row[IDX_VITB12])
+                vita = parse_float(row[IDX_VITA])
+                calcium = parse_float(row[IDX_CALCIUM])
+                vitd = parse_float(row[IDX_VITD])
 
                 Food.objects.update_or_create(
                     bls_code=bls_code,
@@ -73,6 +89,14 @@ class Command(BaseCommand):
                         'fibre_in_g_per_100g': fibre,
                         'iron_in_mg_per_100g': iron,
                         'sugar_in_g_per_100g': sugar,
+                        'omega3_in_g_per_100g': omega3,
+                        'vitc_in_mg_per_100g': vitc,
+                        'magnesium_in_mg_per_100g': magnesium,
+                        'zinc_in_mg_per_100g': zinc,
+                        'vitb12_in_mug_per_100g': vitb12,
+                        'vita_in_mug_per_100g': vita,
+                        'calcium_in_mg_per_100g': calcium,
+                        'vitd_in_mug_per_100g': vitd,
                     }
                 )
                 count += 1
