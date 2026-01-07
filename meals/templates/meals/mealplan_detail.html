@@ -188,7 +188,7 @@
 
         table {
             width: 100%;
-            min-width: 1400px;
+            min-width: 1980px;
             border-collapse: collapse;
             text-align: left;
             table-layout: fixed;
@@ -461,23 +461,23 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 30%;">Zutatenname</th>
-                            <th style="width: 6%;">Menge (g)</th>
-                            <th style="width: 5%;" class="nutrient-header">kcal</th>
-                            <th style="width: 5%;" class="nutrient-header">Prot (g)</th>
-                            <th style="width: 5%;" class="nutrient-header">Fett (g)</th>
-                            <th style="width: 5%;" class="nutrient-header">Bst (g)</th>
-                            <th style="width: 5%;" class="nutrient-header">Eisen (mg)</th>
-                            <th style="width: 5%;" class="nutrient-header">Zucker (g)</th>
-                            <th style="width: 4%;" class="nutrient-header">Ω3 (g)</th>
-                            <th style="width: 4%;" class="nutrient-header">VitC (mg)</th>
-                            <th style="width: 4%;" class="nutrient-header">Mg (mg)</th>
-                            <th style="width: 4%;" class="nutrient-header">Zn (mg)</th>
-                            <th style="width: 4%;" class="nutrient-header">B12 (µg)</th>
-                            <th style="width: 4%;" class="nutrient-header">VitA (µg)</th>
-                            <th style="width: 4%;" class="nutrient-header">Ca (mg)</th>
-                            <th style="width: 4%;" class="nutrient-header">VitD (µg)</th>
-                            <th style="width: 2%;" class="actions-cell"></th>
+                            <th style="width: 350px;">Zutatenname</th>
+                            <th style="width: 180px;">Menge (g)</th>
+                            <th style="width: 100px;" class="nutrient-header">kcal</th>
+                            <th style="width: 100px;" class="nutrient-header">Prot (g)</th>
+                            <th style="width: 100px;" class="nutrient-header">Fett (g)</th>
+                            <th style="width: 100px;" class="nutrient-header">Omega 3 (g)</th>
+                            <th style="width: 100px;" class="nutrient-header">Zucker (g)</th>
+                            <th style="width: 100px;" class="nutrient-header">Bst. (g)</th>
+                            <th style="width: 100px;" class="nutrient-header">Eisen (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header">Vit C (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header">Mag. (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header">Zink (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header">Vit B12 (µg)</th>
+                            <th style="width: 100px;" class="nutrient-header">Vit A (µg)</th>
+                            <th style="width: 100px;" class="nutrient-header">Calcium (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header">Vit D (µg)</th>
+                            <th style="width: 50px;" class="actions-cell"></th>
                         </tr>
                     </thead>
                     <tbody id="ingredientsBody">
@@ -509,13 +509,8 @@
                                 </div>
                             </td>
                             <td>
-                                <div class="cell-content fibre-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="cell-content iron-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
+                                <div class="cell-content omega3-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}
                                 </div>
                             </td>
                             <td>
@@ -524,8 +519,13 @@
                                 </div>
                             </td>
                             <td>
-                                <div class="cell-content omega3-cell">
-                                    {{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}
+                                <div class="cell-content fibre-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content iron-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
                                 </div>
                             </td>
                             <td>
@@ -590,16 +590,16 @@
                                 <div class="cell-content total-value" id="totalFat" style="font-size: 0.9rem;">0.0</div>
                             </td>
                             <td>
-                                <div class="cell-content total-value" id="totalFibre" style="font-size: 0.9rem;">0.0</div>
-                            </td>
-                            <td>
-                                <div class="cell-content total-value" id="totalIron" style="font-size: 0.9rem;">0.0</div>
+                                <div class="cell-content total-value" id="totalOmega3" style="font-size: 0.8rem;">0.0</div>
                             </td>
                             <td>
                                 <div class="cell-content total-value" id="totalSugar" style="font-size: 0.9rem;">0.0</div>
                             </td>
                             <td>
-                                <div class="cell-content total-value" id="totalOmega3" style="font-size: 0.8rem;">0.0</div>
+                                <div class="cell-content total-value" id="totalFibre" style="font-size: 0.9rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalIron" style="font-size: 0.9rem;">0.0</div>
                             </td>
                             <td>
                                 <div class="cell-content total-value" id="totalVitc" style="font-size: 0.8rem;">0.0</div>
@@ -924,10 +924,10 @@
                 <td><div class="cell-content kcal-cell">0.0</div></td>
                 <td><div class="cell-content protein-cell">0.0</div></td>
                 <td><div class="cell-content fat-cell">0.0</div></td>
+                <td><div class="cell-content omega3-cell">0.00</div></td>
+                <td><div class="cell-content sugar-cell">0.0</div></td>
                 <td><div class="cell-content fibre-cell">0.0</div></td>
                 <td><div class="cell-content iron-cell">0.0</div></td>
-                <td><div class="cell-content sugar-cell">0.0</div></td>
-                <td><div class="cell-content omega3-cell">0.00</div></td>
                 <td><div class="cell-content vitc-cell">0.0</div></td>
                 <td><div class="cell-content magnesium-cell">0.0</div></td>
                 <td><div class="cell-content zinc-cell">0.0</div></td>
