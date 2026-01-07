@@ -10,6 +10,14 @@ class Food(models.Model):
     fibre_in_g_per_100g = models.FloatField(default=0.0)
     iron_in_mg_per_100g = models.FloatField(default=0.0)
     sugar_in_g_per_100g = models.FloatField(default=0.0)
+    omega3_in_g_per_100g = models.FloatField(default=0.0)
+    vitc_in_mg_per_100g = models.FloatField(default=0.0)
+    magnesium_in_mg_per_100g = models.FloatField(default=0.0)
+    zinc_in_mg_per_100g = models.FloatField(default=0.0)
+    vitb12_in_mug_per_100g = models.FloatField(default=0.0)
+    vita_in_mug_per_100g = models.FloatField(default=0.0)
+    calcium_in_mg_per_100g = models.FloatField(default=0.0)
+    vitd_in_mug_per_100g = models.FloatField(default=0.0)
 
     class Meta:
         ordering = ['name']
