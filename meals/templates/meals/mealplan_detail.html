@@ -416,6 +416,72 @@
             color: var(--primary);
             font-size: 1.1rem;
         }
+
+        /* Toolbar & Column Selection */
+        .toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .col-select-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+        }
+
+        .col-select-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .col-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 1100;
+            padding: 12px;
+            display: none;
+            width: 200px;
+            margin-top: 8px;
+        }
+
+        .col-dropdown.active {
+            display: block;
+        }
+
+        .col-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .col-option input {
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Hide logic */
+        .hidden-col {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -456,6 +522,33 @@
             </div>
         </div>
 
+        <div class="toolbar">
+            <button class="col-select-btn" id="colSelectBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Spalten auswählen
+            </button>
+            <div class="col-dropdown" id="colDropdown">
+                <label class="col-option"><input type="checkbox" data-col="protein" checked> Protein</label>
+                <label class="col-option"><input type="checkbox" data-col="fat" checked> Fett</label>
+                <label class="col-option"><input type="checkbox" data-col="omega3" checked> Omega 3</label>
+                <label class="col-option"><input type="checkbox" data-col="sugar" checked> Zucker</label>
+                <label class="col-option"><input type="checkbox" data-col="fibre" checked> Ballaststoffe</label>
+                <label class="col-option"><input type="checkbox" data-col="iron" checked> Eisen</label>
+                <label class="col-option"><input type="checkbox" data-col="vitc" checked> Vit C</label>
+                <label class="col-option"><input type="checkbox" data-col="magnesium" checked> Magnesium</label>
+                <label class="col-option"><input type="checkbox" data-col="zinc" checked> Zink</label>
+                <label class="col-option"><input type="checkbox" data-col="vitb12" checked> Vit B12</label>
+                <label class="col-option"><input type="checkbox" data-col="vita" checked> Vit A</label>
+                <label class="col-option"><input type="checkbox" data-col="calcium" checked> Calcium</label>
+                <label class="col-option"><input type="checkbox" data-col="vitd" checked> Vit D</label>
+            </div>
+        </div>
+
         <div class="table-card">
             <div class="table-responsive">
                 <table>
@@ -464,19 +557,19 @@
                             <th style="width: 350px;">Zutatenname</th>
                             <th style="width: 180px;">Menge (g)</th>
                             <th style="width: 100px;" class="nutrient-header">kcal</th>
-                            <th style="width: 100px;" class="nutrient-header">Prot (g)</th>
-                            <th style="width: 100px;" class="nutrient-header">Fett (g)</th>
-                            <th style="width: 100px;" class="nutrient-header">Omega 3 (g)</th>
-                            <th style="width: 100px;" class="nutrient-header">Zucker (g)</th>
-                            <th style="width: 100px;" class="nutrient-header">Bst. (g)</th>
-                            <th style="width: 100px;" class="nutrient-header">Eisen (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header">Vit C (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header">Mag. (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header">Zink (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header">Vit B12 (µg)</th>
-                            <th style="width: 100px;" class="nutrient-header">Vit A (µg)</th>
-                            <th style="width: 100px;" class="nutrient-header">Calcium (mg)</th>
-                            <th style="width: 100px;" class="nutrient-header">Vit D (µg)</th>
+                            <th style="width: 100px;" class="nutrient-header col-protein">Prot (g)</th>
+                            <th style="width: 100px;" class="nutrient-header col-fat">Fett (g)</th>
+                            <th style="width: 100px;" class="nutrient-header col-omega3">Omega 3 (g)</th>
+                            <th style="width: 100px;" class="nutrient-header col-sugar">Zucker (g)</th>
+                            <th style="width: 100px;" class="nutrient-header col-fibre">Bst. (g)</th>
+                            <th style="width: 100px;" class="nutrient-header col-iron">Eisen (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header col-vitc">Vit C (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header col-magnesium">Mag. (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header col-zinc">Zink (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header col-vitb12">Vit B12 (µg)</th>
+                            <th style="width: 100px;" class="nutrient-header col-vita">Vit A (µg)</th>
+                            <th style="width: 100px;" class="nutrient-header col-calcium">Calcium (mg)</th>
+                            <th style="width: 100px;" class="nutrient-header col-vitd">Vit D (µg)</th>
                             <th style="width: 50px;" class="actions-cell"></th>
                         </tr>
                     </thead>
@@ -498,67 +591,67 @@
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-protein">
                                 <div class="cell-content protein-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-fat">
                                 <div class="cell-content fat-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-omega3">
                                 <div class="cell-content omega3-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-sugar">
                                 <div class="cell-content sugar-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-fibre">
                                 <div class="cell-content fibre-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-iron">
                                 <div class="cell-content iron-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-vitc">
                                 <div class="cell-content vitc-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.vitc_in_mg_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-magnesium">
                                 <div class="cell-content magnesium-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.magnesium_in_mg_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-zinc">
                                 <div class="cell-content zinc-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.zinc_in_mg_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-vitb12">
                                 <div class="cell-content vitb12-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.vitb12_in_mug_per_100g|floatformat:2 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-vita">
                                 <div class="cell-content vita-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.vita_in_mug_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-calcium">
                                 <div class="cell-content calcium-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.calcium_in_mg_per_100g|floatformat:1 }}
                                 </div>
                             </td>
-                            <td>
+                            <td class="col-vitd">
                                 <div class="cell-content vitd-cell">
                                     {{ item.amount_in_g|divide_by_100_mult:item.food.vitd_in_mug_per_100g|floatformat:2 }}
                                 </div>
@@ -583,43 +676,43 @@
                             <td>
                                 <div class="cell-content total-value" id="totalKcal">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-protein">
                                 <div class="cell-content total-value" id="totalProtein" style="font-size: 0.9rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-fat">
                                 <div class="cell-content total-value" id="totalFat" style="font-size: 0.9rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-omega3">
                                 <div class="cell-content total-value" id="totalOmega3" style="font-size: 0.8rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-sugar">
                                 <div class="cell-content total-value" id="totalSugar" style="font-size: 0.9rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-fibre">
                                 <div class="cell-content total-value" id="totalFibre" style="font-size: 0.9rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-iron">
                                 <div class="cell-content total-value" id="totalIron" style="font-size: 0.9rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-vitc">
                                 <div class="cell-content total-value" id="totalVitc" style="font-size: 0.8rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-magnesium">
                                 <div class="cell-content total-value" id="totalMagnesium" style="font-size: 0.8rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-zinc">
                                 <div class="cell-content total-value" id="totalZinc" style="font-size: 0.8rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-vitb12">
                                 <div class="cell-content total-value" id="totalVitb12" style="font-size: 0.8rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-vita">
                                 <div class="cell-content total-value" id="totalVita" style="font-size: 0.8rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-calcium">
                                 <div class="cell-content total-value" id="totalCalcium" style="font-size: 0.8rem;">0.0</div>
                             </td>
-                            <td>
+                            <td class="col-vitd">
                                 <div class="cell-content total-value" id="totalVitd" style="font-size: 0.8rem;">0.0</div>
                             </td>
                             <td></td>
@@ -635,6 +728,74 @@
         const CSRF_TOKEN = "{{ csrf_token }}";
         let isPending = false;
         let debounceTimer;
+
+        // Nutrients for visibility tracking
+        const ALL_NUTRIENTS = ['protein', 'fat', 'omega3', 'sugar', 'fibre', 'iron', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
+        let visibleNutrients = {{ plan.visible_nutrients|default:"[]"|safe }};
+
+        // Initial setup
+        if (visibleNutrients.length === 0) {
+            visibleNutrients = [...ALL_NUTRIENTS];
+        }
+
+        function initVisibility() {
+            ALL_NUTRIENTS.forEach(n => {
+                const isVisible = visibleNutrients.includes(n);
+                const checkbox = document.querySelector(`.col-option input[data-col="${n}"]`);
+                if (checkbox) checkbox.checked = isVisible;
+                toggleCol(n, isVisible);
+            });
+        }
+
+        function toggleCol(col, show) {
+            const elements = document.querySelectorAll(`.col-${col}`);
+            elements.forEach(el => {
+                if (show) el.classList.remove('hidden-col');
+                else el.classList.add('hidden-col');
+            });
+            // Adjust table min-width dynamically based on visible columns
+            const visibleCount = ALL_NUTRIENTS.filter(n => visibleNutrients.includes(n)).length;
+            const newMinWidth = 350 + 180 + 100 + (visibleCount * 100) + 50;
+            document.querySelector('table').style.minWidth = `${newMinWidth}px`;
+        }
+
+        async function saveVisibility() {
+            try {
+                await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ visible_nutrients: visibleNutrients })
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        // Toolbar Events
+        document.getElementById('colSelectBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('colDropdown').classList.toggle('active');
+        });
+
+        document.addEventListener('click', () => {
+            document.getElementById('colDropdown').classList.remove('active');
+        });
+
+        document.getElementById('colDropdown').addEventListener('click', (e) => e.stopPropagation());
+
+        document.querySelectorAll('.col-option input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const col = e.target.dataset.col;
+                if (e.target.checked) {
+                    if (!visibleNutrients.includes(col)) visibleNutrients.push(col);
+                } else {
+                    visibleNutrients = visibleNutrients.filter(v => v !== col);
+                }
+                toggleCol(col, e.target.checked);
+                saveVisibility();
+            });
+        });
+
+        // Call init
+        initVisibility();
 
         // Icons
         const ICON_SAVED = `<svg class="status-saved" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
@@ -904,6 +1065,7 @@
 
             if (hasFood && hasAmount) {
                 addBlankRow();
+                initVisibility(); // Apply visibility to the new row
             }
         }
 
@@ -922,19 +1084,19 @@
                     <input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)">
                 </td>
                 <td><div class="cell-content kcal-cell">0.0</div></td>
-                <td><div class="cell-content protein-cell">0.0</div></td>
-                <td><div class="cell-content fat-cell">0.0</div></td>
-                <td><div class="cell-content omega3-cell">0.00</div></td>
-                <td><div class="cell-content sugar-cell">0.0</div></td>
-                <td><div class="cell-content fibre-cell">0.0</div></td>
-                <td><div class="cell-content iron-cell">0.0</div></td>
-                <td><div class="cell-content vitc-cell">0.0</div></td>
-                <td><div class="cell-content magnesium-cell">0.0</div></td>
-                <td><div class="cell-content zinc-cell">0.0</div></td>
-                <td><div class="cell-content vitb12-cell">0.00</div></td>
-                <td><div class="cell-content vita-cell">0.0</div></td>
-                <td><div class="cell-content calcium-cell">0.0</div></td>
-                <td><div class="cell-content vitd-cell">0.00</div></td>
+                <td class="col-protein"><div class="cell-content protein-cell">0.0</div></td>
+                <td class="col-fat"><div class="cell-content fat-cell">0.0</div></td>
+                <td class="col-omega3"><div class="cell-content omega3-cell">0.00</div></td>
+                <td class="col-sugar"><div class="cell-content sugar-cell">0.0</div></td>
+                <td class="col-fibre"><div class="cell-content fibre-cell">0.0</div></td>
+                <td class="col-iron"><div class="cell-content iron-cell">0.0</div></td>
+                <td class="col-vitc"><div class="cell-content vitc-cell">0.0</div></td>
+                <td class="col-magnesium"><div class="cell-content magnesium-cell">0.0</div></td>
+                <td class="col-zinc"><div class="cell-content zinc-cell">0.0</div></td>
+                <td class="col-vitb12"><div class="cell-content vitb12-cell">0.00</div></td>
+                <td class="col-vita"><div class="cell-content vita-cell">0.0</div></td>
+                <td class="col-calcium"><div class="cell-content calcium-cell">0.0</div></td>
+                <td class="col-vitd"><div class="cell-content vitd-cell">0.00</div></td>
                 <td class="actions-cell">
                     <button class="delete-btn" onclick="deleteRow(this)">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
