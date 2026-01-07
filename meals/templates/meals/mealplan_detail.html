@@ -159,14 +159,39 @@
             backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            overflow: visible;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            /* Removed overflow: visible to allow clipping/scrolling if needed, 
+               but we use a wrapper for better control */
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 20px;
+            /* Thin scrollbar for better aesthetics */
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 20px;
         }
 
         table {
             width: 100%;
+            min-width: 1400px;
             border-collapse: collapse;
             text-align: left;
+            table-layout: fixed;
         }
 
         th {
@@ -432,174 +457,176 @@
         </div>
 
         <div class="table-card">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 15%;">Zutatenname</th>
-                        <th style="width: 7%;">Menge (g)</th>
-                        <th style="width: 6%;" class="nutrient-header">kcal</th>
-                        <th style="width: 6%;" class="nutrient-header">Prot (g)</th>
-                        <th style="width: 6%;" class="nutrient-header">Fett (g)</th>
-                        <th style="width: 5%;" class="nutrient-header">Bst (g)</th>
-                        <th style="width: 5%;" class="nutrient-header">Eisen (mg)</th>
-                        <th style="width: 5%;" class="nutrient-header">Zucker (g)</th>
-                        <th style="width: 5%;" class="nutrient-header">Ω3 (g)</th>
-                        <th style="width: 5%;" class="nutrient-header">VitC (mg)</th>
-                        <th style="width: 5%;" class="nutrient-header">Mg (mg)</th>
-                        <th style="width: 5%;" class="nutrient-header">Zn (mg)</th>
-                        <th style="width: 5%;" class="nutrient-header">B12 (µg)</th>
-                        <th style="width: 5%;" class="nutrient-header">VitA (µg)</th>
-                        <th style="width: 5%;" class="nutrient-header">Ca (mg)</th>
-                        <th style="width: 5%;" class="nutrient-header">VitD (µg)</th>
-                        <th class="actions-cell"></th>
-                    </tr>
-                </thead>
-                <tbody id="ingredientsBody">
-                    {% for item in plan.mealplanfood_set.all %}
-                    <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein="{{ item.food.protein_in_g_per_100g }}" data-fat="{{ item.food.fat_in_g_per_100g }}" data-fibre="{{ item.food.fibre_in_g_per_100g }}" data-iron="{{ item.food.iron_in_mg_per_100g }}" data-sugar="{{ item.food.sugar_in_g_per_100g }}" data-omega3="{{ item.food.omega3_in_g_per_100g }}" data-vitc="{{ item.food.vitc_in_mg_per_100g }}" data-magnesium="{{ item.food.magnesium_in_mg_per_100g }}" data-zinc="{{ item.food.zinc_in_mg_per_100g }}" data-vitb12="{{ item.food.vitb12_in_mug_per_100g }}" data-vita="{{ item.food.vita_in_mug_per_100g }}" data-calcium="{{ item.food.calcium_in_mg_per_100g }}" data-vitd="{{ item.food.vitd_in_mug_per_100g }}">
-                        <td>
-                            <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)">
-                                <span>{{ item.food.name }}</span>
-                                <span class="bls-code">{{ item.food.bls_code }}</span>
-                            </div>
-                            <div class="search-dropdown"></div>
-                        </td>
-                        <td>
-                            <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)">
-                        </td>
-                        <td>
-                            <div class="cell-content kcal-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content protein-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content fat-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content fibre-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content iron-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content sugar-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content omega3-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content vitc-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.vitc_in_mg_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content magnesium-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.magnesium_in_mg_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content zinc-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.zinc_in_mg_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content vitb12-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.vitb12_in_mug_per_100g|floatformat:2 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content vita-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.vita_in_mug_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content calcium-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.calcium_in_mg_per_100g|floatformat:1 }}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="cell-content vitd-cell">
-                                {{ item.amount_in_g|divide_by_100_mult:item.food.vitd_in_mug_per_100g|floatformat:2 }}
-                            </div>
-                        </td>
-                        <td class="actions-cell">
-                            <button class="delete-btn" onclick="deleteRow(this)">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    <!-- Blank Row Triggered by JS if not present or after last filled -->
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2" class="total-label">Gesamtwerte</td>
-                        <td>
-                            <div class="cell-content total-value" id="totalKcal">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalProtein" style="font-size: 0.9rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalFat" style="font-size: 0.9rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalFibre" style="font-size: 0.9rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalIron" style="font-size: 0.9rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalSugar" style="font-size: 0.9rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalOmega3" style="font-size: 0.8rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalVitc" style="font-size: 0.8rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalMagnesium" style="font-size: 0.8rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalZinc" style="font-size: 0.8rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalVitb12" style="font-size: 0.8rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalVita" style="font-size: 0.8rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalCalcium" style="font-size: 0.8rem;">0.0</div>
-                        </td>
-                        <td>
-                            <div class="cell-content total-value" id="totalVitd" style="font-size: 0.8rem;">0.0</div>
-                        </td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Zutatenname</th>
+                            <th style="width: 6%;">Menge (g)</th>
+                            <th style="width: 5%;" class="nutrient-header">kcal</th>
+                            <th style="width: 5%;" class="nutrient-header">Prot (g)</th>
+                            <th style="width: 5%;" class="nutrient-header">Fett (g)</th>
+                            <th style="width: 5%;" class="nutrient-header">Bst (g)</th>
+                            <th style="width: 5%;" class="nutrient-header">Eisen (mg)</th>
+                            <th style="width: 5%;" class="nutrient-header">Zucker (g)</th>
+                            <th style="width: 4%;" class="nutrient-header">Ω3 (g)</th>
+                            <th style="width: 4%;" class="nutrient-header">VitC (mg)</th>
+                            <th style="width: 4%;" class="nutrient-header">Mg (mg)</th>
+                            <th style="width: 4%;" class="nutrient-header">Zn (mg)</th>
+                            <th style="width: 4%;" class="nutrient-header">B12 (µg)</th>
+                            <th style="width: 4%;" class="nutrient-header">VitA (µg)</th>
+                            <th style="width: 4%;" class="nutrient-header">Ca (mg)</th>
+                            <th style="width: 4%;" class="nutrient-header">VitD (µg)</th>
+                            <th style="width: 2%;" class="actions-cell"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="ingredientsBody">
+                        {% for item in plan.mealplanfood_set.all %}
+                        <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein="{{ item.food.protein_in_g_per_100g }}" data-fat="{{ item.food.fat_in_g_per_100g }}" data-fibre="{{ item.food.fibre_in_g_per_100g }}" data-iron="{{ item.food.iron_in_mg_per_100g }}" data-sugar="{{ item.food.sugar_in_g_per_100g }}" data-omega3="{{ item.food.omega3_in_g_per_100g }}" data-vitc="{{ item.food.vitc_in_mg_per_100g }}" data-magnesium="{{ item.food.magnesium_in_mg_per_100g }}" data-zinc="{{ item.food.zinc_in_mg_per_100g }}" data-vitb12="{{ item.food.vitb12_in_mug_per_100g }}" data-vita="{{ item.food.vita_in_mug_per_100g }}" data-calcium="{{ item.food.calcium_in_mg_per_100g }}" data-vitd="{{ item.food.vitd_in_mug_per_100g }}">
+                            <td>
+                                <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)">
+                                    <span>{{ item.food.name }}</span>
+                                    <span class="bls-code">{{ item.food.bls_code }}</span>
+                                </div>
+                                <div class="search-dropdown"></div>
+                            </td>
+                            <td>
+                                <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)">
+                            </td>
+                            <td>
+                                <div class="cell-content kcal-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content protein-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content fat-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content fibre-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content iron-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content sugar-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content omega3-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content vitc-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.vitc_in_mg_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content magnesium-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.magnesium_in_mg_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content zinc-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.zinc_in_mg_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content vitb12-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.vitb12_in_mug_per_100g|floatformat:2 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content vita-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.vita_in_mug_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content calcium-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.calcium_in_mg_per_100g|floatformat:1 }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cell-content vitd-cell">
+                                    {{ item.amount_in_g|divide_by_100_mult:item.food.vitd_in_mug_per_100g|floatformat:2 }}
+                                </div>
+                            </td>
+                            <td class="actions-cell">
+                                <button class="delete-btn" onclick="deleteRow(this)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <!-- Blank Row Triggered by JS if not present or after last filled -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" class="total-label">Gesamtwerte</td>
+                            <td>
+                                <div class="cell-content total-value" id="totalKcal">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalProtein" style="font-size: 0.9rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalFat" style="font-size: 0.9rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalFibre" style="font-size: 0.9rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalIron" style="font-size: 0.9rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalSugar" style="font-size: 0.9rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalOmega3" style="font-size: 0.8rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalVitc" style="font-size: 0.8rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalMagnesium" style="font-size: 0.8rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalZinc" style="font-size: 0.8rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalVitb12" style="font-size: 0.8rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalVita" style="font-size: 0.8rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalCalcium" style="font-size: 0.8rem;">0.0</div>
+                            </td>
+                            <td>
+                                <div class="cell-content total-value" id="totalVitd" style="font-size: 0.8rem;">0.0</div>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 
