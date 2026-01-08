@@ -9,4 +9,8 @@ dependencies = [
     "djangorestframework>=3.16.1",
     "openpyxl>=3.1.5",
     "tqdm>=4.67.1",
+    "gunicorn>=23.0.0",
+    "psycopg[binary]>=3.2.3",
+    "whitenoise>=6.8.2",
+    "django-environ>=0.11.2",
 ]
