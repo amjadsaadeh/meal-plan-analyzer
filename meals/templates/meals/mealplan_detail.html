@@ -40,13 +40,14 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: stretch; /* Change to stretch to avoid centering problems with overflow */
             padding-top: 5vh;
         }
 
         .container {
-            width: 95%;
-            padding: 40px 0;
+            width: 100%;
+            margin: 0 auto; /* Center the container */
+            padding: 40px 2.5%; /* Consistent side padding */
             z-index: 10;
         }
 
@@ -57,6 +58,19 @@
             margin-bottom: 2rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid var(--glass-border);
+            flex-wrap: wrap; /* Allow wrapping */
+            gap: 1rem;
+        }
+
+        @media screen and (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-info {
+                align-items: flex-start !important;
+            }
         }
 
         .plan-title-wrapper {
@@ -164,6 +178,7 @@
         }
 
         .table-responsive {
+            display: block; /* Ensure it behaves correctly as a block element */
             width: 100%;
             overflow-x: auto;
             border-radius: 20px;
@@ -187,20 +202,25 @@
 
         table {
             width: 100%;
-            min-width: 1200px;
             border-collapse: collapse;
             text-align: left;
             table-layout: fixed;
         }
 
         th {
-            padding: 1.2rem 1.5rem;
+            padding: 1.2rem 0.75rem;
             font-weight: 600;
             color: var(--text-dim);
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             border-bottom: 2px solid var(--glass-border);
+            text-align: center;
+        }
+
+        th:first-child {
+            text-align: left;
+            padding-left: 1.5rem;
         }
 
         td {
@@ -210,12 +230,18 @@
         }
 
         .cell-content {
-            padding: 1rem 1.5rem;
+            padding: 1rem 0.75rem;
             min-height: 54px;
             display: flex;
             align-items: center;
+            justify-content: center;
             width: 100%;
             height: 100%;
+        }
+
+        .ingredient-name-cell {
+            padding-left: 1.5rem;
+            justify-content: flex-start;
         }
 
         .editable-cell {
@@ -234,7 +260,8 @@
             font-size: 1rem;
             color: var(--text-main);
             outline: none;
-            padding: 1rem 1.5rem;
+            padding: 1rem 0.75rem;
+            text-align: center;
         }
 
         .kcal-cell,
@@ -482,18 +509,40 @@
             display: flex;
             gap: 2.5rem;
             margin-top: 2rem;
+            align-items: flex-start;
+            width: 100%;
         }
 
         .meal-sections-wrapper {
             flex: 1;
             min-width: 0;
-            margin-left: 1rem;
         }
 
         .side-panel {
-            width: 20%;
+            width: 300px;
             flex-shrink: 0;
-            margin-right: 1rem;
+        }
+
+        @media screen and (max-width: 1280px) {
+            .content-layout {
+                flex-direction: column-reverse;
+                gap: 2rem;
+            }
+
+            .side-panel {
+                width: 100%;
+                position: relative;
+                top: 0 !important;
+            }
+
+            .grand-summary {
+                position: relative;
+                top: 0 !important;
+            }
+
+            .meal-sections-wrapper {
+                margin-left: 0;
+            }
         }
 
         /* Toolbar & Column Selection */
@@ -529,7 +578,7 @@
             border: 1px solid var(--glass-border);
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            z-index: 3000;
+            z-index: 10000;
             padding: 12px;
             display: none;
             width: 200px;
@@ -577,7 +626,10 @@
         }
 
         .sticky-bar-inner {
-            width: 95%;
+            width: 100%;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 0 2.5%;
             height: 60px;
             display: flex;
             justify-content: space-between;
@@ -690,23 +742,6 @@
             </button>
         </div>
 
-    <div class="col-dropdown" id="colDropdown">
-                <label class="col-option"><input type="checkbox" data-col="protein" checked> Protein</label>
-                <label class="col-option"><input type="checkbox" data-col="fat" checked> Fett</label>
-                <label class="col-option"><input type="checkbox" data-col="omega3" checked> Omega 3</label>
-                <label class="col-option"><input type="checkbox" data-col="sugar" checked> Zucker</label>
-                <label class="col-option"><input type="checkbox" data-col="fibre" checked> Ballaststoffe</label>
-                <label class="col-option"><input type="checkbox" data-col="iron" checked> Eisen</label>
-                <label class="col-option"><input type="checkbox" data-col="vitc" checked> Vit C</label>
-                <label class="col-option"><input type="checkbox" data-col="magnesium" checked> Magnesium</label>
-                <label class="col-option"><input type="checkbox" data-col="zinc" checked> Zink</label>
-                <label class="col-option"><input type="checkbox" data-col="vitb12" checked> Vit B12</label>
-                <label class="col-option"><input type="checkbox" data-col="vita" checked> Vit A</label>
-                <label class="col-option"><input type="checkbox" data-col="calcium" checked> Calcium</label>
-                <label class="col-option"><input type="checkbox" data-col="vitd" checked> Vit D</label>
-            </div>
-            </div>
-        </div>
 
         <div class="content-layout">
             <div class="meal-sections-wrapper">
@@ -727,22 +762,22 @@
                     <table data-meal-type="{{ meal_slug }}">
                         <thead>
                             <tr>
-                                <th style="width: 250px;">Zutatenname</th>
-                                <th style="width: 120px;">Menge (g)</th>
-                                <th style="width: 80px;" class="nutrient-header">kcal</th>
-                                <th style="width: 80px;" class="nutrient-header col-protein">Prot (g)</th>
-                                <th style="width: 80px;" class="nutrient-header col-fat">Fett (g)</th>
-                                <th style="width: 80px;" class="nutrient-header col-omega3">Omega 3 (g)</th>
-                                <th style="width: 80px;" class="nutrient-header col-sugar">Zucker (g)</th>
-                                <th style="width: 80px;" class="nutrient-header col-fibre">Bst. (g)</th>
-                                <th style="width: 80px;" class="nutrient-header col-iron">Eisen (mg)</th>
-                                <th style="width: 80px;" class="nutrient-header col-vitc">Vit C (mg)</th>
-                                <th style="width: 80px;" class="nutrient-header col-magnesium">Mag. (mg)</th>
-                                <th style="width: 80px;" class="nutrient-header col-zinc">Zink (mg)</th>
-                                <th style="width: 80px;" class="nutrient-header col-vitb12">Vit B12 (µg)</th>
-                                <th style="width: 80px;" class="nutrient-header col-vita">Vit A (µg)</th>
-                                <th style="width: 80px;" class="nutrient-header col-calcium">Calcium (mg)</th>
-                                <th style="width: 80px;" class="nutrient-header col-vitd">Vit D (µg)</th>
+                                <th style="width: 200px;">Zutatenname</th>
+                                <th style="width: 80px;">Menge (g)</th>
+                                <th style="width: 65px;" class="nutrient-header">kcal</th>
+                                <th style="width: 65px;" class="nutrient-header col-protein">Prot (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-fat">Fett (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-omega3">Omega 3 (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-sugar">Zucker (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-fibre">Bst. (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-iron">Eisen (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-vitc">Vit C (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-magnesium">Mag. (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-zinc">Zink (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-vitb12">Vit B12 (µg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-vita">Vit A (µg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-calcium">Calcium (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-vitd">Vit D (µg)</th>
                                 <th style="width: 50px;" class="actions-cell"></th>
                             </tr>
                         </thead>
@@ -938,6 +973,22 @@
 
     <div id="globalSearchDropdown" class="search-dropdown"></div>
 
+    <div class="col-dropdown" id="colDropdown">
+        <label class="col-option"><input type="checkbox" data-col="protein" checked> Protein</label>
+        <label class="col-option"><input type="checkbox" data-col="fat" checked> Fett</label>
+        <label class="col-option"><input type="checkbox" data-col="omega3" checked> Omega 3</label>
+        <label class="col-option"><input type="checkbox" data-col="sugar" checked> Zucker</label>
+        <label class="col-option"><input type="checkbox" data-col="fibre" checked> Ballaststoffe</label>
+        <label class="col-option"><input type="checkbox" data-col="iron" checked> Eisen</label>
+        <label class="col-option"><input type="checkbox" data-col="vitc" checked> Vit C</label>
+        <label class="col-option"><input type="checkbox" data-col="magnesium" checked> Magnesium</label>
+        <label class="col-option"><input type="checkbox" data-col="zinc" checked> Zink</label>
+        <label class="col-option"><input type="checkbox" data-col="vitb12" checked> Vit B12</label>
+        <label class="col-option"><input type="checkbox" data-col="vita" checked> Vit A</label>
+        <label class="col-option"><input type="checkbox" data-col="calcium" checked> Calcium</label>
+        <label class="col-option"><input type="checkbox" data-col="vitd" checked> Vit D</label>
+    </div>
+
     <script>
         const PLAN_ID = "{{ plan.id }}";
         const CSRF_TOKEN = "{{ csrf_token }}";
@@ -971,8 +1022,8 @@
             });
             // Adjust table min-width dynamically based on visible columns
             const visibleCount = ALL_NUTRIENTS.filter(n => visibleNutrients.includes(n)).length;
-            // More compact sizing: name (250) + amount (120) + kcal (80) + nutrients (visible * 80) + actions (50)
-            const newMinWidth = 250 + 120 + 80 + (visibleCount * 80) + 50;
+            // More compact sizing: name (200) + amount (80) + kcal (65) + nutrients (visible * 65) + actions (50)
+            const newMinWidth = 200 + 80 + 65 + (visibleCount * 65) + 50;
             document.querySelectorAll('table').forEach(table => {
                 table.style.minWidth = `${newMinWidth}px`;
             });
