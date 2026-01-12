@@ -267,6 +267,13 @@
 </head>
 
 <body>
+    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
+    <div class="user-nav">
+        <span>Logged in as <strong>{{ user.username }}</strong></span>
+        <a href="#" onclick="document.getElementById('logout-form').submit(); return false;" class="btn-logout">Logout</a>
+    </div>
     <div class="container">
         <header>
             <h1>Meal Plans</h1>

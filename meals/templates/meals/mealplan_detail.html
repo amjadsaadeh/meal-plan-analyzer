@@ -1,0 +1,1589 @@
+{% load static %}
+{% load meal_extras %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ plan.name }} | Meal Plan Detail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3ba38f;
+            --primary-hover: #2d8170;
+            --primary-glow: rgba(59, 163, 143, 0.2);
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #2c3338;
+            --text-dim: #64748b;
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            --row-hover: rgba(59, 163, 143, 0.05);
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 300;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch; /* Change to stretch to avoid centering problems with overflow */
+            padding-top: 5vh;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto; /* Center the container */
+            padding: 40px 2.5%; /* Consistent side padding */
+            z-index: 10;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            flex-wrap: wrap; /* Allow wrapping */
+            gap: 1rem;
+        }
+
+        @media screen and (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-info {
+                align-items: flex-start !important;
+            }
+        }
+
+        .plan-title-wrapper {
+            flex-grow: 1;
+        }
+
+        h1.editable-title {
+            font-size: 2.5rem;
+            font-weight: 400;
+            background: linear-gradient(135deg, #3ba38f 0%, #4a4e51 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            outline: none;
+            cursor: text;
+            border-radius: 8px;
+            padding: 4px 8px;
+            margin-left: -8px;
+            transition: background 0.2s;
+        }
+
+        h1.editable-title:hover,
+        h1.editable-title:focus {
+            background-color: rgba(0, 0, 0, 0.02);
+            -webkit-text-fill-color: initial;
+            color: var(--text-main);
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .edit-icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px;
+            opacity: 0.3;
+        }
+
+        .edit-icon-btn:hover {
+            color: var(--primary);
+            background: rgba(59, 163, 143, 0.1);
+            opacity: 1;
+        }
+
+        .title-container:hover .edit-icon-btn {
+            opacity: 0.8;
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .plan-id {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-saved {
+            color: var(--success);
+        }
+
+        .status-pending {
+            color: var(--warning);
+            cursor: pointer;
+        }
+
+        .table-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            /* Removed overflow: visible to allow clipping/scrolling if needed, 
+               but we use a wrapper for better control */
+        }
+
+        .table-responsive {
+            display: block; /* Ensure it behaves correctly as a block element */
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 20px;
+            /* Thin scrollbar for better aesthetics */
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            table-layout: fixed;
+        }
+
+        th {
+            padding: 1.2rem 0.75rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--glass-border);
+            text-align: center;
+        }
+
+        th:first-child {
+            text-align: left;
+            padding-left: 1.5rem;
+        }
+
+        td {
+            padding: 0;
+            border-bottom: 1px solid var(--glass-border);
+            position: relative;
+        }
+
+        .cell-content {
+            padding: 1rem 0.75rem;
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ingredient-name-cell {
+            padding-left: 1.5rem;
+            justify-content: flex-start;
+        }
+
+        .editable-cell {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .editable-cell:hover {
+            background: var(--row-hover);
+        }
+
+        input.table-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            color: var(--text-main);
+            outline: none;
+            padding: 1rem 0.75rem;
+            text-align: center;
+        }
+
+        .kcal-cell,
+        .protein-cell,
+        .fat-cell,
+        .fibre-cell,
+        .iron-cell,
+        .sugar-cell,
+        .omega3-cell,
+        .vitc-cell,
+        .magnesium-cell,
+        .zinc-cell,
+        .vitb12-cell,
+        .vita-cell,
+        .calcium-cell,
+        .vitd-cell {
+            color: var(--text-dim);
+            font-weight: 400;
+            white-space: nowrap;
+        }
+
+        .nutrient-header {
+            font-size: 0.75rem !important;
+        }
+
+        /* Search Dropdown in Table */
+        .search-dropdown {
+            position: fixed;
+            background: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            /* width and position set via JS */
+        }
+
+        .search-dropdown.active {
+            display: block;
+        }
+
+        .search-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-item:hover {
+            background: var(--row-hover);
+        }
+
+        .search-item .name {
+            font-weight: 400;
+            display: block;
+        }
+
+        .search-item .code {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 300;
+        }
+
+        .search-item .kcal {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .loader {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--glass-border);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .btn-back:hover {
+            color: var(--primary);
+        }
+
+        [contenteditable]:empty:before {
+            content: attr(placeholder);
+            color: var(--text-dim);
+            cursor: text;
+        }
+
+        strong {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .energy-badge {
+            background: rgba(59, 163, 143, 0.1);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #2d8170;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+
+        .ingredient-name-cell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .bls-code {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            margin-left: 10px;
+            font-weight: 300;
+        }
+
+        .delete-btn {
+            color: var(--text-dim);
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .actions-cell {
+            width: 50px;
+            text-align: center;
+        }
+
+        tfoot tr {
+            background: rgba(59, 163, 143, 0.03);
+            font-weight: 600;
+        }
+
+        .total-value {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .meal-section {
+            margin-bottom: 4rem;
+        }
+
+        .meal-header {
+            font-size: 1.8rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary);
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .meal-header svg {
+            opacity: 0.7;
+        }
+
+        .grand-summary {
+            padding: 1.5rem;
+            background: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 75px;
+            z-index: 100;
+        }
+
+        .summary-title {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.8rem;
+        }
+
+        .summary-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0.8rem;
+            background: var(--bg);
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .summary-item:hover {
+            background: var(--row-hover);
+        }
+
+        .summary-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: none;
+            margin-bottom: 0;
+        }
+
+        .summary-val {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Layout wrappers */
+        .content-layout {
+            display: flex;
+            gap: 2.5rem;
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .meal-sections-wrapper {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .side-panel {
+            width: 300px;
+            flex-shrink: 0;
+        }
+
+        @media screen and (max-width: 1280px) {
+            .content-layout {
+                flex-direction: column-reverse;
+                gap: 2rem;
+            }
+
+            .side-panel {
+                width: 100%;
+                position: relative;
+                top: 0 !important;
+            }
+
+            .grand-summary {
+                position: relative;
+                top: 0 !important;
+            }
+
+            .meal-sections-wrapper {
+                margin-left: 0;
+            }
+        }
+
+        /* Toolbar & Column Selection */
+        .toolbar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .col-select-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+            transition: all 0.2s;
+            box-shadow: var(--shadow);
+        }
+
+        .col-select-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .col-dropdown {
+            position: fixed;
+            background: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 10000;
+            padding: 12px;
+            display: none;
+            width: 200px;
+        }
+
+        .col-dropdown.active {
+            display: block;
+        }
+
+        .col-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .col-option input {
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* Hide logic */
+        .hidden-col {
+            display: none !important;
+        }
+
+        .sticky-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 2500;
+            padding: 0;
+            transform: translateY(-100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+        }
+
+        .sticky-bar-inner {
+            width: 100%;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 0 2.5%;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sticky-bar.visible {
+            transform: translateY(0);
+        }
+
+        .sticky-plan-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            max-width: 70%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sticky-bar .sync-status {
+            margin-top: 0;
+        }
+
+        .sticky-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .sticky-bar .col-select-btn {
+            background: transparent;
+            box-shadow: none;
+            border-color: transparent;
+            font-size: 0.9rem;
+        }
+        
+        .sticky-bar .col-select-btn:hover {
+            background: var(--row-hover);
+        }
+
+        .user-nav {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            z-index: 100;
+        }
+
+        .btn-logout {
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            color: #ef4444;
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        @media screen and (max-width: 768px) {
+            .user-nav {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-bottom: 1rem;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
+    <div class="user-nav">
+        <span>Logged in as <strong>{{ user.username }}</strong></span>
+        <a href="#" onclick="document.getElementById('logout-form').submit(); return false;" class="btn-logout">Logout</a>
+    </div>
+    <div class="sticky-bar" id="stickyBar">
+        <div class="sticky-bar-inner">
+            <div class="sticky-plan-name" id="stickyPlanName">{{ plan.name }}</div>
+            <div class="sticky-controls">
+                <button class="col-select-btn sticky-col-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Spalten
+                </button>
+                <div class="sync-status">
+                    <span id="stickySyncText">Saved</span>
+                    <div class="status-icon" id="stickySyncIcon"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <a href="{% url 'meal-plan-list' %}" class="btn-back">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Plans
+        </a>
+
+        <div class="header-top">
+            <div class="plan-title-wrapper">
+                <div class="title-container">
+                    <h1 class="editable-title" contenteditable="true" id="planName" placeholder="Enter plan name...">
+                        {{ plan.name }}</h1>
+                    <button class="edit-icon-btn" onclick="document.getElementById('planName').focus()" title="Edit name">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="header-info">
+                <span class="plan-id">Plan Nr. {{ plan.id }}</span>
+                <div class="sync-status" id="syncStatus">
+                    <span id="syncText">Saved</span>
+                    <div class="status-icon" id="syncIcon">
+                        <!-- Success Tick -->
+                        <svg class="status-saved" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button class="col-select-btn" id="colSelectBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Spalten auswählen
+            </button>
+        </div>
+
+
+        <div class="content-layout">
+            <div class="meal-sections-wrapper">
+                {% for meal_slug, meal_label in meal_types %}
+        <div class="meal-section">
+            <h2 class="meal-header">
+                {% if meal_slug == 'breakfast' %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11h.01"></path><path d="M11 11h.01"></path><path d="M7 11h.01"></path><path d="M12 2A10 10 0 0 1 22 12c0 1.25-.23 2.44-.65 3.54a5 5 0 0 1-7.81 0A10 10 0 0 1 3.12 11.23a5 5 0 0 1 1-6.11A10 10 0 0 1 12 2z"></path></svg>
+                {% elif meal_slug == 'lunch' %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                {% else %}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path></svg>
+                {% endif %}
+                {{ meal_label }}
+            </h2>
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table data-meal-type="{{ meal_slug }}">
+                        <thead>
+                            <tr>
+                                <th style="width: 200px;">Zutatenname</th>
+                                <th style="width: 80px;">Menge (g)</th>
+                                <th style="width: 65px;" class="nutrient-header">kcal</th>
+                                <th style="width: 65px;" class="nutrient-header col-protein">Prot (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-fat">Fett (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-omega3">Omega 3 (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-sugar">Zucker (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-fibre">Bst. (g)</th>
+                                <th style="width: 65px;" class="nutrient-header col-iron">Eisen (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-vitc">Vit C (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-magnesium">Mag. (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-zinc">Zink (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-vitb12">Vit B12 (µg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-vita">Vit A (µg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-calcium">Calcium (mg)</th>
+                                <th style="width: 65px;" class="nutrient-header col-vitd">Vit D (µg)</th>
+                                <th style="width: 50px;" class="actions-cell"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="ingredientsBody-{{ meal_slug }}" class="ingredientsBody" data-meal-type="{{ meal_slug }}">
+                            {% for item in plan.mealplanfood_set.all %}
+                            {% if item.meal_type == meal_slug %}
+                            <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" data-kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein="{{ item.food.protein_in_g_per_100g }}" data-fat="{{ item.food.fat_in_g_per_100g }}" data-fibre="{{ item.food.fibre_in_g_per_100g }}" data-iron="{{ item.food.iron_in_mg_per_100g }}" data-sugar="{{ item.food.sugar_in_g_per_100g }}" data-omega3="{{ item.food.omega3_in_g_per_100g }}" data-vitc="{{ item.food.vitc_in_mg_per_100g }}" data-magnesium="{{ item.food.magnesium_in_mg_per_100g }}" data-zinc="{{ item.food.zinc_in_mg_per_100g }}" data-vitb12="{{ item.food.vitb12_in_mug_per_100g }}" data-vita="{{ item.food.vita_in_mug_per_100g }}" data-calcium="{{ item.food.calcium_in_mg_per_100g }}" data-vitd="{{ item.food.vitd_in_mug_per_100g }}">
+                                <td>
+                                    <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0">
+                                        <span>{{ item.food.name }}</span>
+                                        <span class="bls-code">{{ item.food.bls_code }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)">
+                                </td>
+                                <td>
+                                    <div class="cell-content kcal-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-protein">
+                                    <div class="cell-content protein-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-fat">
+                                    <div class="cell-content fat-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-omega3">
+                                    <div class="cell-content omega3-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}
+                                    </div>
+                                </td>
+                                <td class="col-sugar">
+                                    <div class="cell-content sugar-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-fibre">
+                                    <div class="cell-content fibre-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-iron">
+                                    <div class="cell-content iron-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-vitc">
+                                    <div class="cell-content vitc-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.vitc_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-magnesium">
+                                    <div class="cell-content magnesium-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.magnesium_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-zinc">
+                                    <div class="cell-content zinc-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.zinc_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-vitb12">
+                                    <div class="cell-content vitb12-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.vitb12_in_mug_per_100g|floatformat:2 }}
+                                    </div>
+                                </td>
+                                <td class="col-vita">
+                                    <div class="cell-content vita-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.vita_in_mug_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-calcium">
+                                    <div class="cell-content calcium-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.calcium_in_mg_per_100g|floatformat:1 }}
+                                    </div>
+                                </td>
+                                <td class="col-vitd">
+                                    <div class="cell-content vitd-cell">
+                                        {{ item.amount_in_g|divide_by_100_mult:item.food.vitd_in_mug_per_100g|floatformat:2 }}
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="delete-btn" onclick="deleteRow(this)">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" style="text-align: right; padding-right: 1.5rem; color: var(--text-dim); text-transform: uppercase; font-size: 0.7rem;">Subeinheit:</td>
+                                <td><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="kcal">0.0</div></td>
+                                <td class="col-protein"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="protein">0.0</div></td>
+                                <td class="col-fat"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="fat">0.0</div></td>
+                                <td class="col-omega3"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="omega3">0.0</div></td>
+                                <td class="col-sugar"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="sugar">0.0</div></td>
+                                <td class="col-fibre"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="fibre">0.0</div></td>
+                                <td class="col-iron"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="iron">0.0</div></td>
+                                <td class="col-vitc"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="vitc">0.0</div></td>
+                                <td class="col-magnesium"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="magnesium">0.0</div></td>
+                                <td class="col-zinc"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="zinc">0.0</div></td>
+                                <td class="col-vitb12"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="vitb12">0.0</div></td>
+                                <td class="col-vita"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="vita">0.0</div></td>
+                                <td class="col-calcium"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="calcium">0.0</div></td>
+                                <td class="col-vitd"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-nut="vitd">0.0</div></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+                {% endfor %}
+            </div>
+
+            <div class="side-panel">
+                <div class="grand-summary">
+                    <h3 class="summary-title">Tagesübersicht</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">kcal</span>
+                            <span class="summary-val" id="totalKcal">0.0</span>
+                        </div>
+                        <div class="summary-item col-protein">
+                            <span class="summary-label">Protein</span>
+                            <span class="summary-val" id="totalProtein">0.0</span>
+                        </div>
+                        <div class="summary-item col-fat">
+                            <span class="summary-label">Fett</span>
+                            <span class="summary-val" id="totalFat">0.0</span>
+                        </div>
+                        <div class="summary-item col-omega3">
+                            <span class="summary-label">Omega 3</span>
+                            <span class="summary-val" id="totalOmega3">0.0</span>
+                        </div>
+                        <div class="summary-item col-sugar">
+                            <span class="summary-label">Zucker</span>
+                            <span class="summary-val" id="totalSugar">0.0</span>
+                        </div>
+                        <div class="summary-item col-fibre">
+                            <span class="summary-label">Ballaststoffe</span>
+                            <span class="summary-val" id="totalFibre">0.0</span>
+                        </div>
+                        <div class="summary-item col-iron">
+                            <span class="summary-label">Eisen</span>
+                            <span class="summary-val" id="totalIron">0.0</span>
+                        </div>
+                        <div class="summary-item col-vitc">
+                            <span class="summary-label">Vit C</span>
+                            <span class="summary-val" id="totalVitc">0.0</span>
+                        </div>
+                        <div class="summary-item col-magnesium">
+                            <span class="summary-label">Magnesium</span>
+                            <span class="summary-val" id="totalMagnesium">0.0</span>
+                        </div>
+                        <div class="summary-item col-zinc">
+                            <span class="summary-label">Zink</span>
+                            <span class="summary-val" id="totalZinc">0.0</span>
+                        </div>
+                        <div class="summary-item col-vitb12">
+                            <span class="summary-label">Vit B12</span>
+                            <span class="summary-val" id="totalVitb12">0.00</span>
+                        </div>
+                        <div class="summary-item col-vita">
+                            <span class="summary-label">Vit A</span>
+                            <span class="summary-val" id="totalVita">0.0</span>
+                        </div>
+                        <div class="summary-item col-calcium">
+                            <span class="summary-label">Calcium</span>
+                            <span class="summary-val" id="totalCalcium">0.0</span>
+                        </div>
+                        <div class="summary-item col-vitd">
+                            <span class="summary-label">Vit D</span>
+                            <span class="summary-val" id="totalVitd">0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="globalSearchDropdown" class="search-dropdown"></div>
+
+    <div class="col-dropdown" id="colDropdown">
+        <label class="col-option"><input type="checkbox" data-col="protein" checked> Protein</label>
+        <label class="col-option"><input type="checkbox" data-col="fat" checked> Fett</label>
+        <label class="col-option"><input type="checkbox" data-col="omega3" checked> Omega 3</label>
+        <label class="col-option"><input type="checkbox" data-col="sugar" checked> Zucker</label>
+        <label class="col-option"><input type="checkbox" data-col="fibre" checked> Ballaststoffe</label>
+        <label class="col-option"><input type="checkbox" data-col="iron" checked> Eisen</label>
+        <label class="col-option"><input type="checkbox" data-col="vitc" checked> Vit C</label>
+        <label class="col-option"><input type="checkbox" data-col="magnesium" checked> Magnesium</label>
+        <label class="col-option"><input type="checkbox" data-col="zinc" checked> Zink</label>
+        <label class="col-option"><input type="checkbox" data-col="vitb12" checked> Vit B12</label>
+        <label class="col-option"><input type="checkbox" data-col="vita" checked> Vit A</label>
+        <label class="col-option"><input type="checkbox" data-col="calcium" checked> Calcium</label>
+        <label class="col-option"><input type="checkbox" data-col="vitd" checked> Vit D</label>
+    </div>
+
+    <script>
+        const PLAN_ID = "{{ plan.id }}";
+        const CSRF_TOKEN = "{{ csrf_token }}";
+        let isPending = false;
+        let debounceTimer;
+        let activeSearchCell = null;
+
+        // Nutrients for visibility tracking
+        const ALL_NUTRIENTS = ['protein', 'fat', 'omega3', 'sugar', 'fibre', 'iron', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
+        let visibleNutrients = {{ plan.visible_nutrients|default:"[]"|safe }};
+
+        // Initial setup
+        if (visibleNutrients.length === 0) {
+            visibleNutrients = [...ALL_NUTRIENTS];
+        }
+
+        function initVisibility() {
+            ALL_NUTRIENTS.forEach(n => {
+                const isVisible = visibleNutrients.includes(n);
+                const checkbox = document.querySelector(`.col-option input[data-col="${n}"]`);
+                if (checkbox) checkbox.checked = isVisible;
+                toggleCol(n, isVisible);
+            });
+        }
+
+        function toggleCol(col, show) {
+            const elements = document.querySelectorAll(`.col-${col}`);
+            elements.forEach(el => {
+                if (show) el.classList.remove('hidden-col');
+                else el.classList.add('hidden-col');
+            });
+            // Adjust table min-width dynamically based on visible columns
+            const visibleCount = ALL_NUTRIENTS.filter(n => visibleNutrients.includes(n)).length;
+            // More compact sizing: name (200) + amount (80) + kcal (65) + nutrients (visible * 65) + actions (50)
+            const newMinWidth = 200 + 80 + 65 + (visibleCount * 65) + 50;
+            document.querySelectorAll('table').forEach(table => {
+                table.style.minWidth = `${newMinWidth}px`;
+            });
+        }
+
+        async function saveVisibility() {
+            try {
+                await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ visible_nutrients: visibleNutrients })
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        // Toolbar Events
+        function toggleColDropdown(btn) {
+            const dropdown = document.getElementById('colDropdown');
+            const rect = btn.getBoundingClientRect();
+            
+            // Position below the button
+            dropdown.style.top = (rect.bottom + 8) + 'px';
+            dropdown.style.left = (rect.right - 200) + 'px'; // 200 is width of dropdown
+            
+            dropdown.classList.toggle('active');
+        }
+
+        document.getElementById('colSelectBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleColDropdown(e.currentTarget);
+        });
+
+        document.querySelector('.sticky-col-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleColDropdown(e.currentTarget);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#colDropdown')) {
+                document.getElementById('colDropdown').classList.remove('active');
+            }
+            
+            const globalDropdown = document.getElementById('globalSearchDropdown');
+            //Terminology: focus is lost if clicked outside any focusable element
+            const isFocusable = e.target.closest('.ingredient-name-cell') || e.target.closest('.amount-input') || e.target.closest('.search-dropdown');
+            
+            if (activeSearchCell && e.target.isConnected && !isFocusable) {
+                restoreCell(activeSearchCell);
+            }
+        });
+
+        // Handle focus moving between fields (e.g. via Tab)
+        document.addEventListener('focusin', (e) => {
+            if (activeSearchCell && !activeSearchCell.contains(e.target)) {
+                // If focus moved to a different ingredient name cell, 
+                // initSearch will handle restoration.
+                // If focus moved to an amount field or elsewhere, we restore here.
+                if (!e.target.closest('.search-dropdown')) {
+                    restoreCell(activeSearchCell);
+                }
+            }
+        });
+
+        document.getElementById('colDropdown').addEventListener('click', (e) => e.stopPropagation());
+
+        document.querySelectorAll('.col-option input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const col = e.target.dataset.col;
+                if (e.target.checked) {
+                    if (!visibleNutrients.includes(col)) visibleNutrients.push(col);
+                } else {
+                    visibleNutrients = visibleNutrients.filter(v => v !== col);
+                }
+                toggleCol(col, e.target.checked);
+                saveVisibility();
+            });
+        });
+
+        // Call init
+        initVisibility();
+
+        // Icons
+        const ICON_SAVED = `<svg class="status-saved" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        const ICON_PENDING = `<svg class="status-pending" onclick="forceSync()" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`;
+
+        function setSyncStatus(saved) {
+            isPending = !saved;
+            const text = document.getElementById('syncText');
+            const icon = document.getElementById('syncIcon');
+            const stickyText = document.getElementById('stickySyncText');
+            const stickyIcon = document.getElementById('stickySyncIcon');
+            
+            const message = saved ? 'Saved' : 'Unsaved changes';
+            const html = saved ? ICON_SAVED : ICON_PENDING;
+
+            if (text) text.innerText = message;
+            if (icon) icon.innerHTML = html;
+            if (stickyText) stickyText.innerText = message;
+            if (stickyIcon) stickyIcon.innerHTML = html;
+        }
+
+        // --- Heading Sync ---
+        const planNameEl = document.getElementById('planName');
+        if (planNameEl) {
+            planNameEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.target.blur();
+                }
+            });
+
+            planNameEl.addEventListener('input', () => {
+                setSyncStatus(false);
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(savePlanName, 1000);
+            });
+
+            planNameEl.addEventListener('blur', () => {
+                savePlanName();
+            });
+        }
+
+        async function savePlanName() {
+            const name = document.getElementById('planName').innerText.trim();
+            try {
+                const response = await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ name })
+                });
+                if (response.ok) {
+                    setSyncStatus(true);
+                    const stickyName = document.getElementById('stickyPlanName');
+                    if (stickyName) stickyName.innerText = name;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- Table Logic ---
+        function updateNutrients(input) {
+            const row = input.closest('tr');
+            const amount = parseFloat(input.value) || 0;
+            const factor = amount / 100;
+
+            const nutrients = ['kcal', 'protein', 'fat', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
+            nutrients.forEach(n => {
+                const per100 = parseFloat(row.dataset[n]) || 0;
+                const cell = row.querySelector(`.${n}-cell`);
+                if (cell) {
+                    const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
+                    cell.innerText = (factor * per100).toFixed(precision);
+                }
+            });
+
+            setSyncStatus(false);
+            calculateTotals();
+            const mealType = row.closest('tbody').dataset.mealType;
+            checkAndAddBlankRow(mealType);
+        }
+
+        function calculateTotals() {
+            const nutrients = ['kcal', 'protein', 'fat', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
+            
+            // Grand totals
+            const grandTotals = {};
+            nutrients.forEach(n => grandTotals[n] = 0);
+
+            // Per meal totals
+            const mealTypes = ['breakfast', 'lunch', 'dinner'];
+            const mealTotals = {};
+            mealTypes.forEach(m => {
+                mealTotals[m] = {};
+                nutrients.forEach(n => mealTotals[m][n] = 0);
+            });
+
+            document.querySelectorAll('.ingredient-row').forEach(row => {
+                const mealType = row.closest('tbody').dataset.mealType;
+                nutrients.forEach(n => {
+                    const cell = row.querySelector(`.${n}-cell`);
+                    if (cell) {
+                        const val = parseFloat(cell.innerText) || 0;
+                        grandTotals[n] += val;
+                        if (mealTotals[mealType]) mealTotals[mealType][n] += val;
+                    }
+                });
+            });
+
+            // Update DOM
+            nutrients.forEach(n => {
+                const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
+                
+                // Update grand summary
+                const grandEl = document.getElementById(`total${n.charAt(0).toUpperCase() + n.slice(1)}`);
+                if (grandEl) grandEl.innerText = grandTotals[n].toFixed(precision);
+
+                // Update per-meal footers
+                mealTypes.forEach(m => {
+                    const mealEl = document.querySelector(`.total-value-meal[data-meal="${m}"][data-nut="${n}"]`);
+                    if (mealEl) mealEl.innerText = mealTotals[m][n].toFixed(precision);
+                });
+            });
+        }
+
+        async function deleteRow(btn) {
+            const row = btn.closest('tr');
+            const id = row.dataset.id;
+            const mealType = row.closest('tbody').dataset.mealType;
+
+            if (id) {
+                if (!confirm('Are you sure you want to remove this ingredient?')) return;
+                try {
+                    const response = await fetch(`/api/mealplan-foods/${id}/`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': CSRF_TOKEN }
+                    });
+                    if (!response.ok) {
+                        alert('Error deleting row');
+                        return;
+                    }
+                } catch (e) { console.error(e); }
+            }
+
+            row.remove();
+            calculateTotals();
+            checkAndAddBlankRow(mealType);
+        }
+
+        async function saveRow(el) {
+            const row = el.closest('tr');
+            const foodId = row.dataset.foodId;
+            const amount = parseFloat(row.querySelector('.amount-input').value);
+            const id = row.dataset.id;
+            const mealType = row.closest('tbody').dataset.mealType;
+
+            if (!foodId || isNaN(amount)) return;
+
+            const method = id ? 'PATCH' : 'POST';
+            const url = id ? `/api/mealplan-foods/${id}/` : `/api/mealplan-foods/`;
+
+            const body = {
+                meal_plan: PLAN_ID,
+                food: foodId,
+                amount_in_g: amount,
+                meal_type: mealType
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': CSRF_TOKEN
+                    },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    row.dataset.id = data.id;
+                    setSyncStatus(true);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function initSearch(cell) {
+            // Restore any other active search first
+            if (activeSearchCell && activeSearchCell !== cell) {
+                restoreCell(activeSearchCell);
+            }
+            if (cell.querySelector('input')) return;
+
+            activeSearchCell = cell;
+            const nameSpan = cell.querySelector('span:first-child');
+            const blsSpan = cell.querySelector('.bls-code');
+            const originalName = nameSpan ? nameSpan.innerText.trim() : 'Search Food...';
+            const originalBls = blsSpan ? blsSpan.innerText.trim() : '';
+
+            // Store original data to restore if search cancelled
+            cell.dataset.prevName = originalName;
+            cell.dataset.prevBls = originalBls;
+
+            cell.innerHTML = `<input type="text" class="table-input" placeholder="Search food..." value="${originalName === 'Search Food...' ? '' : originalName}" autocomplete="off">`;
+            const input = cell.querySelector('input');
+            input.focus();
+
+            input.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => searchFood(input), 300);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    restoreCell(cell);
+                    input.blur();
+                }
+            });
+
+            // Keep dropdown positioned
+            window.addEventListener('scroll', updateDropdownPosition, true);
+            window.addEventListener('resize', updateDropdownPosition);
+            document.querySelectorAll('.table-responsive').forEach(el => {
+                el.addEventListener('scroll', updateDropdownPosition, true);
+            });
+
+            // Trigger initial search if there's already a value
+            if (input.value.length >= 2) {
+                searchFood(input);
+            }
+        }
+
+        function handleAmountKey(e, input) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                input.blur();
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                input.blur(); // Save
+                
+                // Focus the blank line "search food" field
+                const tbody = input.closest('tbody');
+                const lastRow = tbody.querySelector('.ingredient-row:last-child');
+                const nameCell = lastRow.querySelector('.ingredient-name-cell');
+                if (nameCell) {
+                    initSearch(nameCell);
+                }
+            }
+        }
+
+        function updateDropdownPosition() {
+            if (!activeSearchCell) return;
+            const dropdown = document.getElementById('globalSearchDropdown');
+            if (!dropdown.classList.contains('active')) return;
+            
+            const rect = activeSearchCell.getBoundingClientRect();
+            dropdown.style.top = (rect.bottom + 5) + 'px';
+            dropdown.style.left = rect.left + 'px';
+            dropdown.style.width = rect.width + 'px';
+        }
+
+        function restoreCell(cell) {
+            const name = cell.dataset.prevName || 'Search Food...';
+            const bls = cell.dataset.prevBls || '';
+            const blsHtml = bls ? `<span class="bls-code">${bls}</span>` : '';
+            cell.innerHTML = `<span>${name}</span>${blsHtml}`;
+            
+            const dropdown = document.getElementById('globalSearchDropdown');
+            dropdown.classList.remove('active');
+            activeSearchCell = null;
+
+            window.removeEventListener('scroll', updateDropdownPosition, true);
+            window.removeEventListener('resize', updateDropdownPosition);
+            document.querySelectorAll('.table-responsive').forEach(el => {
+                el.removeEventListener('scroll', updateDropdownPosition, true);
+            });
+        }
+
+        async function searchFood(input) {
+            const query = input.value.trim();
+            const dropdown = document.getElementById('globalSearchDropdown');
+
+            if (query.length < 2) {
+                dropdown.classList.remove('active');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`);
+                const results = await response.json();
+                renderDropdown(dropdown, results);
+            } catch (e) { console.error(e); }
+        }
+
+        function renderDropdown(dropdown, results) {
+            dropdown.innerHTML = '';
+            if (results.length === 0) {
+                dropdown.innerHTML = '<div class="search-item">No results</div>';
+            } else {
+                results.forEach(food => {
+                    const item = document.createElement('div');
+                    item.className = 'search-item';
+                    item.innerHTML = `
+                        <div>
+                            <span class="name">${food.name}</span>
+                            <span class="code">Code: ${food.bls_code}</span>
+                        </div>
+                        <div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>
+                    `;
+                    item.addEventListener('mousedown', () => {
+                        if (!activeSearchCell) return;
+                        const cell = activeSearchCell;
+                        const row = cell.closest('tr');
+                        row.dataset.foodId = food.id;
+                        row.dataset.kcal = food.energy_in_kcal_per_100g;
+                        row.dataset.protein = food.protein_in_g_per_100g;
+                        row.dataset.fat = food.fat_in_g_per_100g;
+                        row.dataset.fibre = food.fibre_in_g_per_100g;
+                        row.dataset.iron = food.iron_in_mg_per_100g;
+                        row.dataset.sugar = food.sugar_in_g_per_100g;
+                        row.dataset.omega3 = food.omega3_in_g_per_100g;
+                        row.dataset.vitc = food.vitc_in_mg_per_100g;
+                        row.dataset.magnesium = food.magnesium_in_mg_per_100g;
+                        row.dataset.zinc = food.zinc_in_mg_per_100g;
+                        row.dataset.vitb12 = food.vitb12_in_mug_per_100g;
+                        row.dataset.vita = food.vita_in_mug_per_100g;
+                        row.dataset.calcium = food.calcium_in_mg_per_100g;
+                        row.dataset.vitd = food.vitd_in_mug_per_100g;
+                        // Update backup data so future restorations keep this selection
+                        cell.dataset.prevName = food.name;
+                        cell.dataset.prevBls = food.bls_code;
+
+                        cell.innerHTML = `<span>${food.name}</span><span class="bls-code">${food.bls_code}</span>`;
+                        const amountInput = row.querySelector('.amount-input');
+                        updateNutrients(amountInput);
+                        
+                        saveRow(cell);
+                        calculateTotals();
+                        
+                        // Clear active state and hide dropdown
+                        const currentCell = activeSearchCell;
+                        activeSearchCell = null;
+                        dropdown.classList.remove('active');
+                        window.removeEventListener('scroll', updateDropdownPosition, true);
+
+                        // Use setTimeout to ensure the focus jump happens after all current 
+                        // event handling (like blurs from the removed input) is complete
+                        if (amountInput) {
+                            setTimeout(() => {
+                                amountInput.focus();
+                                amountInput.select();
+                            }, 10);
+                        }
+                    });
+                    dropdown.appendChild(item);
+                });
+            }
+            dropdown.classList.add('active');
+            updateDropdownPosition();
+        }
+
+        function checkAndAddBlankRow(mealType) {
+            const tbody = document.getElementById(`ingredientsBody-${mealType}`);
+            if (!tbody) return;
+            const rows = tbody.querySelectorAll('.ingredient-row');
+            const lastRow = rows[rows.length - 1];
+
+            if (!lastRow) {
+                addBlankRow(mealType);
+                return;
+            }
+
+            const hasFood = lastRow.dataset.foodId;
+            const hasAmount = lastRow.querySelector('.amount-input').value !== "";
+
+            if (hasFood && hasAmount) {
+                addBlankRow(mealType);
+                initVisibility();
+            }
+        }
+
+        function addBlankRow(mealType) {
+            const tbody = document.getElementById(`ingredientsBody-${mealType}`);
+            if (!tbody) return;
+            const tr = document.createElement('tr');
+            tr.className = 'ingredient-row';
+            tr.innerHTML = `
+                <td>
+                    <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0">
+                        <span>Search Food...</span>
+                    </div>
+                </td>
+                <td>
+                    <input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)">
+                </td>
+                <td><div class="cell-content kcal-cell">0.0</div></td>
+                <td class="col-protein"><div class="cell-content protein-cell">0.0</div></td>
+                <td class="col-fat"><div class="cell-content fat-cell">0.0</div></td>
+                <td class="col-omega3"><div class="cell-content omega3-cell">0.00</div></td>
+                <td class="col-sugar"><div class="cell-content sugar-cell">0.0</div></td>
+                <td class="col-fibre"><div class="cell-content fibre-cell">0.0</div></td>
+                <td class="col-iron"><div class="cell-content iron-cell">0.0</div></td>
+                <td class="col-vitc"><div class="cell-content vitc-cell">0.0</div></td>
+                <td class="col-magnesium"><div class="cell-content magnesium-cell">0.0</div></td>
+                <td class="col-zinc"><div class="cell-content zinc-cell">0.0</div></td>
+                <td class="col-vitb12"><div class="cell-content vitb12-cell">0.00</div></td>
+                <td class="col-vita"><div class="cell-content vita-cell">0.0</div></td>
+                <td class="col-calcium"><div class="cell-content calcium-cell">0.0</div></td>
+                <td class="col-vitd"><div class="cell-content vitd-cell">0.00</div></td>
+                <td class="actions-cell">
+                    <button class="delete-btn" onclick="deleteRow(this)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        // Initial blank rows for all sections
+        ['breakfast', 'lunch', 'dinner'].forEach(m => {
+            checkAndAddBlankRow(m);
+        });
+
+        // Initialize sync status icons and scroll listener
+        calculateTotals();
+        setSyncStatus(true);
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header-top');
+            const stickyBar = document.getElementById('stickyBar');
+            if (header && stickyBar) {
+                const headerBottom = header.getBoundingClientRect().bottom;
+                if (headerBottom < 0) {
+                    stickyBar.classList.add('visible');
+                } else {
+                    stickyBar.classList.remove('visible');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
