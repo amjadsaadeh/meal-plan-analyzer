@@ -16,6 +16,28 @@ spec:
     spec:
       imagePullSecrets:
         - name: regcred
+      initContainers:
+        - name: collect-static
+          image: index.docker.io/amjadsaadeh/rsos-meal-planner:latest
+          imagePullPolicy: Always
+          command: ["python", "manage.py", "collectstatic", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: meal-planner-config
+            - secretRef:
+                name: meal-planner-secret
+          volumeMounts:
+            - name: staticfiles
+              mountPath: /app/staticfiles
+        - name: migrate
+          image: index.docker.io/amjadsaadeh/rsos-meal-planner:latest
+          imagePullPolicy: Always
+          command: ["python", "manage.py", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: meal-planner-config
+            - secretRef:
+                name: meal-planner-secret
       containers:
         - name: meal-planner
           image: index.docker.io/amjadsaadeh/rsos-meal-planner:latest
@@ -27,6 +49,9 @@ spec:
                 name: meal-planner-config
             - secretRef:
                 name: meal-planner-secret
+          volumeMounts:
+            - name: staticfiles
+              mountPath: /app/staticfiles
           livenessProbe:
             httpGet:
               path: /
@@ -39,3 +64,6 @@ spec:
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
+      volumes:
+        - name: staticfiles
+          emptyDir: {}

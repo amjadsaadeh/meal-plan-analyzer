@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: meal-planner-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns-issuer
+spec:
+  tls:
+    - hosts:
+        - mealplanner.saadeh.dev
+      secretName: meal-planner-tls
+  rules:
+    - host: mealplanner.saadeh.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: meal-planner-service
+                port:
+                  number: 80

@@ -87,6 +87,7 @@
         - "../k8s/secrets.yaml"
         - "../k8s/deployment.yaml"
         - "../k8s/service.yaml"
+        - "../k8s/ingress.yaml"
 
     - name: Restart Deployment to pick up new image
       shell: kubectl rollout restart deployment/meal-planner
