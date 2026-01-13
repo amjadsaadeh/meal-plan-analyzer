@@ -1,0 +1,92 @@
+---
+- name: Build, Push, and Deploy to Kubernetes
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  vars:
+    # Default values - override these with -e "variable=value"
+    docker_user: ""
+    docker_password: ""
+    image_name: "index.docker.io/amjadsaadeh/meal-planner:latest"
+    project_root: "../"
+
+  tasks:
+
+    - name: Include DNS configuration
+      include_tasks: dns.yml
+
+    - name: Include database configuration
+      include_tasks: database.yml
+
+    - name: Ensure Docker variables are provided
+      fail:
+        msg: "Please provide 'docker_user' and 'docker_password' via -e 'docker_user=... docker_password=...'"
+      when: docker_user == "" or docker_password == ""
+
+    - name: Log into DockerHub
+      community.docker.docker_login:
+        username: "{{ docker_user }}"
+        password: "{{ docker_password }}"
+        registry_url: index.docker.io
+
+    - name: Build Docker image
+      community.docker.docker_image:
+        build:
+          path: "{{ project_root }}"
+        name: "{{ image_name }}"
+        source: build
+        force_source: true
+
+    - name: Push Docker image
+      community.docker.docker_image:
+        name: "{{ image_name }}"
+        push: true
+        source: local
+
+    - name: Create or Update Docker Registry Secret in K8s
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: regcred
+          type: kubernetes.io/dockerconfigjson
+          data:
+            .dockerconfigjson: "{{ lookup('template', 'docker_config.j2') | b64encode }}"
+      vars:
+        # Create a temporary config content
+        auth: "{{ (docker_user + ':' + docker_password) | b64encode }}"
+        docker_config:
+          auths:
+            "index.docker.io":
+              auth: "{{ auth }}"
+      
+    # Note: We can't easily template the docker config in a simple task var without a file.
+    # An easier way for the secret is using the shell command if we don't want complex jinja templating
+    # or using the k8s_secret module if available (requires kubernetes.core collection)
+    
+    # Let's retry the secret creation using shell for simplicity and robustness if python lib has issues
+    # But clean approach is better. Let's use kubectl create secret ... --dry-run=client -o yaml | kubectl apply -f -
+    
+    - name: Create Docker Registry Secret using kubectl
+      shell: >
+        kubectl create secret docker-registry regcred
+        --docker-server=https://index.docker.io/v1/
+        --docker-username={{ docker_user }}
+        --docker-password={{ docker_k8s_password }}
+        --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Apply Kubernetes Manifests
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ item }}"
+      loop:
+        - "../k8s/configmap.yaml"
+        - "../k8s/secrets.yaml"
+        - "../k8s/deployment.yaml"
+        - "../k8s/service.yaml"
+
+    - name: Restart Deployment to pick up new image
+      shell: kubectl rollout restart deployment/meal-planner

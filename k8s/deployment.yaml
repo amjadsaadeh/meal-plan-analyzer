@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meal-planner
+  labels:
+    app: meal-planner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: meal-planner
+  template:
+    metadata:
+      labels:
+        app: meal-planner
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: meal-planner
+          image: index.docker.io/amjadsaadeh/rsos-meal-planner:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: meal-planner-config
+            - secretRef:
+                name: meal-planner-secret
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5

@@ -1,0 +1,7 @@
+{
+  "auths": {
+    "https://index.docker.io/v1/": {
+      "auth": "{{ (docker_user + ':' + docker_k8s_password) | b64encode }}"
+    }
+  }
+}
