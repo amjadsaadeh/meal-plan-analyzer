@@ -90,7 +90,7 @@
     - name: Apply Kubernetes Manifests
       kubernetes.core.k8s:
         state: present
-        src: "{{ item }}"
+        definition: "{{ lookup('template', item) | from_yaml }}"
       loop:
         - "../k8s/configmap.yaml"
         - "../k8s/secrets.yaml"
