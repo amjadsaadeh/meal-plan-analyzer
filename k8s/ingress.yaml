@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: meal-planner-ingress
+  namespace: meal-planner
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-dns-issuer
 spec:

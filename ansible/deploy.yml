@@ -4,6 +4,7 @@
   gather_facts: false
   vars_files:
     - vars.yml
+    - vault.yml
   vars:
     # Default values - override these with -e "variable=value"
     docker_user: ""
@@ -72,8 +73,9 @@
     
     - name: Create Docker Registry Secret using kubectl
       shell: >
-        kubectl create secret docker-registry regcred
+        kubectl create secret docker-registry regcred -n meal-planner
         --docker-server=https://index.docker.io/v1/
+        --docker-username={{ docker_user }}
         --docker-username={{ docker_user }}
         --docker-password={{ docker_k8s_password }}
         --dry-run=client -o yaml | kubectl apply -f -
@@ -83,6 +85,7 @@
         state: present
         src: "{{ item }}"
       loop:
+        - "../k8s/namespace.yaml"
         - "../k8s/configmap.yaml"
         - "../k8s/secrets.yaml"
         - "../k8s/deployment.yaml"
@@ -90,4 +93,4 @@
         - "../k8s/ingress.yaml"
 
     - name: Restart Deployment to pick up new image
-      shell: kubectl rollout restart deployment/meal-planner
+      shell: kubectl rollout restart deployment/meal-planner -n meal-planner
