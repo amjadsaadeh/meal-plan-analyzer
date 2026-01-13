@@ -9,7 +9,7 @@
     # Default values - override these with -e "variable=value"
     docker_user: ""
     docker_password: ""
-    image_name: "index.docker.io/amjadsaadeh/meal-planner:latest"
+    image_name: "index.docker.io/amjadsaadeh/rsos-meal-planner:latest"
     project_root: "../"
 
   tasks:
@@ -32,18 +32,24 @@
         registry_url: index.docker.io
 
     - name: Build Docker image
-      community.docker.docker_image:
-        build:
-          path: "{{ project_root }}"
+      community.docker.docker_image_build:
+        # dockerfile: "{{ project_root }}/Dockerfile"
+        path: "{{ project_root }}"
         name: "{{ image_name }}"
-        source: build
-        force_source: true
-
+        rebuild: "always"
+        outputs:
+          - type: "docker"
+            name: "{{ image_name }}"
+            push: true
+    
     - name: Push Docker image
-      community.docker.docker_image:
+      community.docker.docker_image_push:
         name: "{{ image_name }}"
-        push: true
-        source: local
+
+    - name: Apply Kubernetes Namespace
+      kubernetes.core.k8s:
+        state: present
+        src: "../k8s/namespace.yaml"
 
     - name: Create or Update Docker Registry Secret in K8s
       kubernetes.core.k8s:
@@ -53,6 +59,7 @@
           kind: Secret
           metadata:
             name: regcred
+            namespace: meal-planner
           type: kubernetes.io/dockerconfigjson
           data:
             .dockerconfigjson: "{{ lookup('template', 'docker_config.j2') | b64encode }}"
@@ -85,7 +92,6 @@
         state: present
         src: "{{ item }}"
       loop:
-        - "../k8s/namespace.yaml"
         - "../k8s/configmap.yaml"
         - "../k8s/secrets.yaml"
         - "../k8s/deployment.yaml"
