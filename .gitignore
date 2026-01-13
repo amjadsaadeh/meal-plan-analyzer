@@ -5,4 +5,4 @@ __pycache__
 .vault_password
 *.retry
 .envrc
-*vault*
+*vault.yml
