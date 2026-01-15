@@ -25,11 +25,11 @@ class Food(models.Model):
     def __str__(self):
         return self.name
 
-class MealPlan(models.Model):
+class MealPlanDay(models.Model):
     name = models.CharField(max_length=255, default="Neuer Plan")
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
-    foods = models.ManyToManyField(Food, through='MealPlanFood', related_name='meal_plans')
+    foods = models.ManyToManyField(Food, through='MealPlanFood', related_name='meal_plan_days')
     visible_nutrients = models.JSONField(default=list, blank=True)
 
 
@@ -45,7 +45,7 @@ class MealPlanFood(models.Model):
         LUNCH = "lunch", "Lunch"
         DINNER = "dinner", "Dinner"
 
-    meal_plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE)
+    meal_plan_day = models.ForeignKey(MealPlanDay, on_delete=models.CASCADE)
     food = models.ForeignKey(Food, on_delete=models.CASCADE)
     amount_in_g = models.FloatField()
     meal_type = models.CharField(
@@ -55,4 +55,4 @@ class MealPlanFood(models.Model):
     )
     
     class Meta:
-        unique_together = ('meal_plan', 'food', 'meal_type')
+        unique_together = ('meal_plan_day', 'food', 'meal_type')

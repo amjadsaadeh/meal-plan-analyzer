@@ -2,8 +2,8 @@ import re
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from rest_framework import viewsets, filters
-from .models import Food, MealPlan, MealPlanFood
-from .serializers import FoodSerializer, MealPlanSerializer, MealPlanFoodSerializer
+from .models import Food, MealPlanDay, MealPlanFood
+from .serializers import FoodSerializer, MealPlanDaySerializer, MealPlanFoodSerializer
 
 from django.core.paginator import Paginator
 
@@ -12,7 +12,7 @@ def index(request):
 
 def meal_plan_list(request):
     search_query = request.GET.get('search', '').strip()
-    queryset = MealPlan.objects.all()
+    queryset = MealPlanDay.objects.all()
     
     if search_query:
         # Semantic/Fuzzy Search logic (simplified for names)
@@ -49,11 +49,11 @@ def meal_plan_list(request):
 def meal_plan_detail(request, pk=None):
     if pk is None:
         # Create a new empty meal plan and redirect to its detail page
-        plan = MealPlan.objects.create(name="Neuer Plan")
+        plan = MealPlanDay.objects.create(name="Neuer Plan")
         from django.shortcuts import redirect
         return redirect('meal-plan-detail', pk=plan.pk)
     
-    plan = MealPlan.objects.prefetch_related('mealplanfood_set__food').get(pk=pk)
+    plan = MealPlanDay.objects.prefetch_related('mealplanfood_set__food').get(pk=pk)
     meal_types = [
         ('breakfast', 'Frühstück'),
         ('lunch', 'Mittagessen'),
@@ -123,9 +123,9 @@ class FoodViewSet(viewsets.ModelViewSet):
         
         return queryset.order_by(*order_params)
 
-class MealPlanViewSet(viewsets.ModelViewSet):
-    queryset = MealPlan.objects.all()
-    serializer_class = MealPlanSerializer
+class MealPlanDayViewSet(viewsets.ModelViewSet):
+    queryset = MealPlanDay.objects.all()
+    serializer_class = MealPlanDaySerializer
 
 class MealPlanFoodViewSet(viewsets.ModelViewSet):
     queryset = MealPlanFood.objects.all()
