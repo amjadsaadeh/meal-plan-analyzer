@@ -7,6 +7,7 @@ class Food(models.Model):
     energy_in_kcal_per_100g = models.FloatField()
     protein_in_g_per_100g = models.FloatField(default=0.0)
     fat_in_g_per_100g = models.FloatField(default=0.0)
+    carbohydrate_in_g_per_100g = models.FloatField(default=0.0)
     fibre_in_g_per_100g = models.FloatField(default=0.0)
     iron_in_mg_per_100g = models.FloatField(default=0.0)
     sugar_in_g_per_100g = models.FloatField(default=0.0)

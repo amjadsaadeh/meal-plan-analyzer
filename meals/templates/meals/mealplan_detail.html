@@ -812,6 +812,7 @@
                                                 <th style="width: 65px;" class="nutrient-header col-protein">Prot (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-fat">Fett (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-omega3">Omega 3 (g)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-carbs">KH (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-sugar">Zucker (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-fibre">Bst. (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-iron">Eisen (mg)</th>
@@ -830,7 +831,8 @@
                                             {% if item.meal_type == meal_slug %}
                                             <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" 
                                                 data-kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein="{{ item.food.protein_in_g_per_100g }}" 
-                                                data-fat="{{ item.food.fat_in_g_per_100g }}" data-fibre="{{ item.food.fibre_in_g_per_100g }}" 
+                                                data-fat="{{ item.food.fat_in_g_per_100g }}" data-carbs="{{ item.food.carbohydrate_in_g_per_100g }}"
+                                                data-fibre="{{ item.food.fibre_in_g_per_100g }}" 
                                                 data-iron="{{ item.food.iron_in_mg_per_100g }}" data-sugar="{{ item.food.sugar_in_g_per_100g }}" 
                                                 data-omega3="{{ item.food.omega3_in_g_per_100g }}" data-vitc="{{ item.food.vitc_in_mg_per_100g }}" 
                                                 data-magnesium="{{ item.food.magnesium_in_mg_per_100g }}" data-zinc="{{ item.food.zinc_in_mg_per_100g }}" 
@@ -849,6 +851,7 @@
                                                 <td class="col-protein"><div class="cell-content protein-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}</div></td>
                                                 <td class="col-fat"><div class="cell-content fat-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}</div></td>
                                                 <td class="col-omega3"><div class="cell-content omega3-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}</div></td>
+                                                <td class="col-carbs"><div class="cell-content carbs-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.carbohydrate_in_g_per_100g|floatformat:1 }}</div></td>
                                                 <td class="col-sugar"><div class="cell-content sugar-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}</div></td>
                                                 <td class="col-fibre"><div class="cell-content fibre-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}</div></td>
                                                 <td class="col-iron"><div class="cell-content iron-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}</div></td>
@@ -875,6 +878,7 @@
                                                 <td class="col-protein"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="protein">0.0</div></td>
                                                 <td class="col-fat"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="fat">0.0</div></td>
                                                 <td class="col-omega3"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="omega3">0.0</div></td>
+                                                <td class="col-carbs"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="carbs">0.0</div></td>
                                                 <td class="col-sugar"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="sugar">0.0</div></td>
                                                 <td class="col-fibre"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="fibre">0.0</div></td>
                                                 <td class="col-iron"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="iron">0.0</div></td>
@@ -899,7 +903,7 @@
                         <div class="grand-summary">
                             <h3 class="summary-title" id="daySummaryTitle-{{ day.id }}">{{ day.name }} - Übersicht</h3>
                             <div class="summary-grid">
-                                {% for nut_id, nut_label in "kcal:kcal,protein:Protein,fat:Fett,omega3:Omega 3,sugar:Zucker,fibre:Ballaststoffe,iron:Eisen,vitc:Vit C,magnesium:Magnesium,zinc:Zink,vitb12:Vit B12,vita:Vit A,calcium:Calcium,vitd:Vit D"|split_to_dict %}
+                                {% for nut_id, nut_label in "kcal:kcal,protein:Protein,fat:Fett,omega3:Omega 3,carbs:KH,sugar:Zucker,fibre:Ballaststoffe,iron:Eisen,vitc:Vit C,magnesium:Magnesium,zinc:Zink,vitb12:Vit B12,vita:Vit A,calcium:Calcium,vitd:Vit D"|split_to_dict %}
                                 <div class="summary-item col-{{ nut_id }}">
                                     <span class="summary-label">{{ nut_label }}</span>
                                     <span class="summary-val total-day-summary" data-day-id="{{ day.id }}" data-nut="{{ nut_id }}" id="total{{ nut_id|title }}-{{ day.id }}">0.0</span>
@@ -920,6 +924,7 @@
         <label class="col-option"><input type="checkbox" data-col="protein" checked> Protein</label>
         <label class="col-option"><input type="checkbox" data-col="fat" checked> Fett</label>
         <label class="col-option"><input type="checkbox" data-col="omega3" checked> Omega 3</label>
+        <label class="col-option"><input type="checkbox" data-col="carbs" checked> KH</label>
         <label class="col-option"><input type="checkbox" data-col="sugar" checked> Zucker</label>
         <label class="col-option"><input type="checkbox" data-col="fibre" checked> Ballaststoffe</label>
         <label class="col-option"><input type="checkbox" data-col="iron" checked> Eisen</label>
@@ -940,7 +945,7 @@
         let activeSearchCell = null;
 
         // Nutrients for visibility tracking
-        const ALL_NUTRIENTS = ['protein', 'fat', 'omega3', 'sugar', 'fibre', 'iron', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
+        const ALL_NUTRIENTS = ['protein', 'fat', 'omega3', 'carbs', 'sugar', 'fibre', 'iron', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
         // Use visible_nutrients from the overarching plan
         let visibleNutrients = {{ plan.visible_nutrients|default:"[]"|safe }};
 
@@ -1104,7 +1109,7 @@
             const row = input.closest('tr');
             const amount = parseFloat(input.value) || 0;
             const factor = amount / 100;
-            const nutrients = ['kcal', 'protein', 'fat', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
+            const nutrients = ['kcal', 'protein', 'fat', 'carbs', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
             nutrients.forEach(n => {
                 const per100 = parseFloat(row.dataset[n]) || 0;
                 const cell = row.querySelector(`.${n}-cell`);
@@ -1120,7 +1125,7 @@
         }
 
         function calculateTotals() {
-            const nutrients = ['kcal', 'protein', 'fat', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
+            const nutrients = ['kcal', 'protein', 'fat', 'carbs', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
             
             document.querySelectorAll('.day-section').forEach(daySec => {
                 const dayId = daySec.dataset.dayId;
@@ -1294,11 +1299,12 @@
                         const cell = activeSearchCell;
                         const row = cell.closest('tr');
                         row.dataset.foodId = food.id;
-                        ['kcal','protein','fat','fibre','iron','sugar','omega3','vitc','magnesium','zinc','vitb12','vita','calcium','vitd'].forEach(n => {
+                        ['kcal','protein','fat','carbs','fibre','iron','sugar','omega3','vitc','magnesium','zinc','vitb12','vita','calcium','vitd'].forEach(n => {
                             row.dataset[n] = food[n + (n==='kcal'?'':'_per_100g')]; // This depends on your API field names
                             if (n !== 'kcal') {
                                 if (n === 'protein') row.dataset.protein = food.protein_in_g_per_100g;
                                 if (n === 'fat') row.dataset.fat = food.fat_in_g_per_100g;
+                                if (n === 'carbs') row.dataset.carbs = food.carbohydrate_in_g_per_100g;
                                 if (n === 'fibre') row.dataset.fibre = food.fibre_in_g_per_100g;
                                 if (n === 'iron') row.dataset.iron = food.iron_in_mg_per_100g;
                                 if (n === 'sugar') row.dataset.sugar = food.sugar_in_g_per_100g;
@@ -1356,6 +1362,7 @@
                 <td class="col-protein"><div class="cell-content protein-cell">0.0</div></td>
                 <td class="col-fat"><div class="cell-content fat-cell">0.0</div></td>
                 <td class="col-omega3"><div class="cell-content omega3-cell">0.00</div></td>
+                <td class="col-carbs"><div class="cell-content carbs-cell">0.0</div></td>
                 <td class="col-sugar"><div class="cell-content sugar-cell">0.0</div></td>
                 <td class="col-fibre"><div class="cell-content fibre-cell">0.0</div></td>
                 <td class="col-iron"><div class="cell-content iron-cell">0.0</div></td>
