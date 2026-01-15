@@ -247,6 +247,22 @@
             width: 50px;
             text-align: center;
         }
+
+        .energy-badge {
+            background: rgba(59, 163, 143, 0.1);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #2d8170;
+            white-space: nowrap;
+            font-weight: 400;
+            transition: all 0.2s;
+        }
+
+        .energy-badge:hover {
+            background: var(--primary);
+            color: white;
+        }
     </style>
 </head>
 
@@ -273,7 +289,9 @@
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 40px;"></th>
                         <th>Name</th>
+                        <th>Days</th>
                         <th>Created</th>
                         <th>Last Changed</th>
                         <th class="actions-cell"></th>
@@ -281,8 +299,24 @@
                 </thead>
                 <tbody>
                     {% for plan in page_obj %}
-                    <tr class="meal-plan-row" onclick="window.location.href='{% url 'meal-plan-detail' plan.pk %}';">
+                    <tr class="meal-plan-row">
+                        <td>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </td>
                         <td class="meal-plan-name" data-name="{{ plan.name }}">{{ plan.name }}</td>
+                        <td>
+                            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                {% for day in plan.days.all %}
+                                <a href="{% url 'meal-plan-detail' day.pk %}" class="energy-badge" style="text-decoration: none;" onclick="event.stopPropagation()">
+                                    {{ day.name }}
+                                </a>
+                                {% empty %}
+                                <span class="no-data" style="padding: 0; font-size: 0.8rem;">No days</span>
+                                {% endfor %}
+                            </div>
+                        </td>
                         <td class="date-cell">{{ plan.creation_date|date:"M d, Y" }}</td>
                         <td class="date-cell">{{ plan.change_date|date:"M d, Y H:i" }}</td>
                         <td class="actions-cell">
@@ -299,7 +333,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="no-data">No meal plans found.</td>
+                        <td colspan="6" class="no-data">No meal plans found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
