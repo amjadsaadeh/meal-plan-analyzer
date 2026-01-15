@@ -2,8 +2,11 @@ import re
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from rest_framework import viewsets, filters
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood
-from .serializers import FoodSerializer, MealPlanSerializer, MealPlanDaySerializer, MealPlanFoodSerializer
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
+from .serializers import (
+    FoodSerializer, MealPlanSerializer, MealPlanDaySerializer, 
+    MealPlanFoodSerializer, ThresholdPresetSerializer
+)
 
 from django.core.paginator import Paginator
 
@@ -138,3 +141,7 @@ class MealPlanDayViewSet(viewsets.ModelViewSet):
 class MealPlanFoodViewSet(viewsets.ModelViewSet):
     queryset = MealPlanFood.objects.all()
     serializer_class = MealPlanFoodSerializer
+
+class ThresholdPresetViewSet(viewsets.ModelViewSet):
+    queryset = ThresholdPreset.objects.all()
+    serializer_class = ThresholdPresetSerializer

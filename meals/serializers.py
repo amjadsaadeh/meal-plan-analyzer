@@ -1,9 +1,14 @@
 from rest_framework import serializers
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
 
 class FoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Food
+        fields = '__all__'
+
+class ThresholdPresetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ThresholdPreset
         fields = '__all__'
 
 class MealPlanFoodSerializer(serializers.ModelSerializer):
