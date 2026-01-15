@@ -29,6 +29,7 @@ class MealPlan(models.Model):
     name = models.CharField(max_length=255, default="Neuer Plan")
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
+    visible_nutrients = models.JSONField(default=list, blank=True)
 
     class Meta:
         ordering = ['-creation_date']
@@ -42,7 +43,6 @@ class MealPlanDay(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
     foods = models.ManyToManyField(Food, through='MealPlanFood', related_name='meal_plan_days')
-    visible_nutrients = models.JSONField(default=list, blank=True)
 
 
     class Meta:
