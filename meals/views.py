@@ -50,11 +50,13 @@ def meal_plan_detail(request, pk=None):
     if pk is None:
         # Create a new MealPlan and a default MealPlanDay for it
         parent_plan = MealPlan.objects.create(name="Neuer Plan")
-        plan = MealPlanDay.objects.create(name="Tag 1", meal_plan=parent_plan)
+        plan_day = MealPlanDay.objects.create(name="Tag 1", meal_plan=parent_plan)
         from django.shortcuts import redirect
-        return redirect('meal-plan-detail', pk=plan.pk)
+        return redirect('meal-plan-detail', pk=parent_plan.pk)
     
-    plan = MealPlanDay.objects.prefetch_related('mealplanfood_set__food').get(pk=pk)
+    plan = MealPlan.objects.get(pk=pk)
+    days = plan.days.all().order_by('creation_date').prefetch_related('mealplanfood_set__food')
+    
     meal_types = [
         ('breakfast', 'Frühstück'),
         ('lunch', 'Mittagessen'),
@@ -62,6 +64,7 @@ def meal_plan_detail(request, pk=None):
     ]
     return render(request, 'meals/mealplan_detail.html', {
         'plan': plan,
+        'days': days,
         'meal_types': meal_types
     })
 
