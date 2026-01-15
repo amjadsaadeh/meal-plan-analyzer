@@ -25,8 +25,20 @@ class Food(models.Model):
     def __str__(self):
         return self.name
 
-class MealPlanDay(models.Model):
+class MealPlan(models.Model):
     name = models.CharField(max_length=255, default="Neuer Plan")
+    creation_date = models.DateTimeField(auto_now_add=True)
+    change_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-creation_date']
+
+    def __str__(self):
+        return self.name
+
+class MealPlanDay(models.Model):
+    name = models.CharField(max_length=255, default="Neuer Tag")
+    meal_plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE, related_name='days', null=True, blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
     foods = models.ManyToManyField(Food, through='MealPlanFood', related_name='meal_plan_days')
