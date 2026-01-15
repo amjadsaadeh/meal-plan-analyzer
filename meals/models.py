@@ -31,6 +31,7 @@ class MealPlan(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
     visible_nutrients = models.JSONField(default=list, blank=True)
+    thresholds = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ['-creation_date']
