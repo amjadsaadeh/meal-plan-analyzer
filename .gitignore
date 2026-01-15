@@ -6,3 +6,5 @@ __pycache__
 *.retry
 .envrc
 *vault.yml
+*dump.json
+*.backup*
