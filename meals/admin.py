@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Food, MealPlanDay, MealPlanFood
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood
 
 @admin.register(Food)
 class FoodAdmin(admin.ModelAdmin):
@@ -19,8 +19,18 @@ class MealPlanFoodInline(admin.TabularInline):
     model = MealPlanFood
     extra = 1
 
+class MealPlanDayInline(admin.TabularInline):
+    model = MealPlanDay
+    extra = 1
+
+@admin.register(MealPlan)
+class MealPlanAdmin(admin.ModelAdmin):
+    list_display = ('name', 'creation_date', 'change_date')
+    inlines = [MealPlanDayInline]
+    search_fields = ('name',)
+
 @admin.register(MealPlanDay)
 class MealPlanDayAdmin(admin.ModelAdmin):
-    list_display = ('name', 'creation_date', 'change_date')
+    list_display = ('name', 'meal_plan', 'creation_date', 'change_date')
     inlines = [MealPlanFoodInline]
     search_fields = ('name',)
