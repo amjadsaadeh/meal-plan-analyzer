@@ -34,6 +34,7 @@ class Command(BaseCommand):
             IDX_KCAL = col_to_idx('G')
             IDX_PROTEIN = col_to_idx('M')
             IDX_FAT = col_to_idx('P')
+            IDX_CARBS = col_to_idx('S')
             IDX_FIBRE = col_to_idx('V')
             IDX_IRON = col_to_idx('EO')
             IDX_SUGAR = col_to_idx('HL')
@@ -66,6 +67,7 @@ class Command(BaseCommand):
                 energy_kcal = parse_float(row[IDX_KCAL])
                 protein = parse_float(row[IDX_PROTEIN])
                 fat = parse_float(row[IDX_FAT])
+                carbs = parse_float(row[IDX_CARBS])
                 fibre = parse_float(row[IDX_FIBRE])
                 iron = parse_float(row[IDX_IRON])
                 sugar = parse_float(row[IDX_SUGAR])
@@ -86,6 +88,7 @@ class Command(BaseCommand):
                         'energy_in_kcal_per_100g': energy_kcal,
                         'protein_in_g_per_100g': protein,
                         'fat_in_g_per_100g': fat,
+                        'carbohydrate_in_g_per_100g': carbs,
                         'fibre_in_g_per_100g': fibre,
                         'iron_in_mg_per_100g': iron,
                         'sugar_in_g_per_100g': sugar,
