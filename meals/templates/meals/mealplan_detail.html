@@ -941,8 +941,8 @@
 
         // Nutrients for visibility tracking
         const ALL_NUTRIENTS = ['protein', 'fat', 'omega3', 'sugar', 'fibre', 'iron', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
-        // Use visible_nutrients from the first day or empty list
-        let visibleNutrients = {% if days %}{{ days.0.visible_nutrients|default:"[]"|safe }}{% else %}[]{% endif %};
+        // Use visible_nutrients from the overarching plan
+        let visibleNutrients = {{ plan.visible_nutrients|default:"[]"|safe }};
 
         // Initial setup
         if (visibleNutrients.length === 0) {
@@ -973,20 +973,13 @@
         }
 
         async function saveVisibility() {
-            // Save visibility to the overarching plan if we add that field, 
-            // for now, we'll try to save to the first day's API as a fallback 
-            // but ideally MealPlan should have visible_nutrients.
-            // Since we updated MealPlanDay, let's just loop and save to all days in this plan.
-            const dayIds = [...new Set([...document.querySelectorAll('.day-section')].map(el => el.dataset.dayId))];
-            for(const dayId of dayIds) {
-                try {
-                    await fetch(`/api/mealplan-days/${dayId}/`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
-                        body: JSON.stringify({ visible_nutrients: visibleNutrients })
-                    });
-                } catch (e) { console.error(e); }
-            }
+            try {
+                await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ visible_nutrients: visibleNutrients })
+                });
+            } catch (e) { console.error(e); }
         }
 
         // Toolbar Events
