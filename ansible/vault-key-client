@@ -1,0 +1,36 @@
+#! /bin/bash
+
+if [[ -z "$1" ]]; then
+    echo "--vault-id option is missing." $(tty)
+    echo "Usage: $0 --vault-id <entry_name>" $(tty)
+    exit 1
+fi
+
+if [[ -z "$2" ]]; then
+    echo "entry_name is missing." $(tty)
+    echo "Usage: $0 --vault-id <entry_name>" $(tty)
+    exit 1
+fi
+
+echo -n "Enter KeePassXC database password: " > $(tty)
+read -s DB_PASSWORD
+echo
+
+# Find path to the entry in the KeePass database
+# Trim carriage return (e.g. when using a windows keepass instance)
+KEEPASS_ENTRY_PATH=$(echo "$DB_PASSWORD" | $KEEPASS_CMD search "$KEEPASS_DB_PATH" $2 | tr -d '\r')
+if [[ -z "$KEEPASS_ENTRY_PATH" ]]; then
+    echo "Entry not found in KeePass database." > $(tty)
+    exit 2
+fi
+
+NUM_ENTRIES=$(echo "$KEEPASS_ENTRY_PATH" | wc -l)
+if [[ $NUM_ENTRIES -gt 1 ]]; then
+    echo "Multiple entries found in KeePass database." > $(tty)
+    echo "$KEEPASS_ENTRY_PATH" > $(tty)
+    exit 3
+fi
+
+echo "Found Entry: $KEEPASS_ENTRY_PATH" > $(tty)
+
+echo "$DB_PASSWORD" | $KEEPASS_CMD show -a password "$KEEPASS_DB_PATH" "$KEEPASS_ENTRY_PATH" | tr -d '\r'

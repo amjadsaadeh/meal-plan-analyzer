@@ -2,3 +2,9 @@
 *.sqlite3
 *.xlsx
 __pycache__
+.vault_password
+*.retry
+.envrc
+*vault.yml
+*dump.json
+*.backup*
