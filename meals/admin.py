@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
+
+@admin.register(ThresholdPreset)
+class ThresholdPresetAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
 
 @admin.register(Food)
 class FoodAdmin(admin.ModelAdmin):

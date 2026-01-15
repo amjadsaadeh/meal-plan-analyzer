@@ -26,6 +26,61 @@ class Food(models.Model):
     def __str__(self):
         return self.name
 
+class ThresholdPreset(models.Model):
+    name = models.CharField(max_length=255)
+    
+    energy_in_kj_min = models.FloatField(null=True, blank=True)
+    energy_in_kj_max = models.FloatField(null=True, blank=True)
+    
+    energy_in_kcal_min = models.FloatField(null=True, blank=True)
+    energy_in_kcal_max = models.FloatField(null=True, blank=True)
+    
+    protein_in_g_min = models.FloatField(null=True, blank=True)
+    protein_in_g_max = models.FloatField(null=True, blank=True)
+    
+    fat_in_g_min = models.FloatField(null=True, blank=True)
+    fat_in_g_max = models.FloatField(null=True, blank=True)
+    
+    carbohydrate_in_g_min = models.FloatField(null=True, blank=True)
+    carbohydrate_in_g_max = models.FloatField(null=True, blank=True)
+    
+    fibre_in_g_min = models.FloatField(null=True, blank=True)
+    fibre_in_g_max = models.FloatField(null=True, blank=True)
+    
+    iron_in_mg_min = models.FloatField(null=True, blank=True)
+    iron_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    sugar_in_g_min = models.FloatField(null=True, blank=True)
+    sugar_in_g_max = models.FloatField(null=True, blank=True)
+    
+    omega3_in_g_min = models.FloatField(null=True, blank=True)
+    omega3_in_g_max = models.FloatField(null=True, blank=True)
+    
+    vitc_in_mg_min = models.FloatField(null=True, blank=True)
+    vitc_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    magnesium_in_mg_min = models.FloatField(null=True, blank=True)
+    magnesium_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    zinc_in_mg_min = models.FloatField(null=True, blank=True)
+    zinc_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    vitb12_in_mug_min = models.FloatField(null=True, blank=True)
+    vitb12_in_mug_max = models.FloatField(null=True, blank=True)
+    
+    vita_in_mug_min = models.FloatField(null=True, blank=True)
+    vita_in_mug_max = models.FloatField(null=True, blank=True)
+    
+    calcium_in_mg_min = models.FloatField(null=True, blank=True)
+    calcium_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    vitd_in_mug_min = models.FloatField(null=True, blank=True)
+    vitd_in_mug_max = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class MealPlan(models.Model):
     name = models.CharField(max_length=255, default="Neuer Plan")
     creation_date = models.DateTimeField(auto_now_add=True)
