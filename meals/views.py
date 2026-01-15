@@ -2,8 +2,8 @@ import re
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from rest_framework import viewsets, filters
-from .models import Food, MealPlanDay, MealPlanFood
-from .serializers import FoodSerializer, MealPlanDaySerializer, MealPlanFoodSerializer
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood
+from .serializers import FoodSerializer, MealPlanSerializer, MealPlanDaySerializer, MealPlanFoodSerializer
 
 from django.core.paginator import Paginator
 
@@ -12,7 +12,7 @@ def index(request):
 
 def meal_plan_list(request):
     search_query = request.GET.get('search', '').strip()
-    queryset = MealPlanDay.objects.all()
+    queryset = MealPlan.objects.all()
     
     if search_query:
         # Semantic/Fuzzy Search logic (simplified for names)
@@ -48,12 +48,15 @@ def meal_plan_list(request):
 
 def meal_plan_detail(request, pk=None):
     if pk is None:
-        # Create a new empty meal plan and redirect to its detail page
-        plan = MealPlanDay.objects.create(name="Neuer Plan")
+        # Create a new MealPlan and a default MealPlanDay for it
+        parent_plan = MealPlan.objects.create(name="Neuer Plan")
+        plan_day = MealPlanDay.objects.create(name="Tag 1", meal_plan=parent_plan)
         from django.shortcuts import redirect
-        return redirect('meal-plan-detail', pk=plan.pk)
+        return redirect('meal-plan-detail', pk=parent_plan.pk)
     
-    plan = MealPlanDay.objects.prefetch_related('mealplanfood_set__food').get(pk=pk)
+    plan = MealPlan.objects.get(pk=pk)
+    days = plan.days.all().order_by('creation_date').prefetch_related('mealplanfood_set__food')
+    
     meal_types = [
         ('breakfast', 'Frühstück'),
         ('lunch', 'Mittagessen'),
@@ -61,6 +64,7 @@ def meal_plan_detail(request, pk=None):
     ]
     return render(request, 'meals/mealplan_detail.html', {
         'plan': plan,
+        'days': days,
         'meal_types': meal_types
     })
 
@@ -122,6 +126,10 @@ class FoodViewSet(viewsets.ModelViewSet):
         order_params.append('name')
         
         return queryset.order_by(*order_params)
+
+class MealPlanViewSet(viewsets.ModelViewSet):
+    queryset = MealPlan.objects.all()
+    serializer_class = MealPlanSerializer
 
 class MealPlanDayViewSet(viewsets.ModelViewSet):
     queryset = MealPlanDay.objects.all()

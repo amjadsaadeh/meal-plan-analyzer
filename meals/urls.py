@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import FoodViewSet, MealPlanDayViewSet, MealPlanFoodViewSet, index, meal_plan_list, meal_plan_detail
+from .views import FoodViewSet, MealPlanViewSet, MealPlanDayViewSet, MealPlanFoodViewSet, index, meal_plan_list, meal_plan_detail
 
 router = DefaultRouter()
 router.register(r'foods', FoodViewSet)
-router.register(r'mealplans', MealPlanDayViewSet)
+router.register(r'mealplans', MealPlanViewSet)
+router.register(r'mealplan-days', MealPlanDayViewSet)
 router.register(r'mealplan-foods', MealPlanFoodViewSet)
 
 urlpatterns = [
