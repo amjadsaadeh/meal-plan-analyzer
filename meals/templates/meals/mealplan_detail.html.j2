@@ -24,6 +24,7 @@
             --row-hover: rgba(59, 163, 143, 0.05);
             --success: #10b981;
             --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         * {
@@ -554,6 +555,7 @@
             background: var(--bg);
             border-radius: 10px;
             transition: all 0.2s;
+            overflow: hidden;
         }
 
         .summary-item:hover {
@@ -565,12 +567,74 @@
             color: var(--text-dim);
             text-transform: none;
             margin-bottom: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 8px;
         }
 
+        .summary-values-wrapper {
+            display: grid;
+            grid-template-columns: 50px 75px 50px;
+            align-items: center;
+            gap: 4px;
+            justify-items: center;
+            flex-shrink: 0;
+            width: 183px;
+        }
+        
         .summary-val {
             font-size: 0.8rem;
             font-weight: 600;
             color: var(--primary);
+            text-align: center;
+            width: 100%;
+            transition: color 0.3s;
+        }
+
+        .status-under {
+            color: var(--danger) !important;
+        }
+
+        .status-over {
+            color: var(--danger) !important;
+        }
+
+        .threshold-input {
+            width: 100%;
+            height: 28px;
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 2px 4px;
+            font-size: 0.7rem;
+            text-align: center;
+            background: white;
+            outline: none;
+            transition: all 0.2s;
+            color: var(--text-dim);
+        }
+
+        .threshold-input:focus {
+            border-color: var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        .threshold-input::placeholder {
+            color: #cbd5e1;
+            font-size: 0.65rem;
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        .threshold-input::-webkit-outer-spin-button,
+        .threshold-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        .threshold-input[type=number] {
+            -moz-appearance: textfield;
         }
 
         /* Layout wrappers */
@@ -587,7 +651,7 @@
         }
 
         .side-panel {
-            width: 300px;
+            width: 330px;
             flex-shrink: 0;
         }
 
@@ -952,7 +1016,13 @@
                                 {% for nut_id, nut_label in "kcal:kcal,protein:Protein,fat:Fett,omega3:Omega 3,carbs:KH,sugar:Zucker,fibre:Ballaststoffe,iron:Eisen,vitc:Vit C,magnesium:Magnesium,zinc:Zink,vitb12:Vit B12,vita:Vit A,calcium:Calcium,vitd:Vit D"|split_to_dict %}
                                 <div class="summary-item col-{{ nut_id }}">
                                     <span class="summary-label">{{ nut_label }}</span>
-                                    <span class="summary-val total-day-summary" data-day-id="{{ day.id }}" data-nut="{{ nut_id }}" id="total{{ nut_id|title }}-{{ day.id }}">0.0</span>
+                                    <div class="summary-values-wrapper">
+                                        {% with thresholds=plan.thresholds|get_item:nut_id %}
+                                        <input type="number" class="threshold-input threshold-min" data-nut="{{ nut_id }}" placeholder="min" oninput="syncThresholds(this)" value="{{ thresholds.min }}">
+                                        <span class="summary-val total-day-summary" data-day-id="{{ day.id }}" data-nut="{{ nut_id }}" id="total{{ nut_id|title }}-{{ day.id }}">0.0</span>
+                                        <input type="number" class="threshold-input threshold-max" data-nut="{{ nut_id }}" placeholder="max" oninput="syncThresholds(this)" value="{{ thresholds.max }}">
+                                        {% endwith %}
+                                    </div>
                                 </div>
                                 {% endfor %}
                             </div>
@@ -969,7 +1039,13 @@
                     {% for nut_id, nut_label in "kcal:kcal,protein:Protein,fat:Fett,omega3:Omega 3,carbs:KH,sugar:Zucker,fibre:Ballaststoffe,iron:Eisen,vitc:Vit C,magnesium:Magnesium,zinc:Zink,vitb12:Vit B12,vita:Vit A,calcium:Calcium,vitd:Vit D"|split_to_dict %}
                     <div class="summary-item col-{{ nut_id }}">
                         <span class="summary-label">{{ nut_label }}</span>
-                        <span class="summary-val total-plan-summary" data-nut="{{ nut_id }}">0.0</span>
+                        <div class="summary-values-wrapper">
+                            {% with thresholds=plan.thresholds|get_item:nut_id %}
+                            <input type="number" class="threshold-input threshold-min" data-nut="{{ nut_id }}" placeholder="min" oninput="syncThresholds(this)" value="{{ thresholds.min }}">
+                            <span class="summary-val total-plan-summary" data-nut="{{ nut_id }}">0.0</span>
+                            <input type="number" class="threshold-input threshold-max" data-nut="{{ nut_id }}" placeholder="max" oninput="syncThresholds(this)" value="{{ thresholds.max }}">
+                            {% endwith %}
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -1185,6 +1261,53 @@
             }
         }
 
+        let thresholdDebounceTimer;
+        function syncThresholds(el) {
+            const nut = el.dataset.nut;
+            const value = el.value;
+            const isMin = el.classList.contains('threshold-min');
+            
+            // Sync all other inputs for same nutrient and same type (min/max)
+            const selector = isMin ? `.threshold-min[data-nut="${nut}"]` : `.threshold-max[data-nut="${nut}"]`;
+            document.querySelectorAll(selector).forEach(input => {
+                if (input !== el) input.value = value;
+            });
+            
+            setSyncStatus(false);
+            clearTimeout(thresholdDebounceTimer);
+            thresholdDebounceTimer = setTimeout(saveThresholds, 1000);
+
+            // Trigger re-calculation (for highlighting)
+            calculateTotals();
+        }
+
+        async function saveThresholds() {
+            const thresholds = {};
+            // We can just grab from one day summary since they are synced
+            const firstSummary = document.querySelector('.day-summary');
+            if (!firstSummary) return;
+
+            firstSummary.querySelectorAll('.threshold-input').forEach(input => {
+                const nut = input.dataset.nut;
+                if (!thresholds[nut]) thresholds[nut] = {};
+                const isMin = input.classList.contains('threshold-min');
+                const val = input.value ? parseFloat(input.value) : null;
+                if (isMin) thresholds[nut].min = val;
+                else thresholds[nut].max = val;
+            });
+
+            try {
+                const response = await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ thresholds })
+                });
+                if (response.ok) {
+                    setSyncStatus(true);
+                }
+            } catch (e) { console.error(e); }
+        }
+
         function updateNutrients(input) {
             const row = input.closest('tr');
             const amount = parseFloat(input.value) || 0;
@@ -1237,7 +1360,20 @@
                 nutrients.forEach(n => {
                     const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
                     const grandEl = daySec.querySelector(`.total-day-summary[data-nut="${n}"]`);
-                    if (grandEl) grandEl.innerText = grandTotals[n].toFixed(precision);
+                    if (grandEl) {
+                        const val = grandTotals[n];
+                        grandEl.innerText = val.toFixed(precision);
+                        
+                        // Check thresholds
+                        const minInput = daySec.querySelector(`.threshold-min[data-nut="${n}"]`);
+                        const maxInput = daySec.querySelector(`.threshold-max[data-nut="${n}"]`);
+                        const min = minInput && minInput.value ? parseFloat(minInput.value) : null;
+                        const max = maxInput && maxInput.value ? parseFloat(maxInput.value) : null;
+                        
+                        grandEl.classList.remove('status-under', 'status-over');
+                        if (min !== null && val < min) grandEl.classList.add('status-under');
+                        else if (max !== null && val > max) grandEl.classList.add('status-over');
+                    }
                     
                     // Accumulate to plan totals
                     planTotals[n] += grandTotals[n];
@@ -1259,7 +1395,20 @@
             nutrients.forEach(n => {
                 const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
                 const planEl = document.querySelector(`.total-plan-summary[data-nut="${n}"]`);
-                if (planEl) planEl.innerText = planTotals[n].toFixed(precision);
+                if (planEl) {
+                    const val = planTotals[n];
+                    planEl.innerText = val.toFixed(precision);
+                    
+                    // We can use the thresholds from any day summary as they are synced
+                    const minInput = document.querySelector(`.threshold-min[data-nut="${n}"]`);
+                    const maxInput = document.querySelector(`.threshold-max[data-nut="${n}"]`);
+                    const min = minInput && minInput.value ? parseFloat(minInput.value) : null;
+                    const max = maxInput && maxInput.value ? parseFloat(maxInput.value) : null;
+
+                    planEl.classList.remove('status-under', 'status-over');
+                    if (min !== null && val < min) planEl.classList.add('status-under');
+                    else if (max !== null && val > max) planEl.classList.add('status-over');
+                }
             });
         }
 
