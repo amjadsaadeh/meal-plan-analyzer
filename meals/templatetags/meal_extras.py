@@ -19,3 +19,9 @@ def split_to_dict(value):
         return [item.split(':') for item in items]
     except Exception:
         return []
+
+@register.filter
+def get_item(dictionary, key):
+    if not dictionary:
+        return None
+    return dictionary.get(key)
