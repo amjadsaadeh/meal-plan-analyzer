@@ -24,6 +24,7 @@
             --row-hover: rgba(59, 163, 143, 0.05);
             --success: #10b981;
             --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         * {
@@ -480,15 +481,54 @@
             opacity: 0.7;
         }
 
-        .grand-summary {
+        .day-summary, .meal-summary {
             padding: 1.5rem;
             background: white;
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .day-summary {
             position: sticky;
             top: 75px;
             z-index: 100;
+        }
+
+        .meal-summary {
+            margin-top: 3rem;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .meal-summary .summary-grid {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .meal-summary .summary-item {
+            flex: 0 1 auto;
+            min-width: 110px;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .meal-summary .summary-label {
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+
+        .meal-summary .summary-val {
+            font-size: 1.1rem;
+            color: var(--primary);
         }
 
         .summary-title {
@@ -515,6 +555,7 @@
             background: var(--bg);
             border-radius: 10px;
             transition: all 0.2s;
+            overflow: hidden;
         }
 
         .summary-item:hover {
@@ -526,12 +567,74 @@
             color: var(--text-dim);
             text-transform: none;
             margin-bottom: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 8px;
         }
 
+        .summary-values-wrapper {
+            display: grid;
+            grid-template-columns: 50px 75px 50px;
+            align-items: center;
+            gap: 4px;
+            justify-items: center;
+            flex-shrink: 0;
+            width: 183px;
+        }
+        
         .summary-val {
             font-size: 0.8rem;
             font-weight: 600;
             color: var(--primary);
+            text-align: center;
+            width: 100%;
+            transition: color 0.3s;
+        }
+
+        .status-under {
+            color: var(--danger) !important;
+        }
+
+        .status-over {
+            color: var(--danger) !important;
+        }
+
+        .threshold-input {
+            width: 100%;
+            height: 28px;
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            padding: 2px 4px;
+            font-size: 0.7rem;
+            text-align: center;
+            background: white;
+            outline: none;
+            transition: all 0.2s;
+            color: var(--text-dim);
+        }
+
+        .threshold-input:focus {
+            border-color: var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        .threshold-input::placeholder {
+            color: #cbd5e1;
+            font-size: 0.65rem;
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        .threshold-input::-webkit-outer-spin-button,
+        .threshold-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        .threshold-input[type=number] {
+            -moz-appearance: textfield;
         }
 
         /* Layout wrappers */
@@ -548,7 +651,7 @@
         }
 
         .side-panel {
-            width: 300px;
+            width: 330px;
             flex-shrink: 0;
         }
 
@@ -564,7 +667,7 @@
                 top: 0 !important;
             }
 
-            .grand-summary {
+            .day-summary {
                 position: relative;
                 top: 0 !important;
             }
@@ -577,9 +680,89 @@
         /* Toolbar & Column Selection */
         .toolbar {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
             position: relative;
+        }
+
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preset-search-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preset-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .preset-input-wrapper {
+            position: relative;
+        }
+
+        .preset-search-input {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px 12px;
+            border-radius: 10px;
+            width: 250px;
+            outline: none;
+            transition: all 0.2s;
+            color: var(--text-main);
+            box-shadow: var(--shadow);
+            font-size: 0.9rem;
+        }
+
+        .preset-search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .preset-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 3000;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .preset-dropdown.active {
+            display: block;
+        }
+
+        .preset-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            color: var(--text-main);
+            text-align: left;
+        }
+
+        .preset-item:last-child {
+            border-bottom: none;
+        }
+
+        .preset-item:hover {
+            background: var(--row-hover);
+            color: var(--primary);
         }
 
         .col-select-btn {
@@ -601,6 +784,129 @@
             color: var(--primary);
         }
 
+        .btn-secondary {
+            background: rgba(59, 163, 143, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--primary);
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-top: 1.5rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            text-align: left;
+        }
+
+        .modal-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .modal-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .modal-error {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-modal-cancel {
+            background: #f1f5f9;
+            color: var(--text-dim);
+        }
+
+        .btn-modal-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-modal-save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-modal-save:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-modal-save:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
         .col-dropdown {
             position: fixed;
             background: white;
@@ -760,15 +1066,33 @@
         </div>
 
         <div class="toolbar">
-            <button class="col-select-btn" id="colSelectBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="14" width="7" height="7"></rect>
-                    <rect x="3" y="14" width="7" height="7"></rect>
-                </svg>
-                Spalten auswählen
-            </button>
+            <div class="toolbar-left">
+                <button class="col-select-btn" onclick="addDay()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Tag hinzufügen
+                </button>
+                <button class="col-select-btn" id="colSelectBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Spalten auswählen
+                </button>
+            </div>
+            <div class="toolbar-right">
+                <div class="preset-search-container">
+                    <label class="preset-label" for="presetSearch">Vorlage für Referenzwerte</label>
+                    <div class="preset-input-wrapper">
+                        <input type="text" id="presetSearch" class="preset-search-input" placeholder="Nach Vorlage suchen..." autocomplete="off">
+                        <div id="presetDropdown" class="preset-dropdown"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
 
@@ -900,25 +1224,80 @@
                     </div>
 
                     <div class="side-panel">
-                        <div class="grand-summary">
+                        <div class="day-summary">
                             <h3 class="summary-title" id="daySummaryTitle-{{ day.id }}">{{ day.name }} - Übersicht</h3>
                             <div class="summary-grid">
                                 {% for nut_id, nut_label in "kcal:kcal,protein:Protein,fat:Fett,omega3:Omega 3,carbs:KH,sugar:Zucker,fibre:Ballaststoffe,iron:Eisen,vitc:Vit C,magnesium:Magnesium,zinc:Zink,vitb12:Vit B12,vita:Vit A,calcium:Calcium,vitd:Vit D"|split_to_dict %}
                                 <div class="summary-item col-{{ nut_id }}">
                                     <span class="summary-label">{{ nut_label }}</span>
-                                    <span class="summary-val total-day-summary" data-day-id="{{ day.id }}" data-nut="{{ nut_id }}" id="total{{ nut_id|title }}-{{ day.id }}">0.0</span>
+                                    <div class="summary-values-wrapper">
+                                        {% with thresholds=plan.thresholds|get_item:nut_id %}
+                                        <input type="number" class="threshold-input threshold-min" data-nut="{{ nut_id }}" placeholder="min" oninput="syncThresholds(this)" value="{{ thresholds.min }}">
+                                        <span class="summary-val total-day-summary" data-day-id="{{ day.id }}" data-nut="{{ nut_id }}" id="total{{ nut_id|title }}-{{ day.id }}">0.0</span>
+                                        <input type="number" class="threshold-input threshold-max" data-nut="{{ nut_id }}" placeholder="max" oninput="syncThresholds(this)" value="{{ thresholds.max }}">
+                                        {% endwith %}
+                                    </div>
                                 </div>
-                                {% endfor %}
+                            {% endfor %}
                             </div>
+                            <button class="btn-secondary" onclick="openSavePresetModal()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                Als Vorlage für Referenzwerte speichern
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
+
+            <div class="meal-summary">
+                <h3 class="summary-title">Plan Übersicht (Total)</h3>
+                <div class="summary-grid">
+                    {% for nut_id, nut_label in "kcal:kcal,protein:Protein,fat:Fett,omega3:Omega 3,carbs:KH,sugar:Zucker,fibre:Ballaststoffe,iron:Eisen,vitc:Vit C,magnesium:Magnesium,zinc:Zink,vitb12:Vit B12,vita:Vit A,calcium:Calcium,vitd:Vit D"|split_to_dict %}
+                    <div class="summary-item col-{{ nut_id }}">
+                        <span class="summary-label">{{ nut_label }}</span>
+                        <div class="summary-values-wrapper">
+                            {% with thresholds=plan.thresholds|get_item:nut_id %}
+                            <input type="number" class="threshold-input threshold-min" data-nut="{{ nut_id }}" placeholder="min" oninput="syncThresholds(this)" value="{{ thresholds.min }}">
+                            <span class="summary-val total-plan-summary" data-nut="{{ nut_id }}">0.0</span>
+                            <input type="number" class="threshold-input threshold-max" data-nut="{{ nut_id }}" placeholder="max" oninput="syncThresholds(this)" value="{{ thresholds.max }}">
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="btn-secondary" onclick="openSavePresetModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Als Vorlage für Referenzwerte speichern
+                </button>
+            </div>
     </div>
 
     <div id="globalSearchDropdown" class="search-dropdown"></div>
+
+    <!-- Save Preset Modal -->
+    <div class="modal-overlay" id="savePresetModal">
+        <div class="modal-content">
+            <div class="modal-header">Vorlage speichern</div>
+            <div class="modal-body">
+                <input type="text" id="presetNameInput" class="modal-input" placeholder="Name der Vorlage (mind. 3 Zeichen)..." autocomplete="off">
+                <div id="presetNameError" class="modal-error"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-cancel" onclick="closeSavePresetModal()">Abbrechen</button>
+                <button class="btn-modal btn-modal-save" id="savePresetConfirmBtn" disabled onclick="confirmSavePreset()">Speichern</button>
+            </div>
+        </div>
+    </div>
 
     <div class="col-dropdown" id="colDropdown">
         <label class="col-option"><input type="checkbox" data-col="protein" checked> Protein</label>
@@ -984,6 +1363,28 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
                     body: JSON.stringify({ visible_nutrients: visibleNutrients })
                 });
+            } catch (e) { console.error(e); }
+        }
+
+        async function addDay() {
+            try {
+                const dayCount = document.querySelectorAll('.day-section').length;
+                const nextDayNum = dayCount + 1;
+                
+                const response = await fetch(`/api/mealplan-days/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ 
+                        meal_plan: PLAN_ID, 
+                        name: `Tag ${nextDayNum}` 
+                    })
+                });
+                
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error creating day');
+                }
             } catch (e) { console.error(e); }
         }
 
@@ -1105,6 +1506,53 @@
             }
         }
 
+        let thresholdDebounceTimer;
+        function syncThresholds(el) {
+            const nut = el.dataset.nut;
+            const value = el.value;
+            const isMin = el.classList.contains('threshold-min');
+            
+            // Sync all other inputs for same nutrient and same type (min/max)
+            const selector = isMin ? `.threshold-min[data-nut="${nut}"]` : `.threshold-max[data-nut="${nut}"]`;
+            document.querySelectorAll(selector).forEach(input => {
+                if (input !== el) input.value = value;
+            });
+            
+            setSyncStatus(false);
+            clearTimeout(thresholdDebounceTimer);
+            thresholdDebounceTimer = setTimeout(saveThresholds, 1000);
+
+            // Trigger re-calculation (for highlighting)
+            calculateTotals();
+        }
+
+        async function saveThresholds() {
+            const thresholds = {};
+            // We can just grab from one day summary since they are synced
+            const firstSummary = document.querySelector('.day-summary');
+            if (!firstSummary) return;
+
+            firstSummary.querySelectorAll('.threshold-input').forEach(input => {
+                const nut = input.dataset.nut;
+                if (!thresholds[nut]) thresholds[nut] = {};
+                const isMin = input.classList.contains('threshold-min');
+                const val = input.value ? parseFloat(input.value) : null;
+                if (isMin) thresholds[nut].min = val;
+                else thresholds[nut].max = val;
+            });
+
+            try {
+                const response = await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ thresholds })
+                });
+                if (response.ok) {
+                    setSyncStatus(true);
+                }
+            } catch (e) { console.error(e); }
+        }
+
         function updateNutrients(input) {
             const row = input.closest('tr');
             const amount = parseFloat(input.value) || 0;
@@ -1127,6 +1575,9 @@
         function calculateTotals() {
             const nutrients = ['kcal', 'protein', 'fat', 'carbs', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
             
+            const planTotals = {};
+            nutrients.forEach(n => planTotals[n] = 0);
+
             document.querySelectorAll('.day-section').forEach(daySec => {
                 const dayId = daySec.dataset.dayId;
                 const grandTotals = {};
@@ -1154,13 +1605,55 @@
                 nutrients.forEach(n => {
                     const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
                     const grandEl = daySec.querySelector(`.total-day-summary[data-nut="${n}"]`);
-                    if (grandEl) grandEl.innerText = grandTotals[n].toFixed(precision);
+                    if (grandEl) {
+                        const val = grandTotals[n];
+                        grandEl.innerText = val.toFixed(precision);
+                        
+                        // Check thresholds
+                        const minInput = daySec.querySelector(`.threshold-min[data-nut="${n}"]`);
+                        const maxInput = daySec.querySelector(`.threshold-max[data-nut="${n}"]`);
+                        const min = minInput && minInput.value ? parseFloat(minInput.value) : null;
+                        const max = maxInput && maxInput.value ? parseFloat(maxInput.value) : null;
+                        
+                        grandEl.classList.remove('status-under', 'status-over');
+                        if (min !== null && val < min) grandEl.classList.add('status-under');
+                        else if (max !== null && val > max) grandEl.classList.add('status-over');
+                    }
+                    
+                    // Accumulate to plan totals
+                    planTotals[n] += grandTotals[n];
 
                     mealTypes.forEach(m => {
                         const mealEl = daySec.querySelector(`.total-value-meal[data-meal="${m}"][data-nut="${n}"]`);
                         if (mealEl) mealEl.innerText = mealTotals[m][n].toFixed(precision);
                     });
                 });
+            });
+
+            const dayCount = document.querySelectorAll('.day-section').length;
+            if (dayCount > 0) {
+                nutrients.forEach(n => planTotals[n] /= dayCount);
+            }
+
+
+            // Update Plan Summary
+            nutrients.forEach(n => {
+                const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
+                const planEl = document.querySelector(`.total-plan-summary[data-nut="${n}"]`);
+                if (planEl) {
+                    const val = planTotals[n];
+                    planEl.innerText = val.toFixed(precision);
+                    
+                    // We can use the thresholds from any day summary as they are synced
+                    const minInput = document.querySelector(`.threshold-min[data-nut="${n}"]`);
+                    const maxInput = document.querySelector(`.threshold-max[data-nut="${n}"]`);
+                    const min = minInput && minInput.value ? parseFloat(minInput.value) : null;
+                    const max = maxInput && maxInput.value ? parseFloat(maxInput.value) : null;
+
+                    planEl.classList.remove('status-under', 'status-over');
+                    if (min !== null && val < min) planEl.classList.add('status-under');
+                    else if (max !== null && val > max) planEl.classList.add('status-over');
+                }
             });
         }
 
@@ -1255,6 +1748,218 @@
             }
         }
 
+        // Threshold Preset Search Logic
+        const presetSearch = document.getElementById('presetSearch');
+        const presetDropdown = document.getElementById('presetDropdown');
+        let presetDebounceTimer;
+
+        if (presetSearch) {
+            presetSearch.addEventListener('input', () => {
+                clearTimeout(presetDebounceTimer);
+                const query = presetSearch.value.trim();
+                if (query.length < 1) {
+                    presetDropdown.classList.remove('active');
+                    return;
+                }
+                presetDebounceTimer = setTimeout(() => fetchPresets(query), 300);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.preset-search-container')) {
+                    presetDropdown.classList.remove('active');
+                }
+            });
+        }
+
+        async function fetchPresets(query) {
+            try {
+                const response = await fetch(`/api/threshold-presets/?search=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                renderPresets(data.results || data);
+            } catch (e) { console.error(e); }
+        }
+
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const semanticKeywords = ['low', 'high', 'energy', 'cal', 'kcal', 'kj'];
+            const tokens = query.toLowerCase().split(/\s+/)
+                .filter(t => t.length >= 2 && !semanticKeywords.includes(t));
+            if (tokens.length === 0) return text;
+            const pattern = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+            if (!pattern) return text;
+            const regex = new RegExp(`(${pattern})`, 'gi');
+            return text.replace(regex, '<strong>$1</strong>');
+        }
+
+        function renderPresets(presets) {
+            if (!presets || presets.length === 0) {
+                presetDropdown.classList.remove('active');
+                return;
+            }
+            const query = presetSearch.value.trim();
+            presetDropdown.innerHTML = presets.map(p => `
+                <div class="preset-item" onclick='applyPreset(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
+                    ${highlightMatch(p.name, query)}
+                </div>
+            `).join('');
+            presetDropdown.classList.add('active');
+        }
+
+        const NUTRIENT_MAPPING = {
+            'kcal': { min: 'energy_in_kcal_min', max: 'energy_in_kcal_max' },
+            'protein': { min: 'protein_in_g_min', max: 'protein_in_g_max' },
+            'fat': { min: 'fat_in_g_min', max: 'fat_in_g_max' },
+            'carbs': { min: 'carbohydrate_in_g_min', max: 'carbohydrate_in_g_max' },
+            'fibre': { min: 'fibre_in_g_min', max: 'fibre_in_g_max' },
+            'iron': { min: 'iron_in_mg_min', max: 'iron_in_mg_max' },
+            'sugar': { min: 'sugar_in_g_min', max: 'sugar_in_g_max' },
+            'omega3': { min: 'omega3_in_g_min', max: 'omega3_in_g_max' },
+            'vitc': { min: 'vitc_in_mg_min', max: 'vitc_in_mg_max' },
+            'magnesium': { min: 'magnesium_in_mg_min', max: 'magnesium_in_mg_max' },
+            'zinc': { min: 'zinc_in_mg_min', max: 'zinc_in_mg_max' },
+            'vitb12': { min: 'vitb12_in_mug_min', max: 'vitb12_in_mug_max' },
+            'vita': { min: 'vita_in_mug_min', max: 'vita_in_mug_max' },
+            'calcium': { min: 'calcium_in_mg_min', max: 'calcium_in_mg_max' },
+            'vitd': { min: 'vitd_in_mug_min', max: 'vitd_in_mug_max' }
+        };
+
+        async function applyPreset(preset) {
+            if (!confirm(`Möchten Sie die Vorlage "${preset.name}" anwenden? Die aktuellen Referenzwerte werden überschrieben.`)) {
+                return;
+            }
+
+            presetDropdown.classList.remove('active');
+            presetSearch.value = "";
+
+            const newThresholds = {};
+            for (const [nut, fields] of Object.entries(NUTRIENT_MAPPING)) {
+                newThresholds[nut] = {
+                    min: preset[fields.min],
+                    max: preset[fields.max]
+                };
+            }
+
+            // Update UI
+            for (const [nut, vals] of Object.entries(newThresholds)) {
+                document.querySelectorAll(`.threshold-min[data-nut="${nut}"]`).forEach(el => el.value = vals.min || "");
+                document.querySelectorAll(`.threshold-max[data-nut="${nut}"]`).forEach(el => el.value = vals.max || "");
+            }
+
+            // Save to DB
+            try {
+                setSyncStatus(false);
+                const response = await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ thresholds: newThresholds })
+                });
+                if (response.ok) {
+                    setSyncStatus(true);
+                    calculateTotals(); // Refresh highlighting
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Save Preset Functionality
+        const saveModal = document.getElementById('savePresetModal');
+        const nameInput = document.getElementById('presetNameInput');
+        const nameError = document.getElementById('presetNameError');
+        const saveBtn = document.getElementById('savePresetConfirmBtn');
+        let nameValidationTimer;
+
+        function openSavePresetModal() {
+            saveModal.classList.add('active');
+            nameInput.value = "";
+            nameError.innerText = "";
+            saveBtn.disabled = true;
+            nameInput.focus();
+        }
+
+        function closeSavePresetModal() {
+            saveModal.classList.remove('active');
+        }
+
+        if (nameInput) {
+            nameInput.addEventListener('input', () => {
+                const val = nameInput.value.trim();
+                saveBtn.disabled = true;
+                if (val.length < 3) {
+                    nameError.innerText = "Der Name muss mindestens 3 Zeichen lang sein.";
+                    return;
+                }
+                nameError.innerText = "Prüfe Verfügbarkeit...";
+                clearTimeout(nameValidationTimer);
+                nameValidationTimer = setTimeout(() => validatePresetName(val), 500);
+            });
+            
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !saveBtn.disabled) confirmSavePreset();
+                if (e.key === 'Escape') closeSavePresetModal();
+            });
+        }
+
+        async function validatePresetName(name) {
+            try {
+                const response = await fetch(`/api/threshold-presets/?search=${encodeURIComponent(name)}`);
+                const data = await response.json();
+                const presets = data.results || data;
+                const exactMatch = presets.find(p => p.name.toLowerCase() === name.toLowerCase());
+                
+                if (exactMatch) {
+                    nameError.innerText = "Dieser Name ist bereits vergeben.";
+                    saveBtn.disabled = true;
+                } else {
+                    nameError.innerText = "";
+                    saveBtn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                nameError.innerText = "Fehler bei der Validierung.";
+            }
+        }
+
+        async function confirmSavePreset() {
+            const name = nameInput.value.trim();
+            if (name.length < 3) return;
+
+            const thresholds = {};
+            const firstSummary = document.querySelector('.day-summary');
+            if (!firstSummary) return;
+
+            const body = { name };
+            firstSummary.querySelectorAll('.threshold-input').forEach(input => {
+                const nut = input.dataset.nut;
+                const fieldInfo = NUTRIENT_MAPPING[nut];
+                if (!fieldInfo) return;
+                
+                const val = input.value ? parseFloat(input.value) : null;
+                const isMin = input.classList.contains('threshold-min');
+                if (isMin) body[fieldInfo.min] = val;
+                else body[fieldInfo.max] = val;
+            });
+
+            try {
+                saveBtn.disabled = true;
+                const response = await fetch('/api/threshold-presets/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) {
+                    closeSavePresetModal();
+                    alert(`Vorlage "${name}" wurde erfolgreich gespeichert.`);
+                } else {
+                    const errorData = await response.json();
+                    nameError.innerText = errorData.name ? errorData.name[0] : "Fehler beim Speichern.";
+                }
+            } catch (e) {
+                console.error(e);
+                nameError.innerText = "Netzwerkfehler beim Speichern.";
+            } finally {
+                saveBtn.disabled = false;
+            }
+        }
+
         function updateDropdownPosition() {
             if (!activeSearchCell) return;
             const dropdown = document.getElementById('globalSearchDropdown');
@@ -1287,13 +1992,14 @@
         }
 
         function renderDropdown(dropdown, results) {
+            const query = activeSearchCell ? activeSearchCell.querySelector('input').value.trim() : "";
             dropdown.innerHTML = '';
             if (results.length === 0) { dropdown.innerHTML = '<div class="search-item">No results</div>'; }
             else {
                 results.forEach(food => {
                     const item = document.createElement('div');
                     item.className = 'search-item';
-                    item.innerHTML = `<div><span class="name">${food.name}</span><span class="code">Code: ${food.bls_code}</span></div><div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>`;
+                    item.innerHTML = `<div><span class="name">${highlightMatch(food.name, query)}</span><span class="code">Code: ${food.bls_code}</span></div><div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>`;
                     item.addEventListener('mousedown', () => {
                         if (!activeSearchCell) return;
                         const cell = activeSearchCell;
@@ -1355,24 +2061,27 @@
             if (!tbody) return;
             const tr = document.createElement('tr');
             tr.className = 'ingredient-row';
+            
+            const isHidden = (col) => visibleNutrients.includes(col) ? '' : 'hidden-col';
+
             tr.innerHTML = `
                 <td><div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0"><span>Search Food...</span></div></td>
                 <td><input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)"></td>
                 <td><div class="cell-content kcal-cell">0.0</div></td>
-                <td class="col-protein"><div class="cell-content protein-cell">0.0</div></td>
-                <td class="col-fat"><div class="cell-content fat-cell">0.0</div></td>
-                <td class="col-omega3"><div class="cell-content omega3-cell">0.00</div></td>
-                <td class="col-carbs"><div class="cell-content carbs-cell">0.0</div></td>
-                <td class="col-sugar"><div class="cell-content sugar-cell">0.0</div></td>
-                <td class="col-fibre"><div class="cell-content fibre-cell">0.0</div></td>
-                <td class="col-iron"><div class="cell-content iron-cell">0.0</div></td>
-                <td class="col-vitc"><div class="cell-content vitc-cell">0.0</div></td>
-                <td class="col-magnesium"><div class="cell-content magnesium-cell">0.0</div></td>
-                <td class="col-zinc"><div class="cell-content zinc-cell">0.0</div></td>
-                <td class="col-vitb12"><div class="cell-content vitb12-cell">0.00</div></td>
-                <td class="col-vita"><div class="cell-content vita-cell">0.0</div></td>
-                <td class="col-calcium"><div class="cell-content calcium-cell">0.0</div></td>
-                <td class="col-vitd"><div class="cell-content vitd-cell">0.00</div></td>
+                <td class="col-protein ${isHidden('protein')}"><div class="cell-content protein-cell">0.0</div></td>
+                <td class="col-fat ${isHidden('fat')}"><div class="cell-content fat-cell">0.0</div></td>
+                <td class="col-omega3 ${isHidden('omega3')}"><div class="cell-content omega3-cell">0.00</div></td>
+                <td class="col-carbs ${isHidden('carbs')}"><div class="cell-content carbs-cell">0.0</div></td>
+                <td class="col-sugar ${isHidden('sugar')}"><div class="cell-content sugar-cell">0.0</div></td>
+                <td class="col-fibre ${isHidden('fibre')}"><div class="cell-content fibre-cell">0.0</div></td>
+                <td class="col-iron ${isHidden('iron')}"><div class="cell-content iron-cell">0.0</div></td>
+                <td class="col-vitc ${isHidden('vitc')}"><div class="cell-content vitc-cell">0.0</div></td>
+                <td class="col-magnesium ${isHidden('magnesium')}"><div class="cell-content magnesium-cell">0.0</div></td>
+                <td class="col-zinc ${isHidden('zinc')}"><div class="cell-content zinc-cell">0.0</div></td>
+                <td class="col-vitb12 ${isHidden('vitb12')}"><div class="cell-content vitb12-cell">0.00</div></td>
+                <td class="col-vita ${isHidden('vita')}"><div class="cell-content vita-cell">0.0</div></td>
+                <td class="col-calcium ${isHidden('calcium')}"><div class="cell-content calcium-cell">0.0</div></td>
+                <td class="col-vitd ${isHidden('vitd')}"><div class="cell-content vitd-cell">0.00</div></td>
                 <td class="actions-cell"><button class="delete-btn" onclick="deleteRow(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></td>
             `;
             tbody.appendChild(tr);

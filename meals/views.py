@@ -2,8 +2,11 @@ import re
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from rest_framework import viewsets, filters
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood
-from .serializers import FoodSerializer, MealPlanSerializer, MealPlanDaySerializer, MealPlanFoodSerializer
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
+from .serializers import (
+    FoodSerializer, MealPlanSerializer, MealPlanDaySerializer, 
+    MealPlanFoodSerializer, ThresholdPresetSerializer
+)
 
 from django.core.paginator import Paginator
 
@@ -55,14 +58,14 @@ def meal_plan_detail(request, pk=None):
         return redirect('meal-plan-detail', pk=parent_plan.pk)
     
     plan = MealPlan.objects.get(pk=pk)
-    days = plan.days.all().order_by('creation_date').prefetch_related('mealplanfood_set__food')
+    days = plan.days.all().order_by('-creation_date').prefetch_related('mealplanfood_set__food')
     
     meal_types = [
         ('breakfast', 'Frühstück'),
         ('lunch', 'Mittagessen'),
         ('dinner', 'Abendessen'),
     ]
-    return render(request, 'meals/mealplan_detail.html', {
+    return render(request, 'meals/mealplan_detail.html.j2', {
         'plan': plan,
         'days': days,
         'meal_types': meal_types
@@ -138,3 +141,7 @@ class MealPlanDayViewSet(viewsets.ModelViewSet):
 class MealPlanFoodViewSet(viewsets.ModelViewSet):
     queryset = MealPlanFood.objects.all()
     serializer_class = MealPlanFoodSerializer
+
+class ThresholdPresetViewSet(viewsets.ModelViewSet):
+    queryset = ThresholdPreset.objects.all()
+    serializer_class = ThresholdPresetSerializer
