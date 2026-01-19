@@ -27,7 +27,7 @@ class Food(models.Model):
         return self.name
 
 class ThresholdPreset(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     
     energy_in_kj_min = models.FloatField(null=True, blank=True)
     energy_in_kj_max = models.FloatField(null=True, blank=True)
