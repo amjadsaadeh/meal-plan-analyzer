@@ -480,15 +480,54 @@
             opacity: 0.7;
         }
 
-        .grand-summary {
+        .day-summary, .meal-summary {
             padding: 1.5rem;
             background: white;
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .day-summary {
             position: sticky;
             top: 75px;
             z-index: 100;
+        }
+
+        .meal-summary {
+            margin-top: 3rem;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .meal-summary .summary-grid {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .meal-summary .summary-item {
+            flex: 0 1 auto;
+            min-width: 110px;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .meal-summary .summary-label {
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+
+        .meal-summary .summary-val {
+            font-size: 1.1rem;
+            color: var(--primary);
         }
 
         .summary-title {
@@ -564,7 +603,7 @@
                 top: 0 !important;
             }
 
-            .grand-summary {
+            .day-summary {
                 position: relative;
                 top: 0 !important;
             }
@@ -760,6 +799,13 @@
         </div>
 
         <div class="toolbar">
+            <button class="col-select-btn" onclick="addDay()" style="margin-right: 12px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Tag hinzufügen
+            </button>
             <button class="col-select-btn" id="colSelectBtn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7"></rect>
@@ -900,7 +946,7 @@
                     </div>
 
                     <div class="side-panel">
-                        <div class="grand-summary">
+                        <div class="day-summary">
                             <h3 class="summary-title" id="daySummaryTitle-{{ day.id }}">{{ day.name }} - Übersicht</h3>
                             <div class="summary-grid">
                                 {% for nut_id, nut_label in "kcal:kcal,protein:Protein,fat:Fett,omega3:Omega 3,carbs:KH,sugar:Zucker,fibre:Ballaststoffe,iron:Eisen,vitc:Vit C,magnesium:Magnesium,zinc:Zink,vitb12:Vit B12,vita:Vit A,calcium:Calcium,vitd:Vit D"|split_to_dict %}
@@ -916,6 +962,18 @@
             </div>
             {% endfor %}
         </div>
+
+            <div class="meal-summary">
+                <h3 class="summary-title">Plan Übersicht (Total)</h3>
+                <div class="summary-grid">
+                    {% for nut_id, nut_label in "kcal:kcal,protein:Protein,fat:Fett,omega3:Omega 3,carbs:KH,sugar:Zucker,fibre:Ballaststoffe,iron:Eisen,vitc:Vit C,magnesium:Magnesium,zinc:Zink,vitb12:Vit B12,vita:Vit A,calcium:Calcium,vitd:Vit D"|split_to_dict %}
+                    <div class="summary-item col-{{ nut_id }}">
+                        <span class="summary-label">{{ nut_label }}</span>
+                        <span class="summary-val total-plan-summary" data-nut="{{ nut_id }}">0.0</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
     </div>
 
     <div id="globalSearchDropdown" class="search-dropdown"></div>
@@ -984,6 +1042,28 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
                     body: JSON.stringify({ visible_nutrients: visibleNutrients })
                 });
+            } catch (e) { console.error(e); }
+        }
+
+        async function addDay() {
+            try {
+                const dayCount = document.querySelectorAll('.day-section').length;
+                const nextDayNum = dayCount + 1;
+                
+                const response = await fetch(`/api/mealplan-days/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ 
+                        meal_plan: PLAN_ID, 
+                        name: `Tag ${nextDayNum}` 
+                    })
+                });
+                
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error creating day');
+                }
             } catch (e) { console.error(e); }
         }
 
@@ -1127,6 +1207,9 @@
         function calculateTotals() {
             const nutrients = ['kcal', 'protein', 'fat', 'carbs', 'fibre', 'iron', 'sugar', 'omega3', 'vitc', 'magnesium', 'zinc', 'vitb12', 'vita', 'calcium', 'vitd'];
             
+            const planTotals = {};
+            nutrients.forEach(n => planTotals[n] = 0);
+
             document.querySelectorAll('.day-section').forEach(daySec => {
                 const dayId = daySec.dataset.dayId;
                 const grandTotals = {};
@@ -1155,12 +1238,28 @@
                     const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
                     const grandEl = daySec.querySelector(`.total-day-summary[data-nut="${n}"]`);
                     if (grandEl) grandEl.innerText = grandTotals[n].toFixed(precision);
+                    
+                    // Accumulate to plan totals
+                    planTotals[n] += grandTotals[n];
 
                     mealTypes.forEach(m => {
                         const mealEl = daySec.querySelector(`.total-value-meal[data-meal="${m}"][data-nut="${n}"]`);
                         if (mealEl) mealEl.innerText = mealTotals[m][n].toFixed(precision);
                     });
                 });
+            });
+
+            const dayCount = document.querySelectorAll('.day-section').length;
+            if (dayCount > 0) {
+                nutrients.forEach(n => planTotals[n] /= dayCount);
+            }
+
+
+            // Update Plan Summary
+            nutrients.forEach(n => {
+                const precision = (n === 'omega3' || n === 'vitb12' || n === 'vitd') ? 2 : 1;
+                const planEl = document.querySelector(`.total-plan-summary[data-nut="${n}"]`);
+                if (planEl) planEl.innerText = planTotals[n].toFixed(precision);
             });
         }
 
@@ -1355,6 +1454,7 @@
             if (!tbody) return;
             const tr = document.createElement('tr');
             tr.className = 'ingredient-row';
+            
             tr.innerHTML = `
                 <td><div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0"><span>Search Food...</span></div></td>
                 <td><input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)"></td>
