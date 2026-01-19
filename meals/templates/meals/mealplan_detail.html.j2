@@ -1455,24 +1455,26 @@
             const tr = document.createElement('tr');
             tr.className = 'ingredient-row';
             
+            const isHidden = (col) => visibleNutrients.includes(col) ? '' : 'hidden-col';
+
             tr.innerHTML = `
                 <td><div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0"><span>Search Food...</span></div></td>
                 <td><input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)"></td>
                 <td><div class="cell-content kcal-cell">0.0</div></td>
-                <td class="col-protein"><div class="cell-content protein-cell">0.0</div></td>
-                <td class="col-fat"><div class="cell-content fat-cell">0.0</div></td>
-                <td class="col-omega3"><div class="cell-content omega3-cell">0.00</div></td>
-                <td class="col-carbs"><div class="cell-content carbs-cell">0.0</div></td>
-                <td class="col-sugar"><div class="cell-content sugar-cell">0.0</div></td>
-                <td class="col-fibre"><div class="cell-content fibre-cell">0.0</div></td>
-                <td class="col-iron"><div class="cell-content iron-cell">0.0</div></td>
-                <td class="col-vitc"><div class="cell-content vitc-cell">0.0</div></td>
-                <td class="col-magnesium"><div class="cell-content magnesium-cell">0.0</div></td>
-                <td class="col-zinc"><div class="cell-content zinc-cell">0.0</div></td>
-                <td class="col-vitb12"><div class="cell-content vitb12-cell">0.00</div></td>
-                <td class="col-vita"><div class="cell-content vita-cell">0.0</div></td>
-                <td class="col-calcium"><div class="cell-content calcium-cell">0.0</div></td>
-                <td class="col-vitd"><div class="cell-content vitd-cell">0.00</div></td>
+                <td class="col-protein ${isHidden('protein')}"><div class="cell-content protein-cell">0.0</div></td>
+                <td class="col-fat ${isHidden('fat')}"><div class="cell-content fat-cell">0.0</div></td>
+                <td class="col-omega3 ${isHidden('omega3')}"><div class="cell-content omega3-cell">0.00</div></td>
+                <td class="col-carbs ${isHidden('carbs')}"><div class="cell-content carbs-cell">0.0</div></td>
+                <td class="col-sugar ${isHidden('sugar')}"><div class="cell-content sugar-cell">0.0</div></td>
+                <td class="col-fibre ${isHidden('fibre')}"><div class="cell-content fibre-cell">0.0</div></td>
+                <td class="col-iron ${isHidden('iron')}"><div class="cell-content iron-cell">0.0</div></td>
+                <td class="col-vitc ${isHidden('vitc')}"><div class="cell-content vitc-cell">0.0</div></td>
+                <td class="col-magnesium ${isHidden('magnesium')}"><div class="cell-content magnesium-cell">0.0</div></td>
+                <td class="col-zinc ${isHidden('zinc')}"><div class="cell-content zinc-cell">0.0</div></td>
+                <td class="col-vitb12 ${isHidden('vitb12')}"><div class="cell-content vitb12-cell">0.00</div></td>
+                <td class="col-vita ${isHidden('vita')}"><div class="cell-content vita-cell">0.0</div></td>
+                <td class="col-calcium ${isHidden('calcium')}"><div class="cell-content calcium-cell">0.0</div></td>
+                <td class="col-vitd ${isHidden('vitd')}"><div class="cell-content vitd-cell">0.00</div></td>
                 <td class="actions-cell"><button class="delete-btn" onclick="deleteRow(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></td>
             `;
             tbody.appendChild(tr);
