@@ -680,9 +680,89 @@
         /* Toolbar & Column Selection */
         .toolbar {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
             position: relative;
+        }
+
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preset-search-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preset-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .preset-input-wrapper {
+            position: relative;
+        }
+
+        .preset-search-input {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px 12px;
+            border-radius: 10px;
+            width: 250px;
+            outline: none;
+            transition: all 0.2s;
+            color: var(--text-main);
+            box-shadow: var(--shadow);
+            font-size: 0.9rem;
+        }
+
+        .preset-search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .preset-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 3000;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .preset-dropdown.active {
+            display: block;
+        }
+
+        .preset-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            color: var(--text-main);
+            text-align: left;
+        }
+
+        .preset-item:last-child {
+            border-bottom: none;
+        }
+
+        .preset-item:hover {
+            background: var(--row-hover);
+            color: var(--primary);
         }
 
         .col-select-btn {
@@ -704,6 +784,129 @@
             color: var(--primary);
         }
 
+        .btn-secondary {
+            background: rgba(59, 163, 143, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--primary);
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-top: 1.5rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            text-align: left;
+        }
+
+        .modal-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .modal-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .modal-error {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-modal-cancel {
+            background: #f1f5f9;
+            color: var(--text-dim);
+        }
+
+        .btn-modal-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-modal-save {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-modal-save:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-modal-save:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
         .col-dropdown {
             position: fixed;
             background: white;
@@ -863,22 +1066,33 @@
         </div>
 
         <div class="toolbar">
-            <button class="col-select-btn" onclick="addDay()" style="margin-right: 12px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                Tag hinzufügen
-            </button>
-            <button class="col-select-btn" id="colSelectBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="14" width="7" height="7"></rect>
-                    <rect x="3" y="14" width="7" height="7"></rect>
-                </svg>
-                Spalten auswählen
-            </button>
+            <div class="toolbar-left">
+                <button class="col-select-btn" onclick="addDay()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Tag hinzufügen
+                </button>
+                <button class="col-select-btn" id="colSelectBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Spalten auswählen
+                </button>
+            </div>
+            <div class="toolbar-right">
+                <div class="preset-search-container">
+                    <label class="preset-label" for="presetSearch">Vorlage für Referenzwerte</label>
+                    <div class="preset-input-wrapper">
+                        <input type="text" id="presetSearch" class="preset-search-input" placeholder="Nach Vorlage suchen..." autocomplete="off">
+                        <div id="presetDropdown" class="preset-dropdown"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
 
@@ -1024,8 +1238,16 @@
                                         {% endwith %}
                                     </div>
                                 </div>
-                                {% endfor %}
+                            {% endfor %}
                             </div>
+                            <button class="btn-secondary" onclick="openSavePresetModal()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                Als Vorlage für Referenzwerte speichern
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1049,10 +1271,33 @@
                     </div>
                     {% endfor %}
                 </div>
+                <button class="btn-secondary" onclick="openSavePresetModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Als Vorlage für Referenzwerte speichern
+                </button>
             </div>
     </div>
 
     <div id="globalSearchDropdown" class="search-dropdown"></div>
+
+    <!-- Save Preset Modal -->
+    <div class="modal-overlay" id="savePresetModal">
+        <div class="modal-content">
+            <div class="modal-header">Vorlage speichern</div>
+            <div class="modal-body">
+                <input type="text" id="presetNameInput" class="modal-input" placeholder="Name der Vorlage (mind. 3 Zeichen)..." autocomplete="off">
+                <div id="presetNameError" class="modal-error"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-modal-cancel" onclick="closeSavePresetModal()">Abbrechen</button>
+                <button class="btn-modal btn-modal-save" id="savePresetConfirmBtn" disabled onclick="confirmSavePreset()">Speichern</button>
+            </div>
+        </div>
+    </div>
 
     <div class="col-dropdown" id="colDropdown">
         <label class="col-option"><input type="checkbox" data-col="protein" checked> Protein</label>
@@ -1503,6 +1748,218 @@
             }
         }
 
+        // Threshold Preset Search Logic
+        const presetSearch = document.getElementById('presetSearch');
+        const presetDropdown = document.getElementById('presetDropdown');
+        let presetDebounceTimer;
+
+        if (presetSearch) {
+            presetSearch.addEventListener('input', () => {
+                clearTimeout(presetDebounceTimer);
+                const query = presetSearch.value.trim();
+                if (query.length < 1) {
+                    presetDropdown.classList.remove('active');
+                    return;
+                }
+                presetDebounceTimer = setTimeout(() => fetchPresets(query), 300);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.preset-search-container')) {
+                    presetDropdown.classList.remove('active');
+                }
+            });
+        }
+
+        async function fetchPresets(query) {
+            try {
+                const response = await fetch(`/api/threshold-presets/?search=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                renderPresets(data.results || data);
+            } catch (e) { console.error(e); }
+        }
+
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const semanticKeywords = ['low', 'high', 'energy', 'cal', 'kcal', 'kj'];
+            const tokens = query.toLowerCase().split(/\s+/)
+                .filter(t => t.length >= 2 && !semanticKeywords.includes(t));
+            if (tokens.length === 0) return text;
+            const pattern = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+            if (!pattern) return text;
+            const regex = new RegExp(`(${pattern})`, 'gi');
+            return text.replace(regex, '<strong>$1</strong>');
+        }
+
+        function renderPresets(presets) {
+            if (!presets || presets.length === 0) {
+                presetDropdown.classList.remove('active');
+                return;
+            }
+            const query = presetSearch.value.trim();
+            presetDropdown.innerHTML = presets.map(p => `
+                <div class="preset-item" onclick='applyPreset(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
+                    ${highlightMatch(p.name, query)}
+                </div>
+            `).join('');
+            presetDropdown.classList.add('active');
+        }
+
+        const NUTRIENT_MAPPING = {
+            'kcal': { min: 'energy_in_kcal_min', max: 'energy_in_kcal_max' },
+            'protein': { min: 'protein_in_g_min', max: 'protein_in_g_max' },
+            'fat': { min: 'fat_in_g_min', max: 'fat_in_g_max' },
+            'carbs': { min: 'carbohydrate_in_g_min', max: 'carbohydrate_in_g_max' },
+            'fibre': { min: 'fibre_in_g_min', max: 'fibre_in_g_max' },
+            'iron': { min: 'iron_in_mg_min', max: 'iron_in_mg_max' },
+            'sugar': { min: 'sugar_in_g_min', max: 'sugar_in_g_max' },
+            'omega3': { min: 'omega3_in_g_min', max: 'omega3_in_g_max' },
+            'vitc': { min: 'vitc_in_mg_min', max: 'vitc_in_mg_max' },
+            'magnesium': { min: 'magnesium_in_mg_min', max: 'magnesium_in_mg_max' },
+            'zinc': { min: 'zinc_in_mg_min', max: 'zinc_in_mg_max' },
+            'vitb12': { min: 'vitb12_in_mug_min', max: 'vitb12_in_mug_max' },
+            'vita': { min: 'vita_in_mug_min', max: 'vita_in_mug_max' },
+            'calcium': { min: 'calcium_in_mg_min', max: 'calcium_in_mg_max' },
+            'vitd': { min: 'vitd_in_mug_min', max: 'vitd_in_mug_max' }
+        };
+
+        async function applyPreset(preset) {
+            if (!confirm(`Möchten Sie die Vorlage "${preset.name}" anwenden? Die aktuellen Referenzwerte werden überschrieben.`)) {
+                return;
+            }
+
+            presetDropdown.classList.remove('active');
+            presetSearch.value = "";
+
+            const newThresholds = {};
+            for (const [nut, fields] of Object.entries(NUTRIENT_MAPPING)) {
+                newThresholds[nut] = {
+                    min: preset[fields.min],
+                    max: preset[fields.max]
+                };
+            }
+
+            // Update UI
+            for (const [nut, vals] of Object.entries(newThresholds)) {
+                document.querySelectorAll(`.threshold-min[data-nut="${nut}"]`).forEach(el => el.value = vals.min || "");
+                document.querySelectorAll(`.threshold-max[data-nut="${nut}"]`).forEach(el => el.value = vals.max || "");
+            }
+
+            // Save to DB
+            try {
+                setSyncStatus(false);
+                const response = await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ thresholds: newThresholds })
+                });
+                if (response.ok) {
+                    setSyncStatus(true);
+                    calculateTotals(); // Refresh highlighting
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Save Preset Functionality
+        const saveModal = document.getElementById('savePresetModal');
+        const nameInput = document.getElementById('presetNameInput');
+        const nameError = document.getElementById('presetNameError');
+        const saveBtn = document.getElementById('savePresetConfirmBtn');
+        let nameValidationTimer;
+
+        function openSavePresetModal() {
+            saveModal.classList.add('active');
+            nameInput.value = "";
+            nameError.innerText = "";
+            saveBtn.disabled = true;
+            nameInput.focus();
+        }
+
+        function closeSavePresetModal() {
+            saveModal.classList.remove('active');
+        }
+
+        if (nameInput) {
+            nameInput.addEventListener('input', () => {
+                const val = nameInput.value.trim();
+                saveBtn.disabled = true;
+                if (val.length < 3) {
+                    nameError.innerText = "Der Name muss mindestens 3 Zeichen lang sein.";
+                    return;
+                }
+                nameError.innerText = "Prüfe Verfügbarkeit...";
+                clearTimeout(nameValidationTimer);
+                nameValidationTimer = setTimeout(() => validatePresetName(val), 500);
+            });
+            
+            nameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !saveBtn.disabled) confirmSavePreset();
+                if (e.key === 'Escape') closeSavePresetModal();
+            });
+        }
+
+        async function validatePresetName(name) {
+            try {
+                const response = await fetch(`/api/threshold-presets/?search=${encodeURIComponent(name)}`);
+                const data = await response.json();
+                const presets = data.results || data;
+                const exactMatch = presets.find(p => p.name.toLowerCase() === name.toLowerCase());
+                
+                if (exactMatch) {
+                    nameError.innerText = "Dieser Name ist bereits vergeben.";
+                    saveBtn.disabled = true;
+                } else {
+                    nameError.innerText = "";
+                    saveBtn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                nameError.innerText = "Fehler bei der Validierung.";
+            }
+        }
+
+        async function confirmSavePreset() {
+            const name = nameInput.value.trim();
+            if (name.length < 3) return;
+
+            const thresholds = {};
+            const firstSummary = document.querySelector('.day-summary');
+            if (!firstSummary) return;
+
+            const body = { name };
+            firstSummary.querySelectorAll('.threshold-input').forEach(input => {
+                const nut = input.dataset.nut;
+                const fieldInfo = NUTRIENT_MAPPING[nut];
+                if (!fieldInfo) return;
+                
+                const val = input.value ? parseFloat(input.value) : null;
+                const isMin = input.classList.contains('threshold-min');
+                if (isMin) body[fieldInfo.min] = val;
+                else body[fieldInfo.max] = val;
+            });
+
+            try {
+                saveBtn.disabled = true;
+                const response = await fetch('/api/threshold-presets/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) {
+                    closeSavePresetModal();
+                    alert(`Vorlage "${name}" wurde erfolgreich gespeichert.`);
+                } else {
+                    const errorData = await response.json();
+                    nameError.innerText = errorData.name ? errorData.name[0] : "Fehler beim Speichern.";
+                }
+            } catch (e) {
+                console.error(e);
+                nameError.innerText = "Netzwerkfehler beim Speichern.";
+            } finally {
+                saveBtn.disabled = false;
+            }
+        }
+
         function updateDropdownPosition() {
             if (!activeSearchCell) return;
             const dropdown = document.getElementById('globalSearchDropdown');
@@ -1535,13 +1992,14 @@
         }
 
         function renderDropdown(dropdown, results) {
+            const query = activeSearchCell ? activeSearchCell.querySelector('input').value.trim() : "";
             dropdown.innerHTML = '';
             if (results.length === 0) { dropdown.innerHTML = '<div class="search-item">No results</div>'; }
             else {
                 results.forEach(food => {
                     const item = document.createElement('div');
                     item.className = 'search-item';
-                    item.innerHTML = `<div><span class="name">${food.name}</span><span class="code">Code: ${food.bls_code}</span></div><div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>`;
+                    item.innerHTML = `<div><span class="name">${highlightMatch(food.name, query)}</span><span class="code">Code: ${food.bls_code}</span></div><div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>`;
                     item.addEventListener('mousedown', () => {
                         if (!activeSearchCell) return;
                         const cell = activeSearchCell;
