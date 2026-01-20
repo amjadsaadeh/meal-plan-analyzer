@@ -1,6 +1,6 @@
 NUTRIENTS = {
     'energy_in_kcal': {
-        'label': 'Energy',
+        'label': 'Energie',
         'unit': 'kcal',
         'food_key': 'energy_in_kcal_per_100g',
         'precision': 1
@@ -12,7 +12,7 @@ NUTRIENTS = {
         'precision': 1
     },
     'fat_in_g': {
-        'label': 'Fat',
+        'label': 'Fett',
         'unit': 'g',
         'food_key': 'fat_in_g_per_100g',
         'precision': 1
@@ -24,25 +24,25 @@ NUTRIENTS = {
         'precision': 2
     },
     'carbohydrate_in_g': {
-        'label': 'Carbohydrate',
+        'label': 'Kohlenhydrate',
         'unit': 'g',
         'food_key': 'carbohydrate_in_g_per_100g',
         'precision': 1
     },
     'sugar_in_g': {
-        'label': 'Sugar',
+        'label': 'Zucker',
         'unit': 'g',
         'food_key': 'sugar_in_g_per_100g',
         'precision': 1
     },
     'fibre_in_g': {
-        'label': 'Fibre',
+        'label': 'Ballaststoffe',
         'unit': 'g',
         'food_key': 'fibre_in_g_per_100g',
         'precision': 1
     },
     'iron_in_mg': {
-        'label': 'Iron',
+        'label': 'Eisen',
         'unit': 'mg',
         'food_key': 'iron_in_mg_per_100g',
         'precision': 1
@@ -60,7 +60,7 @@ NUTRIENTS = {
         'precision': 1
     },
     'zinc_in_mg': {
-        'label': 'Zinc',
+        'label': 'Zink',
         'unit': 'mg',
         'food_key': 'zinc_in_mg_per_100g',
         'precision': 1
