@@ -143,6 +143,26 @@
             font-size: 12pt;
         }
 
+        .text-right { text-align: right !important; }
+        .text-center { text-align: center !important; }
+
+        .num-right {
+            text-align: right !important;
+            padding-right: 5px !important;
+        }
+        
+        .unit-col {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9em;
+            width: 40px;
+        }
+
+        .num-left {
+            text-align: left;
+            padding-left: 5px !important;
+        }
+
     </style>
 </head>
 <body>
@@ -156,7 +176,8 @@
             <thead>
                 <tr>
                     <th>Wert</th>
-                    <th>Durchschnitt</th>
+                    <th class="text-right">Durchschnitt</th>
+                    <th class="text-center">Einheit</th>
                     <th>Referenz</th>
                     <th>Status</th>
                 </tr>
@@ -165,10 +186,11 @@
                 {% for nutrient in summary_nutrients %}
                 <tr>
                     <td>{{ nutrient.label }}</td>
-                    <td>{{ nutrient.value|floatformat:1 }} {{ nutrient.unit }}</td>
-                    <td>
+                    <td class="num-right">{{ nutrient.value|floatformat:1 }}</td>
+                    <td class="unit-col">{{ nutrient.unit }}</td>
+                    <td class="num-left">
                         {% if nutrient.threshold_label %}
-                            {{ nutrient.threshold_label }} {{ nutrient.unit }}
+                            {{ nutrient.threshold_label }}
                         {% else %}
                             -
                         {% endif %}

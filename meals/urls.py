@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     FoodViewSet, MealPlanViewSet, MealPlanDayViewSet, 
     MealPlanFoodViewSet, ThresholdPresetViewSet, index, 
-    meal_plan_list, meal_plan_detail, meal_plan_pdf
+    meal_plan_list, meal_plan_detail, meal_plan_pdf,
+    meal_plan_preview
 )
 
 router = DefaultRouter()
@@ -18,6 +19,7 @@ urlpatterns = [
     path('meal-plan/new/', meal_plan_detail, name='meal-plan-create'),
     path('meal-plan/<int:pk>/', meal_plan_detail, name='meal-plan-detail'),
     path('meal-plan/<int:pk>/pdf/', meal_plan_pdf, name='meal-plan-pdf'),
+    path('meal-plan/<int:pk>/preview/', meal_plan_preview, name='meal-plan-preview'),
     path('search/', index, name='food-search'),
     path('api/', include(router.urls)),
 ]

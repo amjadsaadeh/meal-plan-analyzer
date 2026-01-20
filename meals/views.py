@@ -152,14 +152,12 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 import weasyprint
 
-def meal_plan_pdf(request, pk):
+def get_meal_plan_context(pk):
     plan = MealPlan.objects.get(pk=pk)
     days = plan.days.all().order_by('creation_date').prefetch_related('mealplanfood_set__food')
     
     # 1. Define Nutrients
     visible_keys = plan.visible_nutrients
-    # visible_nutrients from plan might have old names, we should handle that or assume update
-    # For now, let's just use NUTRIENTS
     
     visible_nutrients = []
     for key, data in NUTRIENTS.items():
@@ -209,12 +207,6 @@ def meal_plan_pdf(request, pk):
         days_data.append(day_info)
 
     # 3. Reference Logic & Summary
-    # Logic:
-    # - If only min -> ref = min
-    # - If only max -> ref = max
-    # - If both -> ref = (min + max) / 2
-    # - Color coding: Warning if < min or > max. OK if in between.
-    
     summary_nutrients = []
     num_days = len(days) if len(days) > 0 else 1
     
@@ -228,7 +220,6 @@ def meal_plan_pdf(request, pk):
         min_val = threshold_data.get('min')
         max_val = threshold_data.get('max')
         
-        # Convert explicit None or empty strings to None
         if min_val == '': min_val = None
         if max_val == '': max_val = None
         
@@ -252,16 +243,12 @@ def meal_plan_pdf(request, pk):
         if ref_val and ref_val > 0:
             percentage = (avg_val / ref_val) * 100
             
-        # Status
         is_ok = True
         if min_val is not None and avg_val < min_val:
             is_ok = False
         if max_val is not None and avg_val > max_val:
             is_ok = False
             
-        # Cap percentage for bar (visual only)
-        bar_percentage = min(percentage, 100)
-        
         summary_nutrients.append({
             'label': n['label'],
             'unit': n['unit'],
@@ -272,7 +259,7 @@ def meal_plan_pdf(request, pk):
             'is_ok': is_ok
         })
 
-    context = {
+    return {
         'plan': plan,
         'days_count': num_days,
         'visible_nutrients': visible_nutrients,
@@ -280,11 +267,17 @@ def meal_plan_pdf(request, pk):
         'days_data': days_data,
     }
 
+def meal_plan_preview(request, pk):
+    context = get_meal_plan_context(pk)
+    return render(request, 'meals/mealplan_pdf.html.j2', context)
+
+def meal_plan_pdf(request, pk):
+    context = get_meal_plan_context(pk)
     html_string = render_to_string('meals/mealplan_pdf.html.j2', context)
     
     html = weasyprint.HTML(string=html_string)
     pdf = html.write_pdf()
     
     response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="mealplan_{plan.id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="mealplan_{context["plan"].id}.pdf"'
     return response
