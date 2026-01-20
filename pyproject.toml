@@ -14,6 +14,7 @@ dependencies = [
     "whitenoise>=6.8.2",
     "django-environ>=0.11.2",
     "weasyprint>=68.0",
+    "jsonschema>=4.26.0",
 ]
 
 [dependency-groups]

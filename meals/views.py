@@ -7,6 +7,7 @@ from .serializers import (
     FoodSerializer, MealPlanSerializer, MealPlanDaySerializer, 
     MealPlanFoodSerializer, ThresholdPresetSerializer
 )
+from .nutrients import NUTRIENTS
 
 from django.core.paginator import Paginator
 
@@ -156,31 +157,23 @@ def meal_plan_pdf(request, pk):
     days = plan.days.all().order_by('creation_date').prefetch_related('mealplanfood_set__food')
     
     # 1. Define Nutrients
-    nutrients_map = [
-        {'key': 'energy_in_kcal', 'label': 'Energy', 'unit': 'kcal', 'food_key': 'energy_in_kcal_per_100g'},
-        {'key': 'protein', 'label': 'Protein', 'unit': 'g', 'food_key': 'protein_in_g_per_100g'},
-        {'key': 'fat', 'label': 'Fat', 'unit': 'g', 'food_key': 'fat_in_g_per_100g'},
-        {'key': 'carbohydrate', 'label': 'Carbohydrate', 'unit': 'g', 'food_key': 'carbohydrate_in_g_per_100g'},
-        {'key': 'sugar', 'label': 'Sugar', 'unit': 'g', 'food_key': 'sugar_in_g_per_100g'},
-        {'key': 'fibre', 'label': 'Fibre', 'unit': 'g', 'food_key': 'fibre_in_g_per_100g'},
-        {'key': 'iron', 'label': 'Iron', 'unit': 'mg', 'food_key': 'iron_in_mg_per_100g'},
-        {'key': 'omega3', 'label': 'Omega-3', 'unit': 'g', 'food_key': 'omega3_in_g_per_100g'},
-        {'key': 'vitc', 'label': 'Vit C', 'unit': 'mg', 'food_key': 'vitc_in_mg_per_100g'},
-        {'key': 'magnesium', 'label': 'Magnesium', 'unit': 'mg', 'food_key': 'magnesium_in_mg_per_100g'},
-        {'key': 'zinc', 'label': 'Zinc', 'unit': 'mg', 'food_key': 'zinc_in_mg_per_100g'},
-        {'key': 'vitb12', 'label': 'Vit B12', 'unit': 'µg', 'food_key': 'vitb12_in_mug_per_100g'},
-        {'key': 'vita', 'label': 'Vit A', 'unit': 'µg', 'food_key': 'vita_in_mug_per_100g'},
-        {'key': 'calcium', 'label': 'Calcium', 'unit': 'mg', 'food_key': 'calcium_in_mg_per_100g'},
-        {'key': 'vitd', 'label': 'Vit D', 'unit': 'µg', 'food_key': 'vitd_in_mug_per_100g'},
-    ]
-    
-    # Only show enabled nutrients + kcal which is always on
     visible_keys = plan.visible_nutrients
-    visible_nutrients = [n for n in nutrients_map if n['key'] in visible_keys or n['key'] == 'energy_in_kcal']
+    # visible_nutrients from plan might have old names, we should handle that or assume update
+    # For now, let's just use NUTRIENTS
+    
+    visible_nutrients = []
+    for key, data in NUTRIENTS.items():
+        if key in visible_keys or key == 'energy_in_kcal':
+            visible_nutrients.append({
+                'key': key,
+                'label': data['label'],
+                'unit': data['unit'],
+                'food_key': data['food_key']
+            })
     
     # 2. Calculate Daily Data
     days_data = []
-    total_nutrients_sum = {n['key']: 0.0 for n in nutrients_map}
+    total_nutrients_sum = {key: 0.0 for key in NUTRIENTS.keys()}
     
     meal_type_labels = {
         'breakfast': 'Frühstück',
@@ -228,37 +221,7 @@ def meal_plan_pdf(request, pk):
     for n in visible_nutrients:
         avg_val = total_nutrients_sum[n['key']] / num_days
         
-        # Determine thresholds
-        # Thresholds format in plan.thresholds: "energy_in_kcal_min": val
-        # Mapping: map 'energy_in_kcal' (key) to 'energy_in_kcal_min'
-        
-        # Special case: map 'energy_in_kcal' to stored key 'energy_in_kcal' or similar? 
-        # Looking at previous context/ThresholdPreset, keys are likely: "energy_in_kcal_min" etc.
-        # But our nutrients_map key for kcal is 'energy_in_kcal'.
-        
-        base_key = n['key']
-        threshold_key_map = {
-            'energy_in_kcal': 'kcal',
-            'protein_in_g': 'protein',
-            'fat_in_g': 'fat',
-            'carbohydrate_in_g': 'carbohydrate',
-            'fibre_in_g': 'fibre',
-            'sugar_in_g': 'sugar',
-            'iron_in_mg': 'iron',
-            'omega3_in_g': 'omega3',
-            'vitc_in_mg': 'vitc',
-            'magnesium_in_mg': 'magnesium',
-            'zinc_in_mg': 'zinc',
-            'vitb12_in_mug': 'vitb12',
-            'vita_in_mug': 'vita',
-            'calcium_in_mg': 'calcium',
-            'vitd_in_mug': 'vitd',
-        }
-        
-        print(base_key)
-        threshold_base = threshold_key_map.get(base_key)
-
-        threshold_data = plan.thresholds.get(threshold_base)
+        threshold_data = plan.thresholds.get(n['key'])
         if not isinstance(threshold_data, dict):
             threshold_data = {}
         
