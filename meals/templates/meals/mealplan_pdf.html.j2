@@ -11,7 +11,7 @@
             size: A4 portrait;
             margin: 2cm;
             @bottom-center {
-                content: "Page " counter(page);
+                content: "Seite " counter(page);
                 font-family: 'Outfit', sans-serif;
                 font-size: 10pt;
             }
@@ -149,7 +149,7 @@
 
     <!-- Summary Page -->
     <div class="summary-page">
-        <h1>Meal Plan Summary: {{ plan.name }}</h1>
+        <h1>Planübersicht: {{ plan.name }}</h1>
         <p><strong>Durchschnittliche Aufnahme pro Tag</strong> (über {{ days_count }} Tage)</p>
         
         <table class="summary-table">
@@ -199,8 +199,8 @@
             <table class="day-table">
                 <thead>
                     <tr>
-                        <th style="width: 40%;">Food</th>
-                        <th style="width: 10%;">Amount (g)</th>
+                        <th style="width: 40%;">Lebensmittel</th>
+                        <th style="width: 10%;">Menge (g)</th>
                         {% for nutrient in visible_nutrients %}
                             <th class="text-right">{{ nutrient.label }}<br><small>({{ nutrient.unit }})</small></th>
                         {% endfor %}
