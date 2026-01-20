@@ -1,0 +1,231 @@
+{% load static meal_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ plan.name }} - PDF Export</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+
+        @page {
+            size: A4 portrait;
+            margin: 2cm;
+            @bottom-center {
+                content: "Page " counter(page);
+                font-family: 'Outfit', sans-serif;
+                font-size: 10pt;
+            }
+        }
+
+        @page landscape {
+            size: A4 landscape;
+            margin: 1.5cm;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: #2c3338;
+            font-size: 11pt;
+            line-height: 1.4;
+        }
+
+        h1 {
+            font-size: 24pt;
+            color: #3ba38f;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3ba38f;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 18pt;
+            color: #3ba38f;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 14pt;
+            color: #64748b;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+
+        /* Summary Page */
+        .summary-page {
+            page: portrait;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .summary-table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .bar-container {
+            width: 100px;
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .bar {
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        .status-ok { color: #10b981; }
+        .status-warn { color: #f59e0b; }
+        .status-alert { color: #ef4444; }
+        
+        .bar-ok { background-color: #10b981; }
+        .bar-warn { background-color: #f59e0b; }
+        .bar-alert { background-color: #ef4444; }
+
+        /* Day Pages */
+        .day-container {
+            page: landscape;
+            page-break-before: always;
+        }
+
+        .day-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 10pt;
+        }
+
+        .day-table th, .day-table td {
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .day-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .day-table td {
+            vertical-align: top;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .total-row {
+            background-color: #f0fdf9;
+            font-weight: 600;
+        }
+        
+        .meal-type-header {
+            background-color: rgba(59, 163, 143, 0.1) !important;
+            color: #2d8170;
+            font-size: 12pt;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Summary Page -->
+    <div class="summary-page">
+        <h1>Meal Plan Summary: {{ plan.name }}</h1>
+        <p><strong>Durchschnittliche Aufnahme pro Tag</strong> (über {{ days_count }} Tage)</p>
+        
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>Wert</th>
+                    <th>Durchschnitt</th>
+                    <th>Referenz</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nutrient in summary_nutrients %}
+                <tr>
+                    <td>{{ nutrient.label }}</td>
+                    <td>{{ nutrient.value|floatformat:1 }} {{ nutrient.unit }}</td>
+                    <td>
+                        {% if nutrient.threshold_label %}
+                            {{ nutrient.threshold_label }} {{ nutrient.unit }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="bar-container">
+                            <div class="bar {% if nutrient.is_ok %}bar-ok{% else %}bar-alert{% endif %}" style="width: {{ nutrient.percentage }}%;"></div>
+                        </div>
+                        <span class="{% if nutrient.is_ok %}status-ok{% else %}status-alert{% endif %}">
+                            {{ nutrient.percentage }}%
+                        </span>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Day Pages -->
+    {% for day in days_data %}
+    <div class="day-container">
+        <h1>{{ day.name }}</h1>
+        
+        {% for meal_type, foods in day.meals.items %}
+            {% if foods %}
+            <h3>{{ meal_type }}</h3>
+            <table class="day-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Food</th>
+                        <th style="width: 10%;">Amount (g)</th>
+                        {% for nutrient in visible_nutrients %}
+                            <th class="text-right">{{ nutrient.label }}<br><small>({{ nutrient.unit }})</small></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in foods %}
+                    <tr>
+                        <td>{{ item.food.name }}</td>
+                        <td class="text-center">{{ item.amount_in_g }}</td>
+                        {% for nutrient in visible_nutrients %}
+                            <td class="text-right">{{ item.nutrients|get_item:nutrient.key|floatformat:1 }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Daily Totals could go here if needed, but wasn't explicitly requested for the day detail pages, only summary on top. 
+             However, "Each day of the meal plan also got a static table..." usually implies just the list. 
+             I'll stick to the list. -->
+    </div>
+    {% endfor %}
+
+</body>
+</html>
