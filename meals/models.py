@@ -1,4 +1,8 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+import jsonschema
+from .nutrients import THRESHOLD_SCHEMA
+
 
 class Food(models.Model):
     bls_code = models.CharField(max_length=50, unique=True)
@@ -93,6 +97,48 @@ class MealPlan(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        super().clean()
+        
+        # Migrate old nutrient names if present
+        migration_map = {
+            'protein': 'protein_in_g',
+            'fat': 'fat_in_g',
+            'omega3': 'omega3_in_g',
+            'carbs': 'carbohydrate_in_g',
+            'sugar': 'sugar_in_g',
+            'fibre': 'fibre_in_g',
+            'iron': 'iron_in_mg',
+            'vitc': 'vitc_in_mg',
+            'magnesium': 'magnesium_in_mg',
+            'zinc': 'zinc_in_mg',
+            'vitb12': 'vitb12_in_mug',
+            'vita': 'vita_in_mug',
+            'calcium': 'calcium_in_mg',
+            'vitd': 'vitd_in_mug',
+            'kcal': 'energy_in_kcal'
+        }
+
+        if self.visible_nutrients:
+            self.visible_nutrients = [migration_map.get(n, n) for n in self.visible_nutrients]
+        
+        if self.thresholds:
+            new_thresholds = {}
+            for k, v in self.thresholds.items():
+                new_key = migration_map.get(k, k)
+                new_thresholds[new_key] = v
+            self.thresholds = new_thresholds
+
+            try:
+                jsonschema.validate(instance=self.thresholds, schema=THRESHOLD_SCHEMA)
+            except jsonschema.ValidationError as e:
+                raise ValidationError(f"Invalid thresholds format: {e.message}")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
 
 class MealPlanDay(models.Model):
     name = models.CharField(max_length=255, default="Neuer Tag")
