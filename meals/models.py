@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 import jsonschema
-from .nutrients import THRESHOLD_SCHEMA
+from .nutrients import THRESHOLD_SCHEMA, NUTRIENT_IDS
 
 
 class Food(models.Model):
@@ -85,11 +85,16 @@ class ThresholdPreset(models.Model):
         return self.name
 
 
+
+def get_default_visible_nutrients():
+    return list(NUTRIENT_IDS)
+
+
 class MealPlan(models.Model):
     name = models.CharField(max_length=255, default="Neuer Plan")
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
-    visible_nutrients = models.JSONField(default=list, blank=True)
+    visible_nutrients = models.JSONField(default=get_default_visible_nutrients, blank=True)
     thresholds = models.JSONField(default=dict, blank=True)
 
     class Meta:

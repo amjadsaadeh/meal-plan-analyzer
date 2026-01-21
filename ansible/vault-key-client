@@ -1,5 +1,15 @@
 #! /bin/bash
 
+if [[ -z "$KEEPASS_DB_PATH" ]]; then
+    echo "KEEPASS_DB_PATH environment variable is not set." $(tty)
+    exit 1
+fi
+
+if [[ -z "$KEEPASS_CMD" ]]; then
+    echo "KEEPASS_CMD environment variable is not set." $(tty)
+    exit 1
+fi
+
 if [[ -z "$1" ]]; then
     echo "--vault-id option is missing." $(tty)
     echo "Usage: $0 --vault-id <entry_name>" $(tty)

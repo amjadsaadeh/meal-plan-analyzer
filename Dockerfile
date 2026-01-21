@@ -21,6 +21,17 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
+# Install system dependencies for WeasyPrint
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libpango-1.0-0 \
+    libharfbuzz0b \
+    libpangoft2-1.0-0 \
+    libpangocairo-1.0-0 \
+    libcairo2 \
+    libgdk-pixbuf2.0-0 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Copy the environment from the builder
 COPY --from=builder /app/.venv /app/.venv
 
