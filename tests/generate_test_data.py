@@ -1,43 +1,68 @@
-import json
+import openpyxl
 import random
-import uuid
-from faker import Faker
+import os
 
-fake = Faker()
-
-def generate_food_fixtures(count=100):
-    foods = []
-    for i in range(count):
-        food = {
-            "model": "meals.food",
-            "pk": i + 1,
-            "fields": {
-                "bls_code": f"T{fake.unique.bothify(text='??#######')}",
-                "name": fake.word().capitalize() + " " + fake.word(),
-                "energy_in_kj_per_100g": round(random.uniform(50, 2000), 1),
-                "energy_in_kcal_per_100g": round(random.uniform(10, 500), 1),
-                "protein_in_g_per_100g": round(random.uniform(0, 30), 1),
-                "fat_in_g_per_100g": round(random.uniform(0, 50), 1),
-                "carbohydrate_in_g_per_100g": round(random.uniform(0, 80), 1),
-                "fibre_in_g_per_100g": round(random.uniform(0, 15), 1),
-                "iron_in_mg_per_100g": round(random.uniform(0, 15), 1),
-                "sugar_in_g_per_100g": round(random.uniform(0, 50), 1),
-                "omega3_in_g_per_100g": round(random.uniform(0, 5), 2),
-                "vitc_in_mg_per_100g": round(random.uniform(0, 100), 1),
-                "magnesium_in_mg_per_100g": round(random.uniform(0, 400), 1),
-                "zinc_in_mg_per_100g": round(random.uniform(0, 15), 1),
-                "vitb12_in_mug_per_100g": round(random.uniform(0, 5), 2),
-                "vita_in_mug_per_100g": round(random.uniform(0, 1000), 1),
-                "calcium_in_mg_per_100g": round(random.uniform(0, 1000), 1),
-                "vitd_in_mug_per_100g": round(random.uniform(0, 10), 2)
-            }
-        }
-        foods.append(food)
+def generate_test_data(output_path, num_rows=100):
+    wb = openpyxl.Workbook()
+    ws = wb.active
     
-    return foods
+    def col_to_idx(col_str):
+        exp = 0
+        idx = 0
+        for char in reversed(col_str.upper()):
+            idx += (ord(char) - ord('A') + 1) * (26 ** exp)
+            exp += 1
+        return idx # openpyxl is 1-based for cell access
+
+    # Mappings from import_foods.py (adjusted for 1-based openpyxl)
+    cols = {
+        'A': 'BLS_CODE',
+        'B': 'NAME',
+        'D': 'KJ',
+        'G': 'KCAL',
+        'M': 'PROTEIN',
+        'P': 'FAT',
+        'S': 'CARBS',
+        'V': 'FIBRE',
+        'EO': 'IRON',
+        'HL': 'SUGAR',
+        'LA': 'OMEGA3',
+        'DO': 'VITC',
+        'EF': 'MAGNESIUM',
+        'ER': 'ZINC',
+        'DK': 'VITB12',
+        'AH': 'VITA',
+        'EC': 'CALCIUM',
+        'AW': 'VITD',
+    }
+
+    # Set headers (optional but good for schema)
+    for col_letter, header in cols.items():
+        ws[f"{col_letter}1"] = header
+
+    for row in range(2, num_rows + 2):
+        ws[f"A{row}"] = f"CODE_{row-1:05d}"
+        ws[f"B{row}"] = f"Food Item {row-1}"
+        ws[f"D{row}"] = random.uniform(0, 3000) # KJ
+        ws[f"G{row}"] = random.uniform(0, 800)  # KCAL
+        ws[f"M{row}"] = random.uniform(0, 100)  # PROTEIN
+        ws[f"P{row}"] = random.uniform(0, 100)  # FAT
+        ws[f"S{row}"] = random.uniform(0, 100)  # CARBS
+        ws[f"V{row}"] = random.uniform(0, 50)   # FIBRE
+        ws[f"EO{row}"] = random.uniform(0, 20)  # IRON
+        ws[f"HL{row}"] = random.uniform(0, 100) # SUGAR
+        ws[f"LA{row}"] = random.uniform(0, 5)   # OMEGA3
+        ws[f"DO{row}"] = random.uniform(0, 100) # VITC
+        ws[f"EF{row}"] = random.uniform(0, 500) # MAGNESIUM
+        ws[f"ER{row}"] = random.uniform(0, 20)  # ZINC
+        ws[f"DK{row}"] = random.uniform(0, 10)  # VITB12
+        ws[f"AH{row}"] = random.uniform(0, 1000)# VITA
+        ws[f"EC{row}"] = random.uniform(0, 1000)# CALCIUM
+        ws[f"AW{row}"] = random.uniform(0, 20)  # VITD
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    wb.save(output_path)
+    print(f"Generated {num_rows} rows at {output_path}")
 
 if __name__ == "__main__":
-    fixtures = generate_food_fixtures(100)
-    with open("tests/data/food_fixtures.json", "w", encoding="utf-8") as f:
-        json.dump(fixtures, f, indent=4, ensure_ascii=False)
-    print(f"Generated 100 food fixtures in tests/data/food_fixtures.json")
+    generate_test_data("/home/orchid/projects/rsos-meal-planning-app/tests/data/test_foods.xlsx")
