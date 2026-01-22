@@ -271,10 +271,12 @@ def get_meal_plan_context(pk):
         'days_data': days_data,
     }
 
+@login_required
 def meal_plan_preview(request, pk):
     context = get_meal_plan_context(pk)
     return render(request, 'meals/mealplan_pdf.html.j2', context)
 
+@login_required
 def meal_plan_pdf(request, pk):
     context = get_meal_plan_context(pk)
     html_string = render_to_string('meals/mealplan_pdf.html.j2', context)
