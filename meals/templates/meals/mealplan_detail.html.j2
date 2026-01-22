@@ -1,15 +1,10 @@
+{% extends 'meals/base.html' %}
 {% load static %}
 {% load meal_extras %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ plan.name }} | Meal Plan Detail</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+{% block title %}{{ plan.name }} | Meal Plan Detail{% endblock %}
+
+{% block extra_css %}
     <style>
         :root {
             --primary: #3ba38f;
@@ -36,13 +31,8 @@
         }
 
         body {
-            background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             align-items: stretch; /* Change to stretch to avoid centering problems with overflow */
-            padding-top: 5vh;
+            padding-top: 0;
         }
 
         .container {
@@ -508,7 +498,7 @@
 
         .day-summary {
             position: sticky;
-            top: 75px;
+            top: calc(var(--top-bar-height) + 15px);
             z-index: 100;
         }
 
@@ -962,7 +952,7 @@
 
         .sticky-bar {
             position: fixed;
-            top: 0;
+            top: var(--top-bar-height);
             left: 0;
             right: 0;
             background: rgba(255, 255, 255, 0.95);
@@ -970,7 +960,7 @@
             border-bottom: 1px solid var(--glass-border);
             z-index: 2500;
             padding: 0;
-            transform: translateY(-100%);
+            transform: translateY(-200%);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             display: flex;
@@ -1023,9 +1013,9 @@
             background: var(--row-hover);
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
+{% block content %}
     <div class="sticky-bar" id="stickyBar">
         <div class="sticky-bar-inner">
             <div class="sticky-plan-name" id="stickyPlanName">{{ plan.name }}</div>
@@ -1352,6 +1342,9 @@
         <label class="col-option"><input type="checkbox" data-col="vitd_in_mug" checked> Vit D</label>
     </div>
 
+{% endblock %}
+
+{% block extra_js %}
     <script>
         const PLAN_ID = "{{ plan.id }}";
         const CSRF_TOKEN = "{{ csrf_token }}";
@@ -2144,6 +2137,4 @@
         });
 
     </script>
-</body>
-
-</html>
+{% endblock %}
