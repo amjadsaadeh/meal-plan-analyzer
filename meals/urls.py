@@ -1,4 +1,5 @@
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
 from .views import (
     FoodViewSet, MealPlanViewSet, MealPlanDayViewSet, 
@@ -15,6 +16,8 @@ router.register(r'mealplan-foods', MealPlanFoodViewSet)
 router.register(r'threshold-presets', ThresholdPresetViewSet)
 
 urlpatterns = [
+    path('login/', auth_views.LoginView.as_view(template_name='meals/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('', meal_plan_list, name='meal-plan-list'),
     path('meal-plan/new/', meal_plan_detail, name='meal-plan-create'),
     path('meal-plan/<int:pk>/', meal_plan_detail, name='meal-plan-detail'),
