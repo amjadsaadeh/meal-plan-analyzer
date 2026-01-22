@@ -20,6 +20,9 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ansible>=13.2.0",
+    "factory-boy>=3.3.3",
     "kubernetes>=34.1.0",
     "nc-dnsapi>=0.1.5",
+    "pytest>=9.0.2",
+    "pytest-django>=4.11.1",
 ]
