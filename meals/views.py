@@ -10,10 +10,13 @@ from .serializers import (
 from .nutrients import NUTRIENTS
 
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def index(request):
     return render(request, 'meals/index.html')
 
+@login_required
 def meal_plan_list(request):
     search_query = request.GET.get('search', '').strip()
     queryset = MealPlan.objects.all()
@@ -50,6 +53,7 @@ def meal_plan_list(request):
         'search_query': search_query
     })
 
+@login_required
 def meal_plan_detail(request, pk=None):
     if pk is None:
         # Create a new MealPlan and a default MealPlanDay for it
@@ -267,10 +271,12 @@ def get_meal_plan_context(pk):
         'days_data': days_data,
     }
 
+@login_required
 def meal_plan_preview(request, pk):
     context = get_meal_plan_context(pk)
     return render(request, 'meals/mealplan_pdf.html.j2', context)
 
+@login_required
 def meal_plan_pdf(request, pk):
     context = get_meal_plan_context(pk)
     html_string = render_to_string('meals/mealplan_pdf.html.j2', context)

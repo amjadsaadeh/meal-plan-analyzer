@@ -1,51 +1,13 @@
+{% extends 'meals/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meal Plans | Modern Nutrition</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+{% block title %}Meal Plans | Modern Nutrition{% endblock %}
+
+{% block extra_css %}
     <style>
-        :root {
-            --primary: #3ba38f;
-            --primary-hover: #2d8170;
-            --primary-glow: rgba(59, 163, 143, 0.2);
-            --bg: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text-main: #2c3338;
-            --text-dim: #64748b;
-            --glass-border: rgba(0, 0, 0, 0.08);
-            --shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            --row-hover: rgba(59, 163, 143, 0.05);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 300;
-        }
-
         body {
-            background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            padding-top: 5vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            padding: 20px;
-            z-index: 10;
+            padding-top: 0; /* Handled by top-bar and container padding */
         }
 
         header {
@@ -208,11 +170,6 @@
             color: var(--text-dim);
         }
 
-        strong {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
         @media (max-width: 600px) {
             .top-actions {
                 flex-direction: column;
@@ -264,10 +221,10 @@
             color: white;
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
-    <div class="container">
+{% block content %}
+    <div class="container" style="max-width: 900px;">
         <header>
             <h1>Meal Plans</h1>
         </header>
@@ -364,7 +321,9 @@
             {% endif %}
         </div>
     </div>
+{% endblock %}
 
+{% block extra_js %}
     <script>
         function highlightMatch(text, query) {
             if (!query) return text;
@@ -472,6 +431,4 @@
             }
         }
     </script>
-</body>
-
-</html>
+{% endblock %}
