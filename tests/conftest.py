@@ -19,3 +19,14 @@ def django_db_setup(django_db_setup, django_db_blocker):
 def api_client():
     from rest_framework.test import APIClient
     return APIClient()
+
+@pytest.fixture
+def user(db):
+    from django.contrib.auth.models import User
+    return User.objects.create_user(username='testuser', password='password')
+
+@pytest.fixture
+def authenticated_client(api_client, user):
+    api_client.force_authenticate(user=user)
+    api_client.force_login(user=user)
+    return api_client
