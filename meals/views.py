@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def index(request):
-    return render(request, 'meals/index.html')
+    return render(request, 'meals/index.html.j2')
 
 @login_required
 def meal_plan_list(request):
@@ -48,7 +48,7 @@ def meal_plan_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    return render(request, 'meals/mealplan_list.html', {
+    return render(request, 'meals/mealplan_list.html.j2', {
         'page_obj': page_obj,
         'search_query': search_query
     })
