@@ -1,45 +1,24 @@
+{% extends 'meals/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Modern Nutrition</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+{% block title %}Login | Modern Nutrition{% endblock %}
+
+{% block extra_css %}
     <style>
-        :root {
-            --primary: #3ba38f;
-            --primary-hover: #2d8170;
-            --primary-glow: rgba(59, 163, 143, 0.2);
-            --bg: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text-main: #2c3338;
-            --text-dim: #64748b;
-            --glass-border: rgba(0, 0, 0, 0.08);
-            --shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            --error: #ef4444;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 300;
-        }
-
         body {
-            background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            width: 100%;
         }
 
         .login-card {
@@ -139,9 +118,9 @@
              margin-bottom: 1.5rem;
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
+{% block content %}
     <div class="login-card">
         <header>
             <h1>Login</h1>
@@ -178,6 +157,4 @@
             <input type="hidden" name="next" value="{{ next }}">
         </form>
     </div>
-</body>
-
-</html>
+{% endblock %}
