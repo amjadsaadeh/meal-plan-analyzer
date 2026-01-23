@@ -1,6 +1,6 @@
 {% load static meal_extras %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>{{ plan.name }} - PDF Export</title>
@@ -62,10 +62,11 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 10pt; /* Reduced from 11pt default */
         }
 
         .summary-table th, .summary-table td {
-            padding: 10px;
+            padding: 6px 8px; /* Reduced from 10px */
             border: 1px solid #e2e8f0;
             text-align: left;
         }
@@ -110,19 +111,24 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
-            font-size: 10pt;
+            font-size: 9pt; /* Reduced from 10pt */
+            table-layout: auto;
         }
 
         .day-table th, .day-table td {
-            padding: 8px;
+            padding: 4px 6px; /* Reduced from 8px */
             border: 1px solid #e2e8f0;
+            word-wrap: break-word; /* Allow wrapping in cells */
+            overflow-wrap: break-word;
+            hyphens: auto; /* Enable hyphenation */
         }
 
         .day-table th {
             background-color: #f8fafc;
             font-weight: 600;
             text-align: left;
-            white-space: nowrap;
+            /* Removed white-space: nowrap */
+            vertical-align: bottom;
         }
 
         .day-table td {
@@ -356,10 +362,10 @@
             <table class="day-table">
                 <thead>
                     <tr>
-                        <th style="width: 40%;">Lebensmittel</th>
-                        <th style="width: 10%;">Menge (g)</th>
+                        <th style="width: auto; min-width: 100px;">Lebensmittel</th>
+                        <th style="width: 60px;" class="text-center">Menge (g)</th>
                         {% for nutrient in visible_nutrients %}
-                            <th class="text-right">{{ nutrient.label }}<br><small>({{ nutrient.unit }})</small></th>
+                            <th class="text-right" style="width: 50px;">{{ nutrient.label }}<br><small>({{ nutrient.unit }})</small></th>
                         {% endfor %}
                     </tr>
                 </thead>
