@@ -271,8 +271,16 @@ def get_meal_plan_context(pk):
         'days_data': days_data,
     }
 
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+
 @login_required
 def meal_plan_preview(request, pk):
+    plan = MealPlan.objects.get(pk=pk)
+    return render(request, 'meals/mealplan_preview.html.j2', {'plan': plan})
+
+@login_required
+@xframe_options_sameorigin
+def meal_plan_preview_content(request, pk):
     context = get_meal_plan_context(pk)
     return render(request, 'meals/mealplan_pdf.html.j2', context)
 

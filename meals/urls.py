@@ -5,7 +5,7 @@ from .views import (
     FoodViewSet, MealPlanViewSet, MealPlanDayViewSet, 
     MealPlanFoodViewSet, ThresholdPresetViewSet, index, 
     meal_plan_list, meal_plan_detail, meal_plan_pdf,
-    meal_plan_preview
+    meal_plan_preview, meal_plan_preview_content
 )
 
 router = DefaultRouter()
@@ -23,6 +23,7 @@ urlpatterns = [
     path('meal-plan/<int:pk>/', meal_plan_detail, name='meal-plan-detail'),
     path('meal-plan/<int:pk>/pdf/', meal_plan_pdf, name='meal-plan-pdf'),
     path('meal-plan/<int:pk>/preview/', meal_plan_preview, name='meal-plan-preview'),
+    path('meal-plan/<int:pk>/preview/content/', meal_plan_preview_content, name='meal-plan-preview-content'),
     path('search/', index, name='food-search'),
     path('api/', include(router.urls)),
 ]
