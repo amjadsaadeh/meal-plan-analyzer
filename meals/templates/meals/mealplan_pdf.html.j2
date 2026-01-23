@@ -163,9 +163,144 @@
             padding-left: 5px !important;
         }
 
+        /* Prevent button from appearing in PDF */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .export-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 0;
+            color: var(--text-dim, #64748b);
+            text-decoration: none;
+            font-weight: 400;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #3ba38f;
+        }
+
+        .back-link svg {
+            margin-right: 8px;
+        }
+
+        .export-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #3ba38f;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .export-button:hover {
+            background-color: #2d8170;
+        }
+
+        .export-button svg {
+            margin-right: 8px;
+        }
+
+        /* Web Preview Styles (Simulated A4 Pages) */
+        @media screen {
+            body {
+                background-color: #f1f5f9;
+                padding: 40px 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 40px;
+            }
+
+            .export-container {
+                width: 90%;
+                max-width: 297mm; /* Max landscape width */
+                margin-bottom: 0px;
+                background: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            }
+
+            .summary-page, .day-container {
+                background-color: white;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                box-sizing: border-box;
+                position: relative;
+                margin: 0;
+                overflow: hidden;
+            }
+
+            .summary-page {
+                width: 210mm;
+                min-height: 297mm;
+                padding: 2cm;
+            }
+
+            .summary-page::after {
+                content: "Seite 1";
+                position: absolute;
+                bottom: 1cm;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 10pt;
+                color: #64748b;
+            }
+
+            .day-container {
+                width: 297mm;
+                min-height: 210mm;
+                padding: 1.5cm;
+            }
+
+            /* Simulation of page numbering on screen */
+            .day-container::after {
+                content: "Seite " attr(data-page-index);
+                position: absolute;
+                bottom: 1cm;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 10pt;
+                color: #64748b;
+            }
+        }
+
     </style>
 </head>
 <body>
+
+    <div class="export-container no-print">
+        <a href="{% url 'meal-plan-detail' plan.id %}" class="back-link" target="_top">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Zurück zum Plan
+        </a>
+        <a href="{% url 'meal-plan-pdf' plan.id %}" class="export-button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            PDF Export
+        </a>
+    </div>
 
     <!-- Summary Page -->
     <div class="summary-page">
@@ -212,7 +347,7 @@
 
     <!-- Day Pages -->
     {% for day in days_data %}
-    <div class="day-container">
+    <div class="day-container" data-page-index="{{ forloop.counter|add:1 }}">
         <h1>{{ day.name }}</h1>
         
         {% for meal_type, foods in day.meals.items %}
