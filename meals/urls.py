@@ -9,11 +9,11 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r'foods', FoodViewSet)
-router.register(r'mealplans', MealPlanViewSet)
-router.register(r'mealplan-days', MealPlanDayViewSet)
-router.register(r'mealplan-foods', MealPlanFoodViewSet)
-router.register(r'threshold-presets', ThresholdPresetViewSet)
+router.register(r'foods', FoodViewSet, basename='food')
+router.register(r'mealplans', MealPlanViewSet, basename='mealplan')
+router.register(r'mealplan-days', MealPlanDayViewSet, basename='mealplanday')
+router.register(r'mealplan-foods', MealPlanFoodViewSet, basename='mealplanfood')
+router.register(r'threshold-presets', ThresholdPresetViewSet, basename='thresholdpreset')
 
 urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='meals/login.html.j2'), name='login'),

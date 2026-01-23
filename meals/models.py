@@ -151,6 +151,7 @@ class MealPlanDay(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
     foods = models.ManyToManyField(Food, through='MealPlanFood', related_name='meal_plan_days')
+    removed = models.BooleanField(default=False)
 
 
     class Meta:
