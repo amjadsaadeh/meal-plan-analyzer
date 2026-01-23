@@ -1159,20 +1159,20 @@
                                                 <th style="width: 200px;">Zutatenname</th>
                                                 <th style="width: 80px;">Menge (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header">kcal</th>
-                                                <th style="width: 65px;" class="nutrient-header col-protein_in_g">Prot (g)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-protein_in_g">Protein (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-fat_in_g">Fett (g)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-omega3_in_g">Omega 3 (g)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-omega3_in_g">Omega-3 (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-carbohydrate_in_g">KH (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-sugar_in_g">Zucker (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-fibre_in_g">Bst. (g)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-iron_in_mg">Eisen (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-vitc_in_mg">Vit C (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-magnesium_in_mg">Mag. (mg)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-vitc_in_mg">Vit. C (mg)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-magnesium_in_mg">Mg (mg)</th>
                                                 <th style="width: 65px;" class="nutrient-header col-zinc_in_mg">Zink (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-vitb12_in_mug">Vit B12 (µg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-vita_in_mug">Vit A (µg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-calcium_in_mg">Calcium (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-vitd_in_mug">Vit D (µg)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-vitb12_in_mug">Vit. B12 (µg)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-vita_in_mug">Vit. A (µg)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-calcium_in_mg">Ca (mg)</th>
+                                                <th style="width: 65px;" class="nutrient-header col-vitd_in_mug">Vit. D (µg)</th>
                                                 <th style="width: 50px;" class="actions-cell"></th>
                                             </tr>
                                         </thead>
@@ -1253,7 +1253,7 @@
                         <div class="day-summary">
                             <h3 class="summary-title" id="daySummaryTitle-{{ day.id }}">{{ day.name }} - Übersicht</h3>
                             <div class="summary-grid">
-                                {% for nut_id, nut_label in "energy_in_kcal:kcal,protein_in_g:Protein,fat_in_g:Fett,omega3_in_g:Omega 3,carbohydrate_in_g:KH,sugar_in_g:Zucker,fibre_in_g:Ballaststoffe,iron_in_mg:Eisen,vitc_in_mg:Vit C,magnesium_in_mg:Magnesium,zinc_in_mg:Zink,vitb12_in_mug:Vit B12,vita_in_mug:Vit A,calcium_in_mg:Calcium,vitd_in_mug:Vit D"|split_to_dict %}
+                                {% for nut_id, nut_label in "energy_in_kcal:kcal,protein_in_g:Protein,fat_in_g:Fett,omega3_in_g:Omega-3,carbohydrate_in_g:KH,sugar_in_g:Zucker,fibre_in_g:Bst.,iron_in_mg:Eisen,vitc_in_mg:Vit. C,magnesium_in_mg:Mg,zinc_in_mg:Zink,vitb12_in_mug:Vit. B12,vita_in_mug:Vit. A,calcium_in_mg:Ca,vitd_in_mug:Vit. D"|split_to_dict %}
                                 <div class="summary-item col-{{ nut_id }}">
                                     <span class="summary-label">{{ nut_label }}</span>
                                     <div class="summary-values-wrapper">
@@ -1284,7 +1284,7 @@
             <div class="meal-summary">
                 <h3 class="summary-title">Plan Übersicht (Total)</h3>
                 <div class="summary-grid">
-                    {% for nut_id, nut_label in "energy_in_kcal:kcal,protein_in_g:Protein,fat_in_g:Fett,omega3_in_g:Omega 3,carbohydrate_in_g:KH,sugar_in_g:Zucker,fibre_in_g:Ballaststoffe,iron_in_mg:Eisen,vitc_in_mg:Vit C,magnesium_in_mg:Magnesium,zinc_in_mg:Zink,vitb12_in_mug:Vit B12,vita_in_mug:Vit A,calcium_in_mg:Calcium,vitd_in_mug:Vit D"|split_to_dict %}
+                    {% for nut_id, nut_label in "energy_in_kcal:kcal,protein_in_g:Protein,fat_in_g:Fett,omega3_in_g:Omega-3,carbohydrate_in_g:KH,sugar_in_g:Zucker,fibre_in_g:Bst.,iron_in_mg:Eisen,vitc_in_mg:Vit. C,magnesium_in_mg:Mg,zinc_in_mg:Zink,vitb12_in_mug:Vit. B12,vita_in_mug:Vit. A,calcium_in_mg:Ca,vitd_in_mug:Vit. D"|split_to_dict %}
                     <div class="summary-item col-{{ nut_id }}">
                         <span class="summary-label">{{ nut_label }}</span>
                         <div class="summary-values-wrapper">
@@ -1328,18 +1328,18 @@
     <div class="col-dropdown" id="colDropdown">
         <label class="col-option"><input type="checkbox" data-col="protein_in_g" checked> Protein</label>
         <label class="col-option"><input type="checkbox" data-col="fat_in_g" checked> Fett</label>
-        <label class="col-option"><input type="checkbox" data-col="omega3_in_g" checked> Omega 3</label>
+        <label class="col-option"><input type="checkbox" data-col="omega3_in_g" checked> Omega-3</label>
         <label class="col-option"><input type="checkbox" data-col="carbohydrate_in_g" checked> KH</label>
         <label class="col-option"><input type="checkbox" data-col="sugar_in_g" checked> Zucker</label>
-        <label class="col-option"><input type="checkbox" data-col="fibre_in_g" checked> Ballaststoffe</label>
+        <label class="col-option"><input type="checkbox" data-col="fibre_in_g" checked> Bst.</label>
         <label class="col-option"><input type="checkbox" data-col="iron_in_mg" checked> Eisen</label>
-        <label class="col-option"><input type="checkbox" data-col="vitc_in_mg" checked> Vit C</label>
-        <label class="col-option"><input type="checkbox" data-col="magnesium_in_mg" checked> Magnesium</label>
+        <label class="col-option"><input type="checkbox" data-col="vitc_in_mg" checked> Vit. C</label>
+        <label class="col-option"><input type="checkbox" data-col="magnesium_in_mg" checked> Mg</label>
         <label class="col-option"><input type="checkbox" data-col="zinc_in_mg" checked> Zink</label>
-        <label class="col-option"><input type="checkbox" data-col="vitb12_in_mug" checked> Vit B12</label>
-        <label class="col-option"><input type="checkbox" data-col="vita_in_mug" checked> Vit A</label>
-        <label class="col-option"><input type="checkbox" data-col="calcium_in_mg" checked> Calcium</label>
-        <label class="col-option"><input type="checkbox" data-col="vitd_in_mug" checked> Vit D</label>
+        <label class="col-option"><input type="checkbox" data-col="vitb12_in_mug" checked> Vit. B12</label>
+        <label class="col-option"><input type="checkbox" data-col="vita_in_mug" checked> Vit. A</label>
+        <label class="col-option"><input type="checkbox" data-col="calcium_in_mg" checked> Ca</label>
+        <label class="col-option"><input type="checkbox" data-col="vitd_in_mug" checked> Vit. D</label>
     </div>
 
 {% endblock %}

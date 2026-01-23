@@ -18,13 +18,13 @@ NUTRIENTS = {
         'precision': 1
     },
     'omega3_in_g': {
-        'label': 'Omega-3',
+        'label': 'O3',
         'unit': 'g',
         'food_key': 'omega3_in_g_per_100g',
         'precision': 2
     },
     'carbohydrate_in_g': {
-        'label': 'Kohlenhydrate',
+        'label': 'KH',
         'unit': 'g',
         'food_key': 'carbohydrate_in_g_per_100g',
         'precision': 1
@@ -36,7 +36,7 @@ NUTRIENTS = {
         'precision': 1
     },
     'fibre_in_g': {
-        'label': 'Ballaststoffe',
+        'label': 'Bst.',
         'unit': 'g',
         'food_key': 'fibre_in_g_per_100g',
         'precision': 1
@@ -48,13 +48,13 @@ NUTRIENTS = {
         'precision': 1
     },
     'vitc_in_mg': {
-        'label': 'Vit C',
+        'label': 'Vit. C',
         'unit': 'mg',
         'food_key': 'vitc_in_mg_per_100g',
         'precision': 1
     },
     'magnesium_in_mg': {
-        'label': 'Magnesium',
+        'label': 'Mg',
         'unit': 'mg',
         'food_key': 'magnesium_in_mg_per_100g',
         'precision': 1
@@ -66,25 +66,25 @@ NUTRIENTS = {
         'precision': 1
     },
     'vitb12_in_mug': {
-        'label': 'Vit B12',
+        'label': 'Vit. B12',
         'unit': 'µg',
         'food_key': 'vitb12_in_mug_per_100g',
         'precision': 2
     },
     'vita_in_mug': {
-        'label': 'Vit A',
+        'label': 'Vit. A',
         'unit': 'µg',
         'food_key': 'vita_in_mug_per_100g',
         'precision': 1
     },
     'calcium_in_mg': {
-        'label': 'Calcium',
+        'label': 'Ca',
         'unit': 'mg',
         'food_key': 'calcium_in_mg_per_100g',
         'precision': 1
     },
     'vitd_in_mug': {
-        'label': 'Vit D',
+        'label': 'Vit. D',
         'unit': 'µg',
         'food_key': 'vitd_in_mug_per_100g',
         'precision': 2

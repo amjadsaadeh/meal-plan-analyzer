@@ -263,12 +263,23 @@ def get_meal_plan_context(pk):
             'is_ok': is_ok
         })
 
+    all_nutrients = []
+    for key, data in NUTRIENTS.items():
+        all_nutrients.append({
+            'key': key,
+            'label': data['label'],
+            'unit': data['unit'],
+            'food_key': data['food_key']
+        })
+
     return {
         'plan': plan,
         'days_count': num_days,
         'visible_nutrients': visible_nutrients,
+        'all_nutrients': all_nutrients,
         'summary_nutrients': summary_nutrients,
         'days_data': days_data,
+        'csrf_token_string': '', # We'll handle CSRF from the request if needed
     }
 
 from django.views.decorators.clickjacking import xframe_options_sameorigin
