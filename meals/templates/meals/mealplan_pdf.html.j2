@@ -348,6 +348,17 @@
             }
         }
 
+        /* Logo Header */
+        .logo-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-header img {
+            max-height: 50px;
+            width: auto;
+        }
+
     </style>
 </head>
 <body>
@@ -396,6 +407,9 @@
 
     <!-- Summary Page -->
     <div class="summary-page">
+        <div class="logo-header">
+            <img src="{% if logo_path %}{{ logo_path }}{% else %}{% static 'meals/img/logo.png' %}{% endif %}" alt="Reizdarm SOS Logo">
+        </div>
         <h1>Auswertung: {{ plan.name }}</h1>
         <p><strong>Durchschnittliche Aufnahme pro Tag</strong> (über {{ days_count }} Tage)</p>
         

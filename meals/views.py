@@ -11,6 +11,8 @@ from .nutrients import NUTRIENTS
 
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.contrib.staticfiles import finders
 
 @login_required
 def index(request):
@@ -306,9 +308,15 @@ def meal_plan_preview_content(request, pk):
 @login_required
 def meal_plan_pdf(request, pk):
     context = get_meal_plan_context(pk)
+    
+    # For WeasyPrint, providing a file:// path is more reliable than a URL
+    logo_disk_path = finders.find('meals/img/logo.png')
+    if logo_disk_path:
+        context['logo_path'] = f"file://{logo_disk_path}"
+        
     html_string = render_to_string('meals/mealplan_pdf.html.j2', context)
     
-    html = weasyprint.HTML(string=html_string)
+    html = weasyprint.HTML(string=html_string, base_url=request.build_absolute_uri())
     pdf = html.write_pdf()
     
     response = HttpResponse(pdf, content_type='application/pdf')
