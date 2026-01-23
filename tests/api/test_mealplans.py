@@ -1,6 +1,6 @@
 import pytest
 from rest_framework import status
-from meals.models import MealPlan
+from meals.models import MealPlan, MealPlanDay
 
 @pytest.mark.django_db
 class TestMealPlanAPI:
@@ -37,3 +37,17 @@ class TestMealPlanAPI:
         response = authenticated_client.get('/api/mealplans/')
         assert response.status_code == status.HTTP_200_OK
         assert response.data['count'] >= 2
+
+    def test_meal_plan_nested_days_filtering(self, authenticated_client):
+        """Test that nested days in meal plan are filtered by removed=False."""
+        plan = MealPlan.objects.create(name="Nested Test Plan")
+        MealPlanDay.objects.create(name="Active Day", meal_plan=plan, removed=False)
+        MealPlanDay.objects.create(name="Removed Day", meal_plan=plan, removed=True)
+        
+        url = f'/api/mealplans/{plan.id}/'
+        response = authenticated_client.get(url)
+        
+        assert response.status_code == status.HTTP_200_OK
+        days = response.data['days']
+        assert len(days) == 1
+        assert days[0]['name'] == "Active Day"

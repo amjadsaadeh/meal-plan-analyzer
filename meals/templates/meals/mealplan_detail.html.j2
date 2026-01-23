@@ -1013,10 +1013,101 @@
         .sticky-bar .col-select-btn:hover {
             background: var(--row-hover);
         }
+
+        /* Delete Day Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .modal-body p {
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+        }
+
+        .modal-warning {
+            font-size: 0.9rem;
+            color: var(--danger) !important;
+            font-weight: 400;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 2rem;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 400;
+            transition: all 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
     </style>
 {% endblock %}
 
 {% block content %}
+    <!-- Day Delete Confirmation Modal -->
+    <div id="deleteDayModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Tag löschen</h3>
+            </div>
+            <div class="modal-body">
+                <p>Möchtest du "<span id="deleteDayName"></span>" wirklich löschen?</p>
+                <p class="modal-warning">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeDeleteDayModal()">Abbrechen</button>
+                <button class="btn-danger" id="confirmDeleteDayBtn">Löschen</button>
+            </div>
+        </div>
+    </div>
+
     <div class="sticky-bar" id="stickyBar">
         <div class="sticky-bar-inner">
             <div class="sticky-plan-name" id="stickyPlanName">{{ plan.name }}</div>
@@ -1130,10 +1221,18 @@
                     <h2 class="editable-day-title" contenteditable="true" onblur="saveDayName(this)" onkeydown="handleDayNameKey(event, this)">
                         {{ day.name }}
                     </h2>
-                    <button class="edit-icon-btn" onclick="this.previousElementSibling.focus()" title="Edit day name">
+                    <button class="edit-icon-btn" onclick="this.previousElementSibling.previousElementSibling.focus()" title="Edit day name">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button class="delete-btn" onclick="openDeleteDayModal({{ day.id }}, '{{ day.name }}')" title="Delete day" style="opacity: 0.3; transition: opacity 0.2s;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
                         </svg>
                     </button>
                 </div>
@@ -2135,6 +2234,63 @@
                 if (headerBottom < 0) stickyBar.classList.add('visible');
                 else stickyBar.classList.remove('visible');
             }
+        });
+
+        // Day Deletion Logic
+        let dayIdToDelete = null;
+
+        function openDeleteDayModal(dayId, dayName) {
+            dayIdToDelete = dayId;
+            document.getElementById('deleteDayName').textContent = dayName;
+            document.getElementById('deleteDayModal').classList.add('active');
+        }
+
+        function closeDeleteDayModal() {
+            document.getElementById('deleteDayModal').classList.remove('active');
+            dayIdToDelete = null;
+        }
+
+        document.getElementById('confirmDeleteDayBtn').addEventListener('click', async () => {
+            if (!dayIdToDelete) return;
+
+            try {
+                setSyncStatus(false, 'Deleting...');
+                const response = await fetch(`/api/mealplan-days/${dayIdToDelete}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': CSRF_TOKEN
+                    },
+                    body: JSON.stringify({ removed: true })
+                });
+
+                if (response.ok) {
+                    const daySection = document.querySelector(`.day-section[data-day-id="${dayIdToDelete}"]`);
+                    if (daySection) {
+                        daySection.style.opacity = '0';
+                        daySection.style.transform = 'translateY(20px)';
+                        daySection.style.transition = 'all 0.4s ease';
+                        setTimeout(() => {
+                            daySection.remove();
+                            calculateTotals();
+                            setSyncStatus(true, 'Saved');
+                        }, 400);
+                    }
+                    closeDeleteDayModal();
+                } else {
+                    console.error('Failed to delete day');
+                    setSyncStatus(false, 'Delete Error');
+                    alert('Fehler beim Löschen des Tages.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                setSyncStatus(false, 'Delete Error');
+            }
+        });
+
+        // Close modal on background click
+        document.getElementById('deleteDayModal').addEventListener('click', (e) => {
+            if (e.target.id === 'deleteDayModal') closeDeleteDayModal();
         });
 
     </script>

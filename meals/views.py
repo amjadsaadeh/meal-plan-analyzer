@@ -63,7 +63,7 @@ def meal_plan_detail(request, pk=None):
         return redirect('meal-plan-detail', pk=parent_plan.pk)
     
     plan = MealPlan.objects.get(pk=pk)
-    days = plan.days.all().order_by('-creation_date').prefetch_related('mealplanfood_set__food')
+    days = plan.days.filter(removed=False).order_by('-creation_date').prefetch_related('mealplanfood_set__food')
     
     meal_types = [
         ('breakfast', 'Frühstück'),
@@ -135,12 +135,20 @@ class FoodViewSet(viewsets.ModelViewSet):
         
         return queryset.order_by(*order_params)
 
+from django.db.models import Prefetch
+
 class MealPlanViewSet(viewsets.ModelViewSet):
     queryset = MealPlan.objects.all()
     serializer_class = MealPlanSerializer
+    
+    def get_queryset(self):
+        active_days = MealPlanDay.objects.filter(removed=False)
+        return MealPlan.objects.prefetch_related(
+            Prefetch('days', queryset=active_days)
+        ).all()
 
 class MealPlanDayViewSet(viewsets.ModelViewSet):
-    queryset = MealPlanDay.objects.all()
+    queryset = MealPlanDay.objects.filter(removed=False)
     serializer_class = MealPlanDaySerializer
 
 class MealPlanFoodViewSet(viewsets.ModelViewSet):
@@ -158,7 +166,7 @@ import weasyprint
 
 def get_meal_plan_context(pk):
     plan = MealPlan.objects.get(pk=pk)
-    days = plan.days.all().order_by('creation_date').prefetch_related('mealplanfood_set__food')
+    days = plan.days.filter(removed=False).order_by('creation_date').prefetch_related('mealplanfood_set__food')
     
     # 1. Define Nutrients
     visible_keys = plan.visible_nutrients
