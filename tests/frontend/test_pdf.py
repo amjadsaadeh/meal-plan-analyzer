@@ -1,16 +1,17 @@
-import os
-import django
+import pytest
 import weasyprint
 from django.template.loader import render_to_string
 from django.contrib.staticfiles import finders
+from tests.frontend.factories import MealPlanFactory
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
-
-from meals.views import get_meal_plan_context
-
+@pytest.mark.django_db
 def test_pdf():
-    context = get_meal_plan_context(1)
+    from meals.views import get_meal_plan_context
+    
+    # Create a plan in the test database
+    plan = MealPlanFactory(name="Test Plan")
+    
+    context = get_meal_plan_context(plan.id)
     logo_disk_path = finders.find('meals/img/logo.png')
     if logo_disk_path:
         context['logo_path'] = f"file://{logo_disk_path}"
@@ -29,10 +30,5 @@ def test_pdf():
     html = weasyprint.HTML(string=html_string, base_url="http://localhost:8001")
     pdf = html.write_pdf()
     
-    with open('test_output.pdf', 'wb') as f:
-        f.write(pdf)
-    
+    assert len(pdf) > 0
     print(f"PDF generated: {len(pdf)} bytes")
-    # A PDF with a 45KB image should be significantly larger than a plain text one.
-    
-test_pdf()
