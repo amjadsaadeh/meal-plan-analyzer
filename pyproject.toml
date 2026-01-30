@@ -25,4 +25,5 @@ dev = [
     "nc-dnsapi>=0.1.5",
     "pytest>=9.0.2",
     "pytest-django>=4.11.1",
+    "pytest-playwright>=0.7.2",
 ]
