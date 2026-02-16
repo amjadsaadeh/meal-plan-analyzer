@@ -3,6 +3,13 @@ import os
 from pathlib import Path
 from django.core.management import call_command
 from django.conf import settings
+import os
+
+def pytest_configure():
+    from django.conf import settings
+    settings.STORAGES["staticfiles"] = {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    }
 
 @pytest.fixture(scope='session', autouse=True)
 def create_static_dir():
