@@ -1,4 +1,4 @@
-# rsos-meal-planning-app
+# Meal Planning App
 
 This small application should provide a basic meal planning capibility, based on the Bundes Lebensmittel Schlüssel.
 
