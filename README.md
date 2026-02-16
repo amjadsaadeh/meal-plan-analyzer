@@ -1,6 +1,6 @@
-# Meal Planning App
+# Meal Plan Analyzer
 
-This small application should provide a basic meal planning capibility, based on the Bundes Lebensmittel Schlüssel.
+This small application that provide a basic meal planning and analyzing capibility, based on the Bundes Lebensmittel Schlüssel.
 
 ## Setup
 
