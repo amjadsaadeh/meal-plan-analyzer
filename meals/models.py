@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 import jsonschema
 from .nutrients import THRESHOLD_SCHEMA, NUTRIENT_IDS
 
@@ -162,9 +163,9 @@ class MealPlanDay(models.Model):
 
 class MealPlanFood(models.Model):
     class MealType(models.TextChoices):
-        BREAKFAST = "breakfast", "Breakfast"
-        LUNCH = "lunch", "Lunch"
-        DINNER = "dinner", "Dinner"
+        BREAKFAST = "breakfast", _("Breakfast")
+        LUNCH = "lunch", _("Lunch")
+        DINNER = "dinner", _("Dinner")
 
     meal_plan_day = models.ForeignKey(MealPlanDay, on_delete=models.CASCADE)
     food = models.ForeignKey(Food, on_delete=models.CASCADE)

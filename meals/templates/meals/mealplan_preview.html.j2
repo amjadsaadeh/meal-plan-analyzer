@@ -1,6 +1,7 @@
 {% extends "meals/base.html.j2" %}
+{% load i18n %}
 
-{% block title %}PDF Preview - {{ plan.name }}{% endblock %}
+{% block title %}{% trans "PDF Preview" %} - {{ plan.name }}{% endblock %}
 
 {% block extra_css %}
 <style>

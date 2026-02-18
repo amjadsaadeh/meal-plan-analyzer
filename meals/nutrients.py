@@ -1,90 +1,92 @@
+from django.utils.translation import gettext_lazy as _
+
 NUTRIENTS = {
     'energy_in_kcal': {
-        'label': 'Energie',
+        'label': _('Energy'),
         'unit': 'kcal',
         'food_key': 'energy_in_kcal_per_100g',
         'precision': 1
     },
     'protein_in_g': {
-        'label': 'Protein',
+        'label': _('Protein'),
         'unit': 'g',
         'food_key': 'protein_in_g_per_100g',
         'precision': 1
     },
     'fat_in_g': {
-        'label': 'Fett',
+        'label': _('Fat'),
         'unit': 'g',
         'food_key': 'fat_in_g_per_100g',
         'precision': 1
     },
     'omega3_in_g': {
-        'label': 'O3',
+        'label': _('Omega-3'),
         'unit': 'g',
         'food_key': 'omega3_in_g_per_100g',
         'precision': 2
     },
     'carbohydrate_in_g': {
-        'label': 'KH',
+        'label': _('Carbs'),
         'unit': 'g',
         'food_key': 'carbohydrate_in_g_per_100g',
         'precision': 1
     },
     'sugar_in_g': {
-        'label': 'Zucker',
+        'label': _('Sugar'),
         'unit': 'g',
         'food_key': 'sugar_in_g_per_100g',
         'precision': 1
     },
     'fibre_in_g': {
-        'label': 'Bst.',
+        'label': _('Fiber'),
         'unit': 'g',
         'food_key': 'fibre_in_g_per_100g',
         'precision': 1
     },
     'iron_in_mg': {
-        'label': 'Eisen',
+        'label': _('Iron'),
         'unit': 'mg',
         'food_key': 'iron_in_mg_per_100g',
         'precision': 1
     },
     'vitc_in_mg': {
-        'label': 'Vit. C',
+        'label': _('Vit. C'),
         'unit': 'mg',
         'food_key': 'vitc_in_mg_per_100g',
         'precision': 1
     },
     'magnesium_in_mg': {
-        'label': 'Mg',
+        'label': _('Mg'),
         'unit': 'mg',
         'food_key': 'magnesium_in_mg_per_100g',
         'precision': 1
     },
     'zinc_in_mg': {
-        'label': 'Zink',
+        'label': _('Zinc'),
         'unit': 'mg',
         'food_key': 'zinc_in_mg_per_100g',
         'precision': 1
     },
     'vitb12_in_mug': {
-        'label': 'Vit. B12',
+        'label': _('Vit. B12'),
         'unit': 'µg',
         'food_key': 'vitb12_in_mug_per_100g',
         'precision': 2
     },
     'vita_in_mug': {
-        'label': 'Vit. A',
+        'label': _('Vit. A'),
         'unit': 'µg',
         'food_key': 'vita_in_mug_per_100g',
         'precision': 1
     },
     'calcium_in_mg': {
-        'label': 'Ca',
+        'label': _('Ca'),
         'unit': 'mg',
         'food_key': 'calcium_in_mg_per_100g',
         'precision': 1
     },
     'vitd_in_mug': {
-        'label': 'Vit. D',
+        'label': _('Vit. D'),
         'unit': 'µg',
         'food_key': 'vitd_in_mug_per_100g',
         'precision': 2

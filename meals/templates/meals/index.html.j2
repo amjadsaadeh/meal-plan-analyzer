@@ -1,10 +1,11 @@
+{% load i18n %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Finder | Modern Nutrition Search</title>
+    <title>{% trans "Food Finder" %} | Modern Nutrition Search</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
@@ -211,12 +212,12 @@
 <body>
     <div class="container">
         <header>
-            <h1>Food Finder</h1>
-            <p class="subtitle">Search through 7,000+ nutrition facts</p>
+            <h1>{% trans "Food Finder" %}</h1>
+            <p class="subtitle">{% trans "Search through 7,000+ nutrition facts" %}</p>
         </header>
 
         <div class="search-wrapper">
-            <input type="text" id="foodSearch" class="search-bar" placeholder="Type at least 2 characters..."
+            <input type="text" id="foodSearch" class="search-bar" placeholder="{% trans "Type at least 2 characters..." %}"
                 autocomplete="off">
             <div id="spinner" class="loading-spinner"></div>
             <div id="dropdown" class="dropdown"></div>
@@ -224,6 +225,11 @@
     </div>
 
     <script>
+        const I18N = {
+            noFoodsFound: "{% trans "No foods found" %}",
+            codeLabel: "{% trans "Code" %}",
+        };
+
         const searchInput = document.getElementById('foodSearch');
         const dropdown = document.getElementById('dropdown');
         const spinner = document.getElementById('spinner');
@@ -281,7 +287,7 @@
             dropdown.innerHTML = '';
 
             if (results.length === 0) {
-                dropdown.innerHTML = '<div class="no-results">No foods found</div>';
+                dropdown.innerHTML = `<div class="no-results">${I18N.noFoodsFound}</div>`;
             } else {
                 results.forEach(food => {
                     const highlightedName = highlightMatch(food.name, query);
@@ -290,7 +296,7 @@
                     div.innerHTML = `
                         <div class="food-info">
                             <h4>${highlightedName}</h4>
-                            <span>Code: ${food.bls_code}</span>
+                            <span>${I18N.codeLabel}: ${food.bls_code}</span>
                         </div>
                         <div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>
                     `;

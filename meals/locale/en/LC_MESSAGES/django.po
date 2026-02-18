@@ -1,0 +1,443 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-18 12:16+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: meals/models.py:166 meals/views.py:73 meals/views.py:193
+msgid "Breakfast"
+msgstr ""
+
+#: meals/models.py:167 meals/views.py:74 meals/views.py:194
+msgid "Lunch"
+msgstr ""
+
+#: meals/models.py:168 meals/views.py:75 meals/views.py:195
+msgid "Dinner"
+msgstr ""
+
+#: meals/nutrients.py:5
+msgid "Energy"
+msgstr ""
+
+#: meals/nutrients.py:11
+msgid "Protein"
+msgstr ""
+
+#: meals/nutrients.py:17
+msgid "Fat"
+msgstr ""
+
+#: meals/nutrients.py:23
+msgid "Omega-3"
+msgstr ""
+
+#: meals/nutrients.py:29
+msgid "Carbs"
+msgstr ""
+
+#: meals/nutrients.py:35
+msgid "Sugar"
+msgstr ""
+
+#: meals/nutrients.py:41
+msgid "Fiber"
+msgstr ""
+
+#: meals/nutrients.py:47
+msgid "Iron"
+msgstr ""
+
+#: meals/nutrients.py:53
+msgid "Vit. C"
+msgstr ""
+
+#: meals/nutrients.py:59
+msgid "Mg"
+msgstr ""
+
+#: meals/nutrients.py:65
+msgid "Zinc"
+msgstr ""
+
+#: meals/nutrients.py:71
+msgid "Vit. B12"
+msgstr ""
+
+#: meals/nutrients.py:77
+msgid "Vit. A"
+msgstr ""
+
+#: meals/nutrients.py:83
+msgid "Ca"
+msgstr ""
+
+#: meals/nutrients.py:89
+msgid "Vit. D"
+msgstr ""
+
+#: meals/templates/meals/base.html.j2:122
+#, python-format
+msgid "Logged in as <strong>%(username)s</strong>"
+msgstr ""
+
+#: meals/templates/meals/base.html.j2:144
+msgid "Logout"
+msgstr ""
+
+#: meals/templates/meals/index.html.j2:8
+#: meals/templates/meals/index.html.j2:215
+msgid "Food Finder"
+msgstr ""
+
+#: meals/templates/meals/index.html.j2:216
+msgid "Search through 7,000+ nutrition facts"
+msgstr ""
+
+#: meals/templates/meals/index.html.j2:220
+msgid "Type at least 2 characters..."
+msgstr ""
+
+#: meals/templates/meals/index.html.j2:229
+msgid "No foods found"
+msgstr ""
+
+#: meals/templates/meals/index.html.j2:230
+#: meals/templates/meals/mealplan_detail.html.j2:1438
+msgid "Code"
+msgstr ""
+
+#: meals/templates/meals/login.html.j2:4
+#: meals/templates/meals/login.html.j2:126
+msgid "Login"
+msgstr ""
+
+#: meals/templates/meals/login.html.j2:127
+msgid "Welcome back to Modern Nutrition"
+msgstr ""
+
+#: meals/templates/meals/login.html.j2:140
+msgid "Username"
+msgstr ""
+
+#: meals/templates/meals/login.html.j2:148
+msgid "Password"
+msgstr ""
+
+#: meals/templates/meals/login.html.j2:155
+msgid "Sign In"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1098
+msgid "Delete Day"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1101
+msgid "Do you really want to delete \"<span id=\"deleteDayName\"></span>\"?"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1102
+msgid "This action cannot be undone."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1105
+#: meals/templates/meals/mealplan_detail.html.j2:1411
+msgid "Cancel"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1106
+msgid "Delete"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1122
+msgid "Columns"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1125
+#: meals/templates/meals/mealplan_detail.html.j2:1156
+#: meals/templates/meals/mealplan_detail.html.j2:1430
+msgid "Saved"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1137
+msgid "Back to Plans"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1145
+msgid "Edit name"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1154
+msgid "Plan No."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1170
+msgid "Preview"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1180
+msgid "Export PDF"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1193
+msgid "Add Day"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1202
+msgid "Select Columns"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1207
+msgid "Reference Value Template"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1209
+msgid "Search template..."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1224
+msgid "Edit day name"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1230
+msgid "Delete day"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1259
+msgid "Ingredient"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1260
+#: meals/templates/meals/mealplan_pdf.html.j2:466
+msgid "Amount (g)"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1315
+msgid "Subtotal:"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1343
+#, python-format
+msgid "%(name)s - Overview"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1350
+#: meals/templates/meals/mealplan_detail.html.j2:1381
+msgid "min"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1352
+#: meals/templates/meals/mealplan_detail.html.j2:1383
+msgid "max"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1364
+#: meals/templates/meals/mealplan_detail.html.j2:1395
+msgid "Save as Reference Value Template"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1374
+msgid "Plan Overview (Total)"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1405
+msgid "Save Template"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1407
+msgid "Template name (min. 3 chars)..."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1412
+msgid "Save"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1431
+msgid "Unsaved changes"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1432
+msgid "Day"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1433
+msgid "Error creating day"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1434
+msgid "Are you sure you want to remove this ingredient?"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1435
+msgid "Error deleting row"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1436
+msgid "Search food..."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1437
+msgid "No results"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1439
+msgid "Overview"
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1440
+msgid "Apply this template? The current reference values will be overwritten."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1441
+msgid "Template saved successfully."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1442
+msgid "The name must be at least 3 characters long."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1443
+msgid "Checking availability..."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1444
+msgid "This name is already taken."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1445
+msgid "Validation error."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1446
+msgid "Error saving."
+msgstr ""
+
+#: meals/templates/meals/mealplan_detail.html.j2:1447
+msgid "Network error while saving."
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:4
+#: meals/templates/meals/mealplan_list.html.j2:229
+msgid "Meal Plans"
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:238
+msgid "Create New Plan"
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:241
+msgid "Search plans..."
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:250
+msgid "Name"
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:251
+msgid "Days"
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:252
+msgid "Created"
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:253
+msgid "Last Changed"
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:273
+msgid "No days"
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:293
+msgid "No meal plans found."
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:329
+msgid "Are you sure you want to delete this meal plan?"
+msgstr ""
+
+#: meals/templates/meals/mealplan_list.html.j2:330
+msgid "Error deleting plan"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:14
+#: meals/templates/meals/mealplan_pdf.html.j2:324
+#: meals/templates/meals/mealplan_pdf.html.j2:341
+msgid "Page"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:373
+msgid "Back to Plan"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:384
+msgid "Select Nutrients"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:404
+msgid "PDF Export"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:413
+msgid "Analysis"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:414
+msgid "Average daily intake"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:414
+#, python-format
+msgid "over %(count)s days"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:419
+msgid "Nutrient"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:420
+msgid "Average"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:421
+msgid "Unit"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:422
+msgid "Reference"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:423
+msgid "Status"
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:465
+msgid "Food"
+msgstr ""
+
+#: meals/templates/meals/mealplan_preview.html.j2:4
+msgid "PDF Preview"
+msgstr ""
+
+#: meals/views.py:64
+msgid "New Plan"
+msgstr ""
+
+#: meals/views.py:65
+msgid "Day 1"
+msgstr ""
