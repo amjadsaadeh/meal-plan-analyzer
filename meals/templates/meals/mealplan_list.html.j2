@@ -1,7 +1,7 @@
 {% extends 'meals/base.html.j2' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Meal Plans | Modern Nutrition{% endblock %}
+{% block title %}{% trans "Meal Plans" %} | Modern Nutrition{% endblock %}
 
 {% block extra_css %}
     <style>
@@ -226,7 +226,7 @@
 {% block content %}
     <div class="container" style="max-width: 900px;">
         <header>
-            <h1>Meal Plans</h1>
+            <h1>{% trans "Meal Plans" %}</h1>
         </header>
 
         <div class="top-actions">
@@ -235,10 +235,10 @@
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                Create New Plan
+                {% trans "Create New Plan" %}
             </a>
             <div class="search-wrapper">
-                <input type="text" name="search" class="search-bar" placeholder="Search plans..." value="{{ search_query }}" autocomplete="off" id="liveSearch">
+                <input type="text" name="search" class="search-bar" placeholder="{% trans "Search plans..." %}" value="{{ search_query }}" autocomplete="off" id="liveSearch">
             </div>
         </div>
 
@@ -247,10 +247,10 @@
                 <thead>
                     <tr>
                         <th style="width: 40px;"></th>
-                        <th>Name</th>
-                        <th>Days</th>
-                        <th>Created</th>
-                        <th>Last Changed</th>
+                        <th>{% trans "Name" %}</th>
+                        <th>{% trans "Days" %}</th>
+                        <th>{% trans "Created" %}</th>
+                        <th>{% trans "Last Changed" %}</th>
                         <th class="actions-cell"></th>
                     </tr>
                 </thead>
@@ -270,7 +270,7 @@
                                     {{ day.name }}
                                 </a>
                                 {% empty %}
-                                <span class="no-data" style="padding: 0; font-size: 0.8rem;">No days</span>
+                                <span class="no-data" style="padding: 0; font-size: 0.8rem;">{% trans "No days" %}</span>
                                 {% endfor %}
                             </div>
                         </td>
@@ -290,7 +290,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="no-data">No meal plans found.</td>
+                        <td colspan="6" class="no-data">{% trans "No meal plans found." %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -325,6 +325,11 @@
 
 {% block extra_js %}
     <script>
+        const I18N = {
+            confirmDeletePlan: "{% trans "Are you sure you want to delete this meal plan?" %}",
+            errorDeletingPlan: "{% trans "Error deleting plan" %}",
+        };
+
         function highlightMatch(text, query) {
             if (!query) return text;
             const semanticKeywords = ['low', 'high', 'energy', 'cal', 'kcal', 'kj'];
@@ -411,7 +416,7 @@
 
         async function deletePlan(event, pk) {
             event.stopPropagation();
-            if (!confirm('Are you sure you want to delete this meal plan?')) return;
+            if (!confirm(I18N.confirmDeletePlan)) return;
 
             try {
                 const response = await fetch(`/api/mealplans/${pk}/`, {
@@ -424,7 +429,7 @@
                     const searchInput = document.getElementById('liveSearch');
                     updateResults(searchInput.value.trim());
                 } else {
-                    alert('Error deleting plan');
+                    alert(I18N.errorDeletingPlan);
                 }
             } catch (error) {
                 console.error('Error:', error);

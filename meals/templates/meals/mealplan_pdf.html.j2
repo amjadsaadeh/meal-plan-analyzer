@@ -1,6 +1,6 @@
-{% load static meal_extras %}
+{% load static i18n meal_extras %}
 <!DOCTYPE html>
-<html lang="de">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <title>{{ plan.name }} - PDF Export</title>
@@ -11,7 +11,7 @@
             size: A4 portrait;
             margin: 2cm;
             @bottom-center {
-                content: "Seite " counter(page);
+                content: "{% trans "Page" %} " counter(page);
                 font-family: 'Outfit', sans-serif;
                 font-size: 10pt;
             }
@@ -321,7 +321,7 @@
             }
 
             .summary-page::after {
-                content: "Seite 1";
+                content: "{% trans "Page" %} 1";
                 position: absolute;
                 bottom: 1cm;
                 left: 50%;
@@ -338,7 +338,7 @@
 
             /* Simulation of page numbering on screen */
             .day-container::after {
-                content: "Seite " attr(data-page-index);
+                content: "{% trans "Page" %} " attr(data-page-index);
                 position: absolute;
                 bottom: 1cm;
                 left: 50%;
@@ -370,7 +370,7 @@
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
-                Zurück zum Plan
+                {% trans "Back to Plan" %}
             </a>
 
             <div class="col-select-container">
@@ -381,7 +381,7 @@
                         <rect x="14" y="14" width="7" height="7"></rect>
                         <rect x="3" y="14" width="7" height="7"></rect>
                     </svg>
-                    Nährwerte auswählen
+                    {% trans "Select Nutrients" %}
                 </button>
                 <div class="col-select-dropdown" id="colDropdown">
                     {% for nutrient in all_nutrients %}
@@ -401,7 +401,7 @@
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
-            PDF Export
+            {% trans "PDF Export" %}
         </a>
     </div>
 
@@ -410,17 +410,17 @@
         <div class="logo-header">
             <img src="{% if logo_path %}{{ logo_path }}{% else %}{% static 'meals/img/logo.png' %}{% endif %}" alt="Reizdarm SOS Logo">
         </div>
-        <h1>Auswertung: {{ plan.name }}</h1>
-        <p><strong>Durchschnittliche Aufnahme pro Tag</strong> (über {{ days_count }} Tage)</p>
-        
+        <h1>{% trans "Analysis" %}: {{ plan.name }}</h1>
+        <p><strong>{% trans "Average daily intake" %}</strong> ({% blocktrans with count=days_count %}over {{ count }} days{% endblocktrans %})</p>
+
         <table class="summary-table">
             <thead>
                 <tr>
-                    <th>Wert</th>
-                    <th class="text-right">Durchschnitt</th>
-                    <th class="text-center">Einheit</th>
-                    <th>Referenz</th>
-                    <th>Status</th>
+                    <th>{% trans "Nutrient" %}</th>
+                    <th class="text-right">{% trans "Average" %}</th>
+                    <th class="text-center">{% trans "Unit" %}</th>
+                    <th>{% trans "Reference" %}</th>
+                    <th>{% trans "Status" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -462,8 +462,8 @@
             <table class="day-table">
                 <thead>
                     <tr>
-                        <th style="width: auto; min-width: 100px;">Lebensmittel</th>
-                        <th style="width: 60px;" class="text-center">Menge (g)</th>
+                        <th style="width: auto; min-width: 100px;">{% trans "Food" %}</th>
+                        <th style="width: 60px;" class="text-center">{% trans "Amount (g)" %}</th>
                         {% for nutrient in visible_nutrients %}
                             <th class="text-right" style="width: 50px;">{{ nutrient.label }}<br><small>({{ nutrient.unit }})</small></th>
                         {% endfor %}

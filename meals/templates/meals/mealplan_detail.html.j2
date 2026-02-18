@@ -1,5 +1,5 @@
 {% extends 'meals/base.html.j2' %}
-{% load static %}
+{% load static i18n %}
 {% load meal_extras %}
 
 {% block title %}{{ plan.name }} | Meal Plan Detail{% endblock %}
@@ -1095,15 +1095,15 @@
     <div id="deleteDayModal" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Tag löschen</h3>
+                <h3>{% trans "Delete Day" %}</h3>
             </div>
             <div class="modal-body">
-                <p>Möchtest du "<span id="deleteDayName"></span>" wirklich löschen?</p>
-                <p class="modal-warning">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+                <p>{% blocktrans %}Do you really want to delete "<span id="deleteDayName"></span>"?{% endblocktrans %}</p>
+                <p class="modal-warning">{% trans "This action cannot be undone." %}</p>
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeDeleteDayModal()">Abbrechen</button>
-                <button class="btn-danger" id="confirmDeleteDayBtn">Löschen</button>
+                <button class="btn-secondary" onclick="closeDeleteDayModal()">{% trans "Cancel" %}</button>
+                <button class="btn-danger" id="confirmDeleteDayBtn">{% trans "Delete" %}</button>
             </div>
         </div>
     </div>
@@ -1119,10 +1119,10 @@
                         <rect x="14" y="14" width="7" height="7"></rect>
                         <rect x="3" y="14" width="7" height="7"></rect>
                     </svg>
-                    Spalten
+                    {% trans "Columns" %}
                 </button>
                 <div class="sync-status">
-                    <span id="stickySyncText">Saved</span>
+                    <span id="stickySyncText">{% trans "Saved" %}</span>
                     <div class="status-icon" id="stickySyncIcon"></div>
                 </div>
             </div>
@@ -1134,7 +1134,7 @@
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
-            Back to Plans
+            {% trans "Back to Plans" %}
         </a>
 
         <div class="header-top">
@@ -1142,7 +1142,7 @@
                 <div class="title-container">
                     <h1 class="editable-title" contenteditable="true" id="planName" placeholder="Enter plan name...">
                         {{ plan.name }}</h1>
-                    <button class="edit-icon-btn" onclick="document.getElementById('planName').focus()" title="Edit name">
+                    <button class="edit-icon-btn" onclick="document.getElementById('planName').focus()" title="{% trans "Edit name" %}">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -1151,9 +1151,9 @@
                 </div>
             </div>
             <div class="header-info">
-                <span class="plan-id">Plan Nr. {{ plan.id }}</span>
+                <span class="plan-id">{% trans "Plan No." %} {{ plan.id }}</span>
                 <div class="sync-status" id="syncStatus">
-                    <span id="syncText">Saved</span>
+                    <span id="syncText">{% trans "Saved" %}</span>
                     <div class="status-icon" id="syncIcon">
                         <!-- Success Tick -->
                         <svg class="status-saved" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -1167,7 +1167,7 @@
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
-                        Vorschau
+                        {% trans "Preview" %}
                     </a>
                     <a href="{% url 'meal-plan-pdf' plan.id %}" target="_blank" class="btn-pdf">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
@@ -1177,7 +1177,7 @@
                             <line x1="16" y1="17" x2="8" y2="17"></line>
                             <polyline points="10 9 9 9 8 9"></polyline>
                         </svg>
-                        Export PDF
+                        {% trans "Export PDF" %}
                     </a>
                 </div>
             </div>
@@ -1190,7 +1190,7 @@
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
-                    Tag hinzufügen
+                    {% trans "Add Day" %}
                 </button>
                 <button class="col-select-btn" id="colSelectBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1199,14 +1199,14 @@
                         <rect x="14" y="14" width="7" height="7"></rect>
                         <rect x="3" y="14" width="7" height="7"></rect>
                     </svg>
-                    Spalten auswählen
+                    {% trans "Select Columns" %}
                 </button>
             </div>
             <div class="toolbar-right">
                 <div class="preset-search-container">
-                    <label class="preset-label" for="presetSearch">Vorlage für Referenzwerte</label>
+                    <label class="preset-label" for="presetSearch">{% trans "Reference Value Template" %}</label>
                     <div class="preset-input-wrapper">
-                        <input type="text" id="presetSearch" class="preset-search-input" placeholder="Nach Vorlage suchen..." autocomplete="off">
+                        <input type="text" id="presetSearch" class="preset-search-input" placeholder="{% trans "Search template..." %}" autocomplete="off">
                         <div id="presetDropdown" class="preset-dropdown"></div>
                     </div>
                 </div>
@@ -1221,13 +1221,13 @@
                     <h2 class="editable-day-title" contenteditable="true" onblur="saveDayName(this)" onkeydown="handleDayNameKey(event, this)">
                         {{ day.name }}
                     </h2>
-                    <button class="edit-icon-btn" onclick="this.previousElementSibling.previousElementSibling.focus()" title="Edit day name">
+                    <button class="edit-icon-btn" onclick="this.previousElementSibling.previousElementSibling.focus()" title="{% trans "Edit day name" %}">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
                     </button>
-                    <button class="delete-btn" onclick="openDeleteDayModal({{ day.id }}, '{{ day.name }}')" title="Delete day" style="opacity: 0.3; transition: opacity 0.2s;">
+                    <button class="delete-btn" onclick="openDeleteDayModal({{ day.id }}, '{{ day.name }}')" title="{% trans "Delete day" %}" style="opacity: 0.3; transition: opacity 0.2s;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1256,23 +1256,12 @@
                                     <table data-meal-type="{{ meal_slug }}" data-day-id="{{ day.id }}">
                                         <thead>
                                             <tr>
-                                                <th style="width: 200px;">Zutatenname</th>
-                                                <th style="width: 80px;">Menge (g)</th>
+                                                <th style="width: 200px;">{% trans "Ingredient" %}</th>
+                                                <th style="width: 80px;">{% trans "Amount (g)" %}</th>
                                                 <th style="width: 65px;" class="nutrient-header">kcal</th>
-                                                <th style="width: 65px;" class="nutrient-header col-protein_in_g">Protein (g)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-fat_in_g">Fett (g)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-omega3_in_g">Omega-3 (g)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-carbohydrate_in_g">KH (g)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-sugar_in_g">Zucker (g)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-fibre_in_g">Bst. (g)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-iron_in_mg">Eisen (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-vitc_in_mg">Vit. C (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-magnesium_in_mg">Mg (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-zinc_in_mg">Zink (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-vitb12_in_mug">Vit. B12 (µg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-vita_in_mug">Vit. A (µg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-calcium_in_mg">Ca (mg)</th>
-                                                <th style="width: 65px;" class="nutrient-header col-vitd_in_mug">Vit. D (µg)</th>
+                                                {% for nut_id, nut_data in nutrients.items %}{% if nut_id != 'energy_in_kcal' %}
+                                                <th style="width: 65px;" class="nutrient-header col-{{ nut_id }}">{{ nut_data.label }} ({{ nut_data.unit }})</th>
+                                                {% endif %}{% endfor %}
                                                 <th style="width: 50px;" class="actions-cell"></th>
                                             </tr>
                                         </thead>
@@ -1323,7 +1312,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="2" style="text-align: right; padding-right: 1.5rem; color: var(--text-dim); text-transform: uppercase; font-size: 0.7rem;">Subeinheit:</td>
+                                                <td colspan="2" style="text-align: right; padding-right: 1.5rem; color: var(--text-dim); text-transform: uppercase; font-size: 0.7rem;">{% trans "Subtotal:" %}</td>
                                                 <td><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="energy_in_kcal">0.0</div></td>
                                                 <td class="col-protein_in_g"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="protein_in_g">0.0</div></td>
                                                 <td class="col-fat_in_g"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="fat_in_g">0.0</div></td>
@@ -1351,20 +1340,20 @@
 
                     <div class="side-panel">
                         <div class="day-summary">
-                            <h3 class="summary-title" id="daySummaryTitle-{{ day.id }}">{{ day.name }} - Übersicht</h3>
+                            <h3 class="summary-title" id="daySummaryTitle-{{ day.id }}">{% blocktrans with name=day.name %}{{ name }} - Overview{% endblocktrans %}</h3>
                             <div class="summary-grid">
-                                {% for nut_id, nut_label in "energy_in_kcal:kcal,protein_in_g:Protein,fat_in_g:Fett,omega3_in_g:Omega-3,carbohydrate_in_g:KH,sugar_in_g:Zucker,fibre_in_g:Bst.,iron_in_mg:Eisen,vitc_in_mg:Vit. C,magnesium_in_mg:Mg,zinc_in_mg:Zink,vitb12_in_mug:Vit. B12,vita_in_mug:Vit. A,calcium_in_mg:Ca,vitd_in_mug:Vit. D"|split_to_dict %}
+                                {% for nut_id, nut_data in nutrients.items %}
                                 <div class="summary-item col-{{ nut_id }}">
-                                    <span class="summary-label">{{ nut_label }}</span>
+                                    <span class="summary-label">{{ nut_data.label }}</span>
                                     <div class="summary-values-wrapper">
                                         {% with thresholds=plan.thresholds|get_item:nut_id %}
-                                        <input type="number" class="threshold-input threshold-min" data-nut="{{ nut_id }}" placeholder="min" oninput="syncThresholds(this)" value="{{ thresholds.min }}">
+                                        <input type="number" class="threshold-input threshold-min" data-nut="{{ nut_id }}" placeholder="{% trans "min" %}" oninput="syncThresholds(this)" value="{{ thresholds.min }}">
                                         <span class="summary-val total-day-summary" data-day-id="{{ day.id }}" data-nut="{{ nut_id }}">0.0</span>
-                                        <input type="number" class="threshold-input threshold-max" data-nut="{{ nut_id }}" placeholder="max" oninput="syncThresholds(this)" value="{{ thresholds.max }}">
+                                        <input type="number" class="threshold-input threshold-max" data-nut="{{ nut_id }}" placeholder="{% trans "max" %}" oninput="syncThresholds(this)" value="{{ thresholds.max }}">
                                         {% endwith %}
                                     </div>
                                 </div>
-                            {% endfor %}
+                                {% endfor %}
                             </div>
                             <button class="btn-secondary" onclick="openSavePresetModal()">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1372,7 +1361,7 @@
                                     <polyline points="17 21 17 13 7 13 7 21"></polyline>
                                     <polyline points="7 3 7 8 15 8"></polyline>
                                 </svg>
-                                Als Vorlage für Referenzwerte speichern
+                                {% trans "Save as Reference Value Template" %}
                             </button>
                         </div>
                     </div>
@@ -1382,16 +1371,16 @@
         </div>
 
             <div class="meal-summary">
-                <h3 class="summary-title">Plan Übersicht (Total)</h3>
+                <h3 class="summary-title">{% trans "Plan Overview (Total)" %}</h3>
                 <div class="summary-grid">
-                    {% for nut_id, nut_label in "energy_in_kcal:kcal,protein_in_g:Protein,fat_in_g:Fett,omega3_in_g:Omega-3,carbohydrate_in_g:KH,sugar_in_g:Zucker,fibre_in_g:Bst.,iron_in_mg:Eisen,vitc_in_mg:Vit. C,magnesium_in_mg:Mg,zinc_in_mg:Zink,vitb12_in_mug:Vit. B12,vita_in_mug:Vit. A,calcium_in_mg:Ca,vitd_in_mug:Vit. D"|split_to_dict %}
+                    {% for nut_id, nut_data in nutrients.items %}
                     <div class="summary-item col-{{ nut_id }}">
-                        <span class="summary-label">{{ nut_label }}</span>
+                        <span class="summary-label">{{ nut_data.label }}</span>
                         <div class="summary-values-wrapper">
                             {% with thresholds=plan.thresholds|get_item:nut_id %}
-                            <input type="number" class="threshold-input threshold-min" data-nut="{{ nut_id }}" placeholder="min" oninput="syncThresholds(this)" value="{{ thresholds.min }}">
+                            <input type="number" class="threshold-input threshold-min" data-nut="{{ nut_id }}" placeholder="{% trans "min" %}" oninput="syncThresholds(this)" value="{{ thresholds.min }}">
                             <span class="summary-val total-plan-summary" data-nut="{{ nut_id }}">0.0</span>
-                            <input type="number" class="threshold-input threshold-max" data-nut="{{ nut_id }}" placeholder="max" oninput="syncThresholds(this)" value="{{ thresholds.max }}">
+                            <input type="number" class="threshold-input threshold-max" data-nut="{{ nut_id }}" placeholder="{% trans "max" %}" oninput="syncThresholds(this)" value="{{ thresholds.max }}">
                             {% endwith %}
                         </div>
                     </div>
@@ -1403,7 +1392,7 @@
                         <polyline points="17 21 17 13 7 13 7 21"></polyline>
                         <polyline points="7 3 7 8 15 8"></polyline>
                     </svg>
-                    Als Vorlage für Referenzwerte speichern
+                    {% trans "Save as Reference Value Template" %}
                 </button>
             </div>
     </div>
@@ -1413,33 +1402,22 @@
     <!-- Save Preset Modal -->
     <div class="modal-overlay" id="savePresetModal">
         <div class="modal-content">
-            <div class="modal-header">Vorlage speichern</div>
+            <div class="modal-header">{% trans "Save Template" %}</div>
             <div class="modal-body">
-                <input type="text" id="presetNameInput" class="modal-input" placeholder="Name der Vorlage (mind. 3 Zeichen)..." autocomplete="off">
+                <input type="text" id="presetNameInput" class="modal-input" placeholder="{% trans "Template name (min. 3 chars)..." %}" autocomplete="off">
                 <div id="presetNameError" class="modal-error"></div>
             </div>
             <div class="modal-actions">
-                <button class="btn-modal btn-modal-cancel" onclick="closeSavePresetModal()">Abbrechen</button>
-                <button class="btn-modal btn-modal-save" id="savePresetConfirmBtn" disabled onclick="confirmSavePreset()">Speichern</button>
+                <button class="btn-modal btn-modal-cancel" onclick="closeSavePresetModal()">{% trans "Cancel" %}</button>
+                <button class="btn-modal btn-modal-save" id="savePresetConfirmBtn" disabled onclick="confirmSavePreset()">{% trans "Save" %}</button>
             </div>
         </div>
     </div>
 
     <div class="col-dropdown" id="colDropdown">
-        <label class="col-option"><input type="checkbox" data-col="protein_in_g" checked> Protein</label>
-        <label class="col-option"><input type="checkbox" data-col="fat_in_g" checked> Fett</label>
-        <label class="col-option"><input type="checkbox" data-col="omega3_in_g" checked> Omega-3</label>
-        <label class="col-option"><input type="checkbox" data-col="carbohydrate_in_g" checked> KH</label>
-        <label class="col-option"><input type="checkbox" data-col="sugar_in_g" checked> Zucker</label>
-        <label class="col-option"><input type="checkbox" data-col="fibre_in_g" checked> Bst.</label>
-        <label class="col-option"><input type="checkbox" data-col="iron_in_mg" checked> Eisen</label>
-        <label class="col-option"><input type="checkbox" data-col="vitc_in_mg" checked> Vit. C</label>
-        <label class="col-option"><input type="checkbox" data-col="magnesium_in_mg" checked> Mg</label>
-        <label class="col-option"><input type="checkbox" data-col="zinc_in_mg" checked> Zink</label>
-        <label class="col-option"><input type="checkbox" data-col="vitb12_in_mug" checked> Vit. B12</label>
-        <label class="col-option"><input type="checkbox" data-col="vita_in_mug" checked> Vit. A</label>
-        <label class="col-option"><input type="checkbox" data-col="calcium_in_mg" checked> Ca</label>
-        <label class="col-option"><input type="checkbox" data-col="vitd_in_mug" checked> Vit. D</label>
+        {% for nut_id, nut_data in nutrients.items %}{% if nut_id != 'energy_in_kcal' %}
+        <label class="col-option"><input type="checkbox" data-col="{{ nut_id }}" checked> {{ nut_data.label }}</label>
+        {% endif %}{% endfor %}
     </div>
 
 {% endblock %}
@@ -1448,6 +1426,26 @@
     <script>
         const PLAN_ID = "{{ plan.id }}";
         const CSRF_TOKEN = "{{ csrf_token }}";
+        const I18N = {
+            saved: "{% trans "Saved" %}",
+            unsavedChanges: "{% trans "Unsaved changes" %}",
+            dayPrefix: "{% trans "Day" %}",
+            errorCreatingDay: "{% trans "Error creating day" %}",
+            confirmDeleteIngredient: "{% trans "Are you sure you want to remove this ingredient?" %}",
+            errorDeletingRow: "{% trans "Error deleting row" %}",
+            searchFood: "{% trans "Search food..." %}",
+            noResults: "{% trans "No results" %}",
+            codeLabel: "{% trans "Code" %}",
+            daySummaryOverview: "{% trans "Overview" %}",
+            confirmApplyTemplate: "{% trans "Apply this template? The current reference values will be overwritten." %}",
+            templateSavedSuccess: "{% trans "Template saved successfully." %}",
+            nameTooShort: "{% trans "The name must be at least 3 characters long." %}",
+            checkingAvailability: "{% trans "Checking availability..." %}",
+            nameAlreadyTaken: "{% trans "This name is already taken." %}",
+            validationError: "{% trans "Validation error." %}",
+            savingError: "{% trans "Error saving." %}",
+            networkError: "{% trans "Network error while saving." %}",
+        };
         let isPending = false;
         let debounceTimer;
         let activeSearchCell = null;
@@ -1503,16 +1501,16 @@
                 const response = await fetch(`/api/mealplan-days/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
-                    body: JSON.stringify({ 
-                        meal_plan: PLAN_ID, 
-                        name: `Tag ${nextDayNum}` 
+                    body: JSON.stringify({
+                        meal_plan: PLAN_ID,
+                        name: `${I18N.dayPrefix} ${nextDayNum}`
                     })
                 });
-                
+
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert('Error creating day');
+                    alert(I18N.errorCreatingDay);
                 }
             } catch (e) { console.error(e); }
         }
@@ -1573,7 +1571,7 @@
             const icon = document.getElementById('syncIcon');
             const stickyText = document.getElementById('stickySyncText');
             const stickyIcon = document.getElementById('stickySyncIcon');
-            const message = saved ? 'Saved' : 'Unsaved changes';
+            const message = saved ? I18N.saved : I18N.unsavedChanges;
             const html = saved ? ICON_SAVED : ICON_PENDING;
             if (text) text.innerText = message;
             if (icon) icon.innerHTML = html;
@@ -1623,7 +1621,7 @@
                 if (response.ok) {
                     setSyncStatus(true);
                     const sideTitle = document.getElementById(`daySummaryTitle-${dayId}`);
-                    if (sideTitle) sideTitle.innerText = `${name} - Übersicht`;
+                    if (sideTitle) sideTitle.innerText = `${name} - ${I18N.daySummaryOverview}`;
                 }
             } catch (e) { console.error(e); }
         }
@@ -1794,13 +1792,13 @@
             const mealType = tbody.dataset.mealType;
 
             if (id) {
-                if (!confirm('Are you sure you want to remove this ingredient?')) return;
+                if (!confirm(I18N.confirmDeleteIngredient)) return;
                 try {
                     const response = await fetch(`/api/mealplan-foods/${id}/`, {
                         method: 'DELETE',
                         headers: { 'X-CSRFToken': CSRF_TOKEN }
                     });
-                    if (!response.ok) { alert('Error deleting row'); return; }
+                    if (!response.ok) { alert(I18N.errorDeletingRow); return; }
                 } catch (e) { console.error(e); }
             }
             row.remove();
@@ -1849,11 +1847,11 @@
             activeSearchCell = cell;
             const nameSpan = cell.querySelector('span:first-child');
             const blsSpan = cell.querySelector('.bls-code');
-            const originalName = nameSpan ? nameSpan.innerText.trim() : 'Search Food...';
+            const originalName = nameSpan ? nameSpan.innerText.trim() : I18N.searchFood;
             const originalBls = blsSpan ? blsSpan.innerText.trim() : '';
             cell.dataset.prevName = originalName;
             cell.dataset.prevBls = originalBls;
-            cell.innerHTML = `<input type="text" class="table-input" placeholder="Search food..." value="${originalName === 'Search Food...' ? '' : originalName}" autocomplete="off">`;
+            cell.innerHTML = `<input type="text" class="table-input" placeholder="${I18N.searchFood}" value="${originalName === I18N.searchFood ? '' : originalName}" autocomplete="off">`;
             const input = cell.querySelector('input');
             input.focus();
             input.addEventListener('input', () => {
@@ -1953,7 +1951,7 @@
         };
 
         async function applyPreset(preset) {
-            if (!confirm(`Möchten Sie die Vorlage "${preset.name}" anwenden? Die aktuellen Referenzwerte werden überschrieben.`)) {
+            if (!confirm(`${preset.name}: ${I18N.confirmApplyTemplate}`)) {
                 return;
             }
 
@@ -2013,10 +2011,10 @@
                 const val = nameInput.value.trim();
                 saveBtn.disabled = true;
                 if (val.length < 3) {
-                    nameError.innerText = "Der Name muss mindestens 3 Zeichen lang sein.";
+                    nameError.innerText = I18N.nameTooShort;
                     return;
                 }
-                nameError.innerText = "Prüfe Verfügbarkeit...";
+                nameError.innerText = I18N.checkingAvailability;
                 clearTimeout(nameValidationTimer);
                 nameValidationTimer = setTimeout(() => validatePresetName(val), 500);
             });
@@ -2035,7 +2033,7 @@
                 const exactMatch = presets.find(p => p.name.toLowerCase() === name.toLowerCase());
                 
                 if (exactMatch) {
-                    nameError.innerText = "Dieser Name ist bereits vergeben.";
+                    nameError.innerText = I18N.nameAlreadyTaken;
                     saveBtn.disabled = true;
                 } else {
                     nameError.innerText = "";
@@ -2043,7 +2041,7 @@
                 }
             } catch (e) {
                 console.error(e);
-                nameError.innerText = "Fehler bei der Validierung.";
+                nameError.innerText = I18N.validationError;
             }
         }
 
@@ -2076,14 +2074,14 @@
                 });
                 if (response.ok) {
                     closeSavePresetModal();
-                    alert(`Vorlage "${name}" wurde erfolgreich gespeichert.`);
+                    alert(`"${name}": ${I18N.templateSavedSuccess}`);
                 } else {
                     const errorData = await response.json();
-                    nameError.innerText = errorData.name ? errorData.name[0] : "Fehler beim Speichern.";
+                    nameError.innerText = errorData.name ? errorData.name[0] : I18N.savingError;
                 }
             } catch (e) {
                 console.error(e);
-                nameError.innerText = "Netzwerkfehler beim Speichern.";
+                nameError.innerText = I18N.networkError;
             } finally {
                 saveBtn.disabled = false;
             }
@@ -2100,7 +2098,7 @@
         }
 
         function restoreCell(cell) {
-            const name = cell.dataset.prevName || 'Search Food...';
+            const name = cell.dataset.prevName || I18N.searchFood;
             const bls = cell.dataset.prevBls || '';
             const blsHtml = bls ? `<span class="bls-code">${bls}</span>` : '';
             cell.innerHTML = `<span>${name}</span>${blsHtml}`;
@@ -2123,12 +2121,12 @@
         function renderDropdown(dropdown, results) {
             const query = activeSearchCell ? activeSearchCell.querySelector('input').value.trim() : "";
             dropdown.innerHTML = '';
-            if (results.length === 0) { dropdown.innerHTML = '<div class="search-item">No results</div>'; }
+            if (results.length === 0) { dropdown.innerHTML = `<div class="search-item">${I18N.noResults}</div>`; }
             else {
                 results.forEach(food => {
                     const item = document.createElement('div');
                     item.className = 'search-item';
-                    item.innerHTML = `<div><span class="name">${highlightMatch(food.name, query)}</span><span class="code">Code: ${food.bls_code}</span></div><div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>`;
+                    item.innerHTML = `<div><span class="name">${highlightMatch(food.name, query)}</span><span class="code">${I18N.codeLabel}: ${food.bls_code}</span></div><div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>`;
                     item.addEventListener('mousedown', () => {
                         if (!activeSearchCell) return;
                         const cell = activeSearchCell;

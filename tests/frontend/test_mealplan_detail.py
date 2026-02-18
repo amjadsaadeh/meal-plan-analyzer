@@ -29,33 +29,33 @@ def test_mealplan_detail_add_day(logged_in_page, live_server, test_user):
     
     expect(logged_in_page.locator(".day-section")).to_have_count(1)
     
-    # Click "Tag hinzufügen"
-    logged_in_page.click("text=Tag hinzufügen")
-    
+    # Click "Add Day" button (use specific selector to avoid matching plan name)
+    logged_in_page.click("button.col-select-btn:has-text('Add Day')")
+
     # Page reloads after adding day
     logged_in_page.wait_for_load_state("networkidle")
-    
+
     expect(logged_in_page.locator(".day-section")).to_have_count(2)
     # The view orders by -creation_date, so the new day is at the top
-    expect(logged_in_page.locator(".day-section").first).to_contain_text("Tag 2")
+    expect(logged_in_page.locator(".day-section").first).to_contain_text("Day 2")
 
 def test_mealplan_detail_pdf_export_preview(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="PDF Test Plan")
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
     
-    # Click "Vorschau" (Preview)
+    # Click "Preview"
     with logged_in_page.expect_popup() as popup_info:
-        logged_in_page.click("text=Vorschau")
-    
+        logged_in_page.click("text=Preview")
+
     preview_page = popup_info.value
     preview_page.wait_for_load_state("networkidle")
-    
+
     preview_page.wait_for_selector(".preview-frame")
     iframe = preview_page.frame_locator(".preview-frame")
-    
+
     # The preview page should contain the plan name inside the iframe
-    expect(iframe.locator("h1")).to_contain_text("Auswertung: PDF Test Plan")
-    expect(iframe.locator("body")).to_contain_text("Durchschnittliche Aufnahme")
+    expect(iframe.locator("h1")).to_contain_text("Analysis: PDF Test Plan")
+    expect(iframe.locator("body")).to_contain_text("Average daily intake")
 
 def test_mealplan_detail_food_search_and_add(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="Food Search Test")

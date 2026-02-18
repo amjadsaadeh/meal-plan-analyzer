@@ -1,10 +1,11 @@
 import re
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
+from django.utils.translation import gettext as _
 from rest_framework import viewsets, filters
 from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
 from .serializers import (
-    FoodSerializer, MealPlanSerializer, MealPlanDaySerializer, 
+    FoodSerializer, MealPlanSerializer, MealPlanDaySerializer,
     MealPlanFoodSerializer, ThresholdPresetSerializer
 )
 from .nutrients import NUTRIENTS
@@ -60,8 +61,8 @@ def meal_plan_list(request):
 def meal_plan_detail(request, pk=None):
     if pk is None:
         # Create a new MealPlan and a default MealPlanDay for it
-        parent_plan = MealPlan.objects.create(name="Neuer Plan")
-        plan_day = MealPlanDay.objects.create(name="Tag 1", meal_plan=parent_plan)
+        parent_plan = MealPlan.objects.create(name=_("New Plan"))
+        plan_day = MealPlanDay.objects.create(name=_("Day 1"), meal_plan=parent_plan)
         from django.shortcuts import redirect
         return redirect('meal-plan-detail', pk=parent_plan.pk)
     
@@ -69,14 +70,15 @@ def meal_plan_detail(request, pk=None):
     days = plan.days.filter(removed=False).order_by('-creation_date').prefetch_related('mealplanfood_set__food')
     
     meal_types = [
-        ('breakfast', 'Frühstück'),
-        ('lunch', 'Mittagessen'),
-        ('dinner', 'Abendessen'),
+        ('breakfast', _('Breakfast')),
+        ('lunch', _('Lunch')),
+        ('dinner', _('Dinner')),
     ]
     return render(request, 'meals/mealplan_detail.html.j2', {
         'plan': plan,
         'days': days,
-        'meal_types': meal_types
+        'meal_types': meal_types,
+        'nutrients': NUTRIENTS,
     })
 
 class FoodViewSet(viewsets.ModelViewSet):
@@ -188,16 +190,19 @@ def get_meal_plan_context(pk):
     days_data = []
     total_nutrients_sum = {key: 0.0 for key in NUTRIENTS.keys()}
     
+    breakfast_label = _('Breakfast')
+    lunch_label = _('Lunch')
+    dinner_label = _('Dinner')
     meal_type_labels = {
-        'breakfast': 'Frühstück',
-        'lunch': 'Mittagessen',
-        'dinner': 'Abendessen'
+        'breakfast': breakfast_label,
+        'lunch': lunch_label,
+        'dinner': dinner_label,
     }
 
     for day in days:
         day_info = {
             'name': day.name,
-            'meals': {'Frühstück': [], 'Mittagessen': [], 'Abendessen': []} 
+            'meals': {breakfast_label: [], lunch_label: [], dinner_label: []}
         }
         
         for mpf in day.mealplanfood_set.all():
