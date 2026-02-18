@@ -13,6 +13,7 @@ from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib.staticfiles import finders
+from django.shortcuts import get_object_or_404
 
 @login_required
 def index(request):
@@ -64,7 +65,7 @@ def meal_plan_detail(request, pk=None):
         from django.shortcuts import redirect
         return redirect('meal-plan-detail', pk=parent_plan.pk)
     
-    plan = MealPlan.objects.get(pk=pk)
+    plan = get_object_or_404(MealPlan, pk=pk)
     days = plan.days.filter(removed=False).order_by('-creation_date').prefetch_related('mealplanfood_set__food')
     
     meal_types = [
@@ -167,7 +168,7 @@ from django.template.loader import render_to_string
 import weasyprint
 
 def get_meal_plan_context(pk):
-    plan = MealPlan.objects.get(pk=pk)
+    plan = get_object_or_404(MealPlan, pk=pk)
     days = plan.days.filter(removed=False).order_by('creation_date').prefetch_related('mealplanfood_set__food')
     
     # 1. Define Nutrients
@@ -296,7 +297,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 @login_required
 def meal_plan_preview(request, pk):
-    plan = MealPlan.objects.get(pk=pk)
+    plan = get_object_or_404(MealPlan, pk=pk)
     return render(request, 'meals/mealplan_preview.html.j2', {'plan': plan})
 
 @login_required
