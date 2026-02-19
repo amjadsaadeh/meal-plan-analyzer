@@ -11,7 +11,7 @@ Covers:
 
 import pytest
 from django.core.exceptions import ValidationError
-from meals.models import MealPlan
+from meals.models import MealPlan, SiteSettings
 from meals.nutrients import NUTRIENT_IDS
 
 
@@ -141,3 +141,34 @@ class TestMealPlanThresholdValidation:
         plan = MealPlan(thresholds={"bad_key": {"min": 0, "max": 1}})
         with pytest.raises(ValidationError):
             plan.save()
+
+
+@pytest.mark.django_db
+class TestSiteSettingsSingleton:
+    """SiteSettings enforces a singleton pattern via pk=1."""
+
+    def test_get_creates_instance_when_none_exists(self):
+        assert SiteSettings.objects.count() == 0
+        obj = SiteSettings.get()
+        assert obj.pk == 1
+        assert SiteSettings.objects.count() == 1
+
+    def test_get_returns_existing_instance(self):
+        SiteSettings.objects.create()
+        obj = SiteSettings.get()
+        assert obj.pk == 1
+        assert SiteSettings.objects.count() == 1
+
+    def test_save_forces_pk_1(self):
+        s = SiteSettings()
+        s.save()
+        assert s.pk == 1
+
+    def test_only_one_instance_after_multiple_saves(self):
+        SiteSettings().save()
+        SiteSettings().save()
+        assert SiteSettings.objects.count() == 1
+
+    def test_logo_field_is_blank_by_default(self):
+        obj = SiteSettings.get()
+        assert not obj.logo
