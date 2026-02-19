@@ -11,7 +11,7 @@ Uses a superuser via the standard Django test client to verify that:
 import pytest
 from django.contrib.auth.models import User
 from django.test import Client
-from meals.models import Food, MealPlan, MealPlanDay, ThresholdPreset
+from meals.models import Food, MealPlan, MealPlanDay, ThresholdPreset, SiteSettings
 
 
 # ---------------------------------------------------------------------------
@@ -145,3 +145,33 @@ class TestThresholdPresetAdmin:
     def test_search_by_name(self, admin_client, sample_preset):
         response = admin_client.get('/admin/meals/thresholdpreset/?q=Admin+Test+Preset')
         assert response.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# SiteSettings admin (singleton UX)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+class TestSiteSettingsAdmin:
+    def test_changelist_redirects_to_change_form(self, admin_client):
+        """Visiting the changelist auto-creates the singleton and redirects to its change form."""
+        response = admin_client.get('/admin/meals/sitesettings/')
+        assert response.status_code == 302
+        assert response.url == '/admin/meals/sitesettings/1/change/'
+
+    def test_change_form_loads(self, admin_client):
+        SiteSettings.get()  # ensure singleton exists
+        response = admin_client.get('/admin/meals/sitesettings/1/change/')
+        assert response.status_code == 200
+
+    def test_add_permission_denied_when_instance_exists(self, admin_client):
+        """Admins cannot add a second SiteSettings object."""
+        SiteSettings.get()
+        response = admin_client.get('/admin/meals/sitesettings/add/')
+        assert response.status_code == 403
+
+    def test_delete_permission_denied(self, admin_client):
+        """Delete is always disabled for SiteSettings."""
+        SiteSettings.get()
+        response = admin_client.post('/admin/meals/sitesettings/1/delete/')
+        assert response.status_code == 403

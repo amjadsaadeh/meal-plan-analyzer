@@ -178,3 +178,21 @@ class MealPlanFood(models.Model):
     
     class Meta:
         unique_together = ('meal_plan_day', 'food', 'meal_type')
+
+
+class SiteSettings(models.Model):
+    """Singleton model for site-wide settings, e.g. a custom PDF logo."""
+    logo = models.FileField(upload_to='logos/', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Site Settings'
+        verbose_name_plural = 'Site Settings'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset, SiteSettings
 
 @admin.register(ThresholdPreset)
 class ThresholdPresetAdmin(admin.ModelAdmin):
@@ -39,3 +41,19 @@ class MealPlanDayAdmin(admin.ModelAdmin):
     list_display = ('name', 'meal_plan', 'creation_date', 'change_date')
     inlines = [MealPlanFoodInline]
     search_fields = ('name',)
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        # Redirect the list view directly to the single settings object
+        obj = SiteSettings.get()
+        return HttpResponseRedirect(
+            reverse('admin:meals_sitesettings_change', args=[obj.pk])
+        )

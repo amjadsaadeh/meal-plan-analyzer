@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, filters
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset, SiteSettings
 from .serializers import (
     FoodSerializer, MealPlanSerializer, MealPlanDaySerializer,
     MealPlanFoodSerializer, ThresholdPresetSerializer
@@ -309,22 +309,28 @@ def meal_plan_preview(request, pk):
 @xframe_options_sameorigin
 def meal_plan_preview_content(request, pk):
     context = get_meal_plan_context(pk)
+    site = SiteSettings.get()
+    if site.logo:
+        context['logo_path'] = site.logo.url
     return render(request, 'meals/mealplan_pdf.html.j2', context)
 
 @login_required
 def meal_plan_pdf(request, pk):
     context = get_meal_plan_context(pk)
-    
-    # For WeasyPrint, providing a file:// path is more reliable than a URL
-    logo_disk_path = finders.find('meals/img/logo.png')
-    if logo_disk_path:
-        context['logo_path'] = f"file://{logo_disk_path}"
-        
+
+    site = SiteSettings.get()
+    if site.logo:
+        context['logo_path'] = f"file://{site.logo.path}"
+    else:
+        logo_disk_path = finders.find('meals/img/logo.png')
+        if logo_disk_path:
+            context['logo_path'] = f"file://{logo_disk_path}"
+
     html_string = render_to_string('meals/mealplan_pdf.html.j2', context)
-    
+
     html = weasyprint.HTML(string=html_string, base_url=request.build_absolute_uri())
     pdf = html.write_pdf()
-    
+
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="mealplan_{context["plan"].id}.pdf"'
     return response
