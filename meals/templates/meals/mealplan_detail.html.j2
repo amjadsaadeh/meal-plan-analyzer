@@ -373,6 +373,61 @@
             color: var(--text-dim);
         }
 
+        /* Alias badge shown next to food name in search results */
+        .alias-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            background: rgba(106, 217, 198, 0.15);
+            color: #4180A6;
+            border: 1px solid rgba(106, 217, 198, 0.45);
+            border-radius: 4px;
+            font-size: 0.68rem;
+            padding: 1px 6px;
+            margin-left: 6px;
+            cursor: default;
+            font-weight: 400;
+            vertical-align: middle;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .alias-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 7px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3338;
+            color: #fff;
+            font-size: 0.76rem;
+            padding: 5px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        .alias-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #2c3338;
+        }
+
+        .alias-tooltip strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .alias-badge:hover .alias-tooltip {
+            display: block;
+        }
+
         .loader {
             width: 16px;
             height: 16px;
@@ -1429,6 +1484,7 @@
             searchFood: "{% trans "Search food..." %}",
             noResults: "{% trans "No results" %}",
             codeLabel: "{% trans "Code" %}",
+            aliasBadge: "{% trans "alias" %}",
             daySummaryOverview: "{% trans "Overview" %}",
             confirmApplyTemplate: "{% trans "Apply this template? The current reference values will be overwritten." %}",
             templateSavedSuccess: "{% trans "Template saved successfully." %}",
@@ -2119,7 +2175,10 @@
                 results.forEach(food => {
                     const item = document.createElement('div');
                     item.className = 'search-item';
-                    item.innerHTML = `<div><span class="name">${highlightMatch(food.name, query)}</span><span class="code">${I18N.codeLabel}: ${food.bls_code}</span></div><div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>`;
+                    const aliasBadgeHtml = food.matched_alias
+                        ? `<span class="alias-badge">${I18N.aliasBadge}<span class="alias-tooltip">${highlightMatch(food.matched_alias, query)}</span></span>`
+                        : '';
+                    item.innerHTML = `<div><span class="name">${highlightMatch(food.name, query)}${aliasBadgeHtml}</span><span class="code">${I18N.codeLabel}: ${food.bls_code}</span></div><div class="energy-badge">${food.energy_in_kcal_per_100g} kcal/100g</div>`;
                     item.addEventListener('mousedown', () => {
                         if (!activeSearchCell) return;
                         const cell = activeSearchCell;

@@ -3,7 +3,8 @@ from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, filters
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset, SiteSettings
+from rest_framework.response import Response
+from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset, SiteSettings, get_alias_index
 from .serializers import (
     FoodSerializer, MealPlanSerializer, MealPlanDaySerializer,
     MealPlanFoodSerializer, ThresholdPresetSerializer
@@ -85,30 +86,29 @@ class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
     pagination_class = None
-    
+
+    @staticmethod
+    def _parse_search(search_query):
+        """Return (low_energy_intent, high_energy_intent, clean_search) for a raw query."""
+        low_energy_intent = bool(re.search(r'\blow\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
+        high_energy_intent = bool(re.search(r'\bhigh\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
+        clean_search = re.sub(r'\b(low|high)\b.*\b(energy|cal|kcal|kj)\b', '', search_query, flags=re.I).strip()
+        if not clean_search and not (low_energy_intent or high_energy_intent):
+            clean_search = search_query
+        return low_energy_intent, high_energy_intent, clean_search
+
     def get_queryset(self):
         queryset = Food.objects.all()
         search_query = self.request.query_params.get('search', '').strip()
-        
+
         if len(search_query) < 2:
             return queryset.none() if search_query else queryset
 
         # 1. Semantic Extraction
-        # We look for intents like "low energy", "high cal", etc.
-        low_energy_intent = bool(re.search(r'\blow\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
-        high_energy_intent = bool(re.search(r'\bhigh\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
-        
-        # Clean the query string from semantic keywords to perform name search
-        clean_search = re.sub(r'\b(low|high)\b.*\b(energy|cal|kcal|kj)\b', '', search_query, flags=re.I).strip()
-        if not clean_search and (low_energy_intent or high_energy_intent):
-            # If user ONLY typed "low energy", we don't filter by name
-            clean_search = ""
-        elif not clean_search:
-            clean_search = search_query
+        low_energy_intent, high_energy_intent, clean_search = self._parse_search(search_query)
 
-        # 2. Filtering
+        # 2. Filtering by name / bls_code
         if clean_search:
-            # Match the whole phrase or individual words
             terms = clean_search.split()
             name_query = Q(name__icontains=clean_search) | Q(bls_code__icontains=clean_search)
             for term in terms:
@@ -117,12 +117,11 @@ class FoodViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(name_query)
 
         # 3. Weighted Relevance Ranking
-        # We assign points based on how well the name matches
         queryset = queryset.annotate(
             relevance=Case(
-                When(name__iexact=clean_search, then=Value(100)), # Exact match
-                When(name__istartswith=clean_search, then=Value(50)), # Starts with
-                When(name__icontains=f" {clean_search}", then=Value(40)), # Word starts with
+                When(name__iexact=clean_search, then=Value(100)),
+                When(name__istartswith=clean_search, then=Value(50)),
+                When(name__icontains=f" {clean_search}", then=Value(40)),
                 default=Value(1),
                 output_field=IntegerField(),
             )
@@ -130,15 +129,59 @@ class FoodViewSet(viewsets.ModelViewSet):
 
         # 4. Final Ordering
         order_params = ['-relevance']
-        
         if low_energy_intent:
-            order_params.insert(0, 'energy_in_kcal_per_100g') # Sort by lowest cal first
+            order_params.insert(0, 'energy_in_kcal_per_100g')
         elif high_energy_intent:
-            order_params.insert(0, '-energy_in_kcal_per_100g') # Sort by highest cal first
-            
+            order_params.insert(0, '-energy_in_kcal_per_100g')
         order_params.append('name')
-        
+
         return queryset.order_by(*order_params)
+
+    def list(self, request, *args, **kwargs):
+        """Return foods matching by name/bls_code and additionally by aliases.
+
+        Foods that only appear due to an alias match carry a non-null
+        ``matched_alias`` attribute which the serializer exposes so the
+        frontend can render an "alias" badge.
+        """
+        search_query = request.query_params.get('search', '').strip()
+
+        # Get name-based results via the regular queryset
+        name_queryset = self.get_queryset()
+        name_foods = list(name_queryset)
+        name_food_ids = {f.id for f in name_foods}
+
+        # Alias search (Python-side, using the cached index)
+        alias_matches: dict[int, str] = {}  # food_id → best matching alias string
+        if len(search_query) >= 2:
+            _, _, clean_search = self._parse_search(search_query)
+            if clean_search:
+                search_lower = clean_search.lower()
+                terms = [t for t in clean_search.split() if len(t) >= 2]
+                alias_index = get_alias_index()
+                for food_id, aliases in alias_index.items():
+                    for alias in aliases:
+                        alias_lower = alias.lower()
+                        if search_lower in alias_lower or any(t.lower() in alias_lower for t in terms):
+                            alias_matches[food_id] = alias
+                            break
+
+        # Fetch foods that matched only via alias (not already in name results)
+        alias_only_ids = set(alias_matches.keys()) - name_food_ids
+        alias_only_foods = (
+            list(Food.objects.filter(id__in=alias_only_ids).order_by('name'))
+            if alias_only_ids else []
+        )
+
+        # Annotate: name-matched foods get None, alias-only foods get the alias string
+        for food in name_foods:
+            food.matched_alias = None
+        for food in alias_only_foods:
+            food.matched_alias = alias_matches[food.id]
+
+        all_foods = name_foods + alias_only_foods
+        serializer = self.get_serializer(all_foods, many=True)
+        return Response(serializer.data)
 
 from django.db.models import Prefetch
 

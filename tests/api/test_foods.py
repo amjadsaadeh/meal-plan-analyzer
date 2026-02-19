@@ -1,6 +1,43 @@
 import pytest
+from django.core.cache import cache
 from rest_framework import status
-from meals.models import Food
+from meals.models import Food, FoodAlias, ALIAS_CACHE_KEY
+from meals.models import get_alias_index
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _make_food(**kwargs):
+    """Create a minimal Food instance for testing."""
+    defaults = dict(
+        bls_code="TEST001",
+        name="Testfood",
+        energy_in_kj_per_100g=100.0,
+        energy_in_kcal_per_100g=24.0,
+        protein_in_g_per_100g=1.0,
+        fat_in_g_per_100g=0.5,
+        carbohydrate_in_g_per_100g=4.0,
+        fibre_in_g_per_100g=0.5,
+        iron_in_mg_per_100g=0.1,
+        sugar_in_g_per_100g=2.0,
+        omega3_in_g_per_100g=0.01,
+        vitc_in_mg_per_100g=1.0,
+        magnesium_in_mg_per_100g=5.0,
+        zinc_in_mg_per_100g=0.1,
+        vitb12_in_mug_per_100g=0.0,
+        vita_in_mug_per_100g=0.0,
+        calcium_in_mg_per_100g=10.0,
+        vitd_in_mug_per_100g=0.0,
+    )
+    defaults.update(kwargs)
+    return Food.objects.create(**defaults)
+
+
+# ---------------------------------------------------------------------------
+# Existing tests (unchanged behaviour)
+# ---------------------------------------------------------------------------
 
 @pytest.mark.django_db
 class TestFoodAPI:
@@ -70,7 +107,7 @@ class TestFoodAPI:
     def test_search_foods_name_authenticated(self, authenticated_client):
         """Test searching for foods by name with authentication."""
         food = Food.objects.get(pk=1)
-        search_term = food.name[:10] 
+        search_term = food.name[:10]
         response = authenticated_client.get(f'/api/foods/?search={search_term}')
         assert response.status_code == status.HTTP_200_OK
         assert any(item['name'] == food.name for item in response.data)
@@ -81,3 +118,201 @@ class TestFoodAPI:
         assert response.status_code == status.HTTP_200_OK
         energies = [item['energy_in_kcal_per_100g'] for item in response.data]
         assert energies == sorted(energies)
+
+    # ------------------------------------------------------------------
+    # matched_alias field is always present
+    # ------------------------------------------------------------------
+
+    def test_food_list_has_matched_alias_field(self, authenticated_client):
+        """Every food in the list response exposes matched_alias."""
+        response = authenticated_client.get('/api/foods/')
+        assert response.status_code == status.HTTP_200_OK
+        for item in response.data:
+            assert 'matched_alias' in item
+
+    def test_food_detail_has_matched_alias_field(self, authenticated_client):
+        """Single food detail endpoint exposes matched_alias."""
+        food = Food.objects.first()
+        response = authenticated_client.get(f'/api/foods/{food.id}/')
+        assert response.status_code == status.HTTP_200_OK
+        assert 'matched_alias' in response.data
+
+    def test_name_search_matched_alias_is_null(self, authenticated_client):
+        """Foods found by name/bls_code match should have matched_alias=null."""
+        food = Food.objects.get(pk=1)
+        response = authenticated_client.get(f'/api/foods/?search={food.name[:6]}')
+        assert response.status_code == status.HTTP_200_OK
+        for item in response.data:
+            if item['id'] == food.id:
+                assert item['matched_alias'] is None
+                break
+
+
+# ---------------------------------------------------------------------------
+# Alias search tests
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+class TestFoodAliasSearch:
+    """Tests for alias-based food search."""
+
+    def setup_method(self):
+        # Ensure the alias cache is clear before every test
+        cache.delete(ALIAS_CACHE_KEY)
+
+    def teardown_method(self):
+        cache.delete(ALIAS_CACHE_KEY)
+
+    # ------------------------------------------------------------------
+    # Model / cache tests
+    # ------------------------------------------------------------------
+
+    def test_alias_index_is_empty_when_no_aliases_exist(self):
+        """get_alias_index returns an empty dict when no FoodAlias rows exist."""
+        assert FoodAlias.objects.count() == 0
+        index = get_alias_index()
+        assert index == {}
+
+    def test_alias_index_populated_after_creation(self):
+        """get_alias_index reflects newly created aliases."""
+        food = _make_food(bls_code="ALIAS001", name="Hühnerbrust")
+        FoodAlias.objects.create(food=food, alias="Chicken breast")
+        index = get_alias_index()
+        assert food.id in index
+        assert "Chicken breast" in index[food.id]
+
+    def test_alias_index_cached_after_first_call(self):
+        """Second call to get_alias_index returns the cached value."""
+        food = _make_food(bls_code="ALIAS002", name="Lachs")
+        FoodAlias.objects.create(food=food, alias="Salmon")
+        # First call builds and caches
+        get_alias_index()
+        assert cache.get(ALIAS_CACHE_KEY) is not None
+        # Second call hits the cache (we verify the key is still there)
+        index2 = get_alias_index()
+        assert food.id in index2
+
+    def test_cache_invalidated_on_alias_create(self):
+        """Creating a FoodAlias clears the alias cache."""
+        food = _make_food(bls_code="ALIAS003", name="Rind")
+        get_alias_index()  # populate cache
+        FoodAlias.objects.create(food=food, alias="Beef")
+        assert cache.get(ALIAS_CACHE_KEY) is None
+
+    def test_cache_invalidated_on_alias_delete(self):
+        """Deleting a FoodAlias clears the alias cache."""
+        food = _make_food(bls_code="ALIAS004", name="Schwein")
+        fa = FoodAlias.objects.create(food=food, alias="Pork")
+        get_alias_index()  # populate cache
+        fa.delete()
+        assert cache.get(ALIAS_CACHE_KEY) is None
+
+    def test_multiple_aliases_per_food(self):
+        """A food can have multiple aliases all stored in the index."""
+        food = _make_food(bls_code="ALIAS005", name="Kartoffel")
+        FoodAlias.objects.create(food=food, alias="Potato")
+        FoodAlias.objects.create(food=food, alias="Spud")
+        index = get_alias_index()
+        assert set(index[food.id]) == {"Potato", "Spud"}
+
+    # ------------------------------------------------------------------
+    # API endpoint tests
+    # ------------------------------------------------------------------
+
+    def test_search_by_alias_returns_food(self, authenticated_client):
+        """Searching for an alias term returns the associated food."""
+        food = _make_food(bls_code="ALIAS010", name="Apfel")
+        FoodAlias.objects.create(food=food, alias="Malum")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        response = authenticated_client.get('/api/foods/?search=Malum')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert food.id in ids
+
+    def test_alias_match_has_matched_alias_set(self, authenticated_client):
+        """Foods returned via alias match carry the alias string in matched_alias."""
+        food = _make_food(bls_code="ALIAS011", name="Birne")
+        FoodAlias.objects.create(food=food, alias="Pear")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        response = authenticated_client.get('/api/foods/?search=Pear')
+        assert response.status_code == status.HTTP_200_OK
+        matched = next((item for item in response.data if item['id'] == food.id), None)
+        assert matched is not None
+        assert matched['matched_alias'] == "Pear"
+
+    def test_alias_search_is_case_insensitive(self, authenticated_client):
+        """Alias matching ignores letter case."""
+        food = _make_food(bls_code="ALIAS012", name="Tomate")
+        FoodAlias.objects.create(food=food, alias="Tomato")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        response = authenticated_client.get('/api/foods/?search=tomato')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert food.id in ids
+
+        response_upper = authenticated_client.get('/api/foods/?search=TOMATO')
+        assert food.id in [item['id'] for item in response_upper.data]
+
+    def test_alias_partial_match(self, authenticated_client):
+        """A partial term contained in an alias still returns the food."""
+        food = _make_food(bls_code="ALIAS013", name="Erdbeere")
+        FoodAlias.objects.create(food=food, alias="Strawberry")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        # "strawb" is a substring of "Strawberry"
+        response = authenticated_client.get('/api/foods/?search=strawb')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert food.id in ids
+
+    def test_name_match_does_not_get_alias_badge(self, authenticated_client):
+        """Foods found by their actual name do not get a matched_alias even if they also have aliases."""
+        food = _make_food(bls_code="ALIAS014", name="Mango")
+        FoodAlias.objects.create(food=food, alias="AnotherName")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        # Search by actual name
+        response = authenticated_client.get('/api/foods/?search=Mango')
+        assert response.status_code == status.HTTP_200_OK
+        matched = next((item for item in response.data if item['id'] == food.id), None)
+        assert matched is not None
+        assert matched['matched_alias'] is None
+
+    def test_alias_only_result_appears_after_name_results(self, authenticated_client):
+        """Foods matched by alias come after name-matched results in the response."""
+        food_name = _make_food(bls_code="ALIAS015", name="Zitrone")
+        food_alias = _make_food(bls_code="ALIAS016", name="Unrelated XYZ")
+        FoodAlias.objects.create(food=food_alias, alias="Zitrone alias")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        response = authenticated_client.get('/api/foods/?search=Zitrone')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert food_name.id in ids
+        assert food_alias.id in ids
+        # Name match comes first
+        assert ids.index(food_name.id) < ids.index(food_alias.id)
+
+    def test_no_duplicate_when_both_name_and_alias_match(self, authenticated_client):
+        """A food matching by both name and alias appears only once."""
+        food = _make_food(bls_code="ALIAS017", name="Banane")
+        FoodAlias.objects.create(food=food, alias="Banane gelb")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        response = authenticated_client.get('/api/foods/?search=Banane')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert ids.count(food.id) == 1
+
+    def test_short_query_below_threshold_returns_nothing(self, authenticated_client):
+        """Queries shorter than 2 chars return an empty list."""
+        food = _make_food(bls_code="ALIAS018", name="Ei")
+        FoodAlias.objects.create(food=food, alias="E")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        response = authenticated_client.get('/api/foods/?search=E')
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data == []
