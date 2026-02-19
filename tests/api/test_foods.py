@@ -316,3 +316,177 @@ class TestFoodAliasSearch:
         response = authenticated_client.get('/api/foods/?search=E')
         assert response.status_code == status.HTTP_200_OK
         assert response.data == []
+
+
+# ---------------------------------------------------------------------------
+# Real-world German dialect alias scenarios
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+class TestRealWorldAliases:
+    """Tests with realistic German regional/dialect synonyms.
+
+    Setup
+    -----
+    - Kartoffeln  → aliases: Erdäpfel, Krumbirnen
+    - Tomate      → alias:   Paradeisa
+    - Gemüsebrühe → alias:   Suppe
+    - Knochenbrühe → alias:  Suppe          (same alias shared by two foods)
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup_foods(self, db):
+        cache.delete(ALIAS_CACHE_KEY)
+
+        self.kartoffeln = _make_food(bls_code="RW001", name="Kartoffeln")
+        FoodAlias.objects.create(food=self.kartoffeln, alias="Erdäpfel")
+        FoodAlias.objects.create(food=self.kartoffeln, alias="Krumbirnen")
+
+        self.tomate = _make_food(bls_code="RW002", name="Tomate")
+        FoodAlias.objects.create(food=self.tomate, alias="Paradeisa")
+
+        self.gemuesebruehe = _make_food(bls_code="RW003", name="Gemüsebrühe")
+        FoodAlias.objects.create(food=self.gemuesebruehe, alias="Suppe")
+
+        self.knochenbruehe = _make_food(bls_code="RW004", name="Knochenbrühe")
+        FoodAlias.objects.create(food=self.knochenbruehe, alias="Suppe")
+
+        # Ensure fresh cache after creating all aliases
+        cache.delete(ALIAS_CACHE_KEY)
+        yield
+        cache.delete(ALIAS_CACHE_KEY)
+
+    # ------------------------------------------------------------------
+    # Kartoffeln / Erdäpfel / Krumbirnen
+    # ------------------------------------------------------------------
+
+    def test_kartoffeln_found_by_erdaepfel(self, authenticated_client):
+        """Searching 'Erdäpfel' (Austrian dialect) returns Kartoffeln."""
+        response = authenticated_client.get('/api/foods/?search=Erdäpfel')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert self.kartoffeln.id in ids
+
+    def test_kartoffeln_erdaepfel_sets_matched_alias(self, authenticated_client):
+        """matched_alias is set to 'Erdäpfel' when found via that alias."""
+        response = authenticated_client.get('/api/foods/?search=Erdäpfel')
+        item = next(i for i in response.data if i['id'] == self.kartoffeln.id)
+        assert item['matched_alias'] == "Erdäpfel"
+
+    def test_kartoffeln_found_by_krumbirnen(self, authenticated_client):
+        """Searching 'Krumbirnen' (regional dialect) returns Kartoffeln."""
+        response = authenticated_client.get('/api/foods/?search=Krumbirnen')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert self.kartoffeln.id in ids
+
+    def test_kartoffeln_krumbirnen_sets_matched_alias(self, authenticated_client):
+        """matched_alias is set to 'Krumbirnen' when found via that alias."""
+        response = authenticated_client.get('/api/foods/?search=Krumbirnen')
+        item = next(i for i in response.data if i['id'] == self.kartoffeln.id)
+        assert item['matched_alias'] == "Krumbirnen"
+
+    def test_kartoffeln_partial_erdaepf(self, authenticated_client):
+        """Partial term 'Erdäpf' is enough to match the alias 'Erdäpfel'."""
+        response = authenticated_client.get('/api/foods/?search=Erdäpf')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert self.kartoffeln.id in ids
+
+    def test_kartoffeln_index_has_both_aliases(self):
+        """The alias index contains both 'Erdäpfel' and 'Krumbirnen' for Kartoffeln."""
+        index = get_alias_index()
+        assert self.kartoffeln.id in index
+        assert set(index[self.kartoffeln.id]) == {"Erdäpfel", "Krumbirnen"}
+
+    def test_kartoffeln_by_name_has_no_alias_badge(self, authenticated_client):
+        """Searching the real name 'Kartoffeln' does not set matched_alias."""
+        response = authenticated_client.get('/api/foods/?search=Kartoffeln')
+        item = next((i for i in response.data if i['id'] == self.kartoffeln.id), None)
+        assert item is not None
+        assert item['matched_alias'] is None
+
+    # ------------------------------------------------------------------
+    # Tomate / Paradeisa
+    # ------------------------------------------------------------------
+
+    def test_tomate_found_by_paradeisa(self, authenticated_client):
+        """Searching 'Paradeisa' (Bavarian/Austrian word for tomato) returns Tomate."""
+        response = authenticated_client.get('/api/foods/?search=Paradeisa')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert self.tomate.id in ids
+
+    def test_tomate_paradeisa_sets_matched_alias(self, authenticated_client):
+        """matched_alias is 'Paradeisa' when Tomate is found via that alias."""
+        response = authenticated_client.get('/api/foods/?search=Paradeisa')
+        item = next(i for i in response.data if i['id'] == self.tomate.id)
+        assert item['matched_alias'] == "Paradeisa"
+
+    def test_tomate_partial_paradeis(self, authenticated_client):
+        """Partial term 'Paradeis' matches the alias 'Paradeisa'."""
+        response = authenticated_client.get('/api/foods/?search=Paradeis')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert self.tomate.id in ids
+
+    def test_tomate_paradeisa_case_insensitive(self, authenticated_client):
+        """Alias search for 'paradeisa' (lowercase) still finds Tomate."""
+        response = authenticated_client.get('/api/foods/?search=paradeisa')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert self.tomate.id in ids
+
+    # ------------------------------------------------------------------
+    # Shared alias "Suppe" → Gemüsebrühe AND Knochenbrühe
+    # ------------------------------------------------------------------
+
+    def test_suppe_returns_both_bruehe_foods(self, authenticated_client):
+        """Searching 'Suppe' returns both Gemüsebrühe and Knochenbrühe."""
+        response = authenticated_client.get('/api/foods/?search=Suppe')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert self.gemuesebruehe.id in ids
+        assert self.knochenbruehe.id in ids
+
+    def test_suppe_both_foods_have_matched_alias_suppe(self, authenticated_client):
+        """Both foods found via 'Suppe' carry matched_alias='Suppe'."""
+        response = authenticated_client.get('/api/foods/?search=Suppe')
+        by_id = {item['id']: item for item in response.data}
+        assert by_id[self.gemuesebruehe.id]['matched_alias'] == "Suppe"
+        assert by_id[self.knochenbruehe.id]['matched_alias'] == "Suppe"
+
+    def test_suppe_each_food_appears_exactly_once(self, authenticated_client):
+        """No duplicates: each brühe food appears exactly once in the results."""
+        response = authenticated_client.get('/api/foods/?search=Suppe')
+        ids = [item['id'] for item in response.data]
+        assert ids.count(self.gemuesebruehe.id) == 1
+        assert ids.count(self.knochenbruehe.id) == 1
+
+    def test_suppe_partial_supp(self, authenticated_client):
+        """Partial term 'Supp' is enough to match both brühe foods via alias."""
+        response = authenticated_client.get('/api/foods/?search=Supp')
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item['id'] for item in response.data]
+        assert self.gemuesebruehe.id in ids
+        assert self.knochenbruehe.id in ids
+
+    def test_suppe_alias_index_has_both_food_ids(self):
+        """The alias index maps both brühe food IDs to an alias list containing 'Suppe'."""
+        index = get_alias_index()
+        assert "Suppe" in index.get(self.gemuesebruehe.id, [])
+        assert "Suppe" in index.get(self.knochenbruehe.id, [])
+
+    def test_gemuesebruehe_by_name_has_no_alias_badge(self, authenticated_client):
+        """Searching 'Gemüsebrühe' by name gives matched_alias=None."""
+        response = authenticated_client.get('/api/foods/?search=Gemüsebrühe')
+        item = next((i for i in response.data if i['id'] == self.gemuesebruehe.id), None)
+        assert item is not None
+        assert item['matched_alias'] is None
+
+    def test_knochenbruehe_by_name_has_no_alias_badge(self, authenticated_client):
+        """Searching 'Knochenbrühe' by name gives matched_alias=None."""
+        response = authenticated_client.get('/api/foods/?search=Knochenbrühe')
+        item = next((i for i in response.data if i['id'] == self.knochenbruehe.id), None)
+        assert item is not None
+        assert item['matched_alias'] is None
