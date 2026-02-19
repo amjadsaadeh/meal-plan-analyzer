@@ -20,8 +20,12 @@ from django.conf.urls.i18n import set_language
 from django.conf import settings
 from django.conf.urls.static import static
 
+from django.views.static import serve
+from django.urls import re_path
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('i18n/set-language/', set_language, name='set_language'),
     path('', include('meals.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]

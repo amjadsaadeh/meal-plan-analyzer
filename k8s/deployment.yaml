@@ -53,6 +53,8 @@ spec:
           volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles
+            - name: media
+              mountPath: /app/media
           livenessProbe:
             httpGet:
               path: /
@@ -68,3 +70,6 @@ spec:
       volumes:
         - name: staticfiles
           emptyDir: {}
+        - name: media
+          persistentVolumeClaim:
+            claimName: meal-planner-media-pvc

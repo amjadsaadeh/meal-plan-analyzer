@@ -94,6 +94,7 @@
       loop:
         - "../k8s/configmap.yaml"
         - "../k8s/secrets.yaml"
+        - "../k8s/pvc.yaml"
         - "../k8s/deployment.yaml"
         - "../k8s/service.yaml"
         - "../k8s/ingress.yaml"
