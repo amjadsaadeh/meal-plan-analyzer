@@ -11,6 +11,43 @@ from .serializers import (
 )
 from .nutrients import NUTRIENTS
 
+# ---------------------------------------------------------------------------
+# Umlaut helpers
+# ---------------------------------------------------------------------------
+
+_UMLAUT_PAIRS = [('a', 'ä'), ('A', 'Ä'), ('o', 'ö'), ('O', 'Ö'), ('u', 'ü'), ('U', 'Ü')]
+
+
+def normalize_umlauts(text: str) -> str:
+    """Fold German umlauts to their ASCII base vowels (ä→a, ö→o, ü→u)."""
+    for plain, umlaut in _UMLAUT_PAIRS:
+        text = text.replace(umlaut, plain)
+    return text
+
+
+def _umlaut_search_variants(text: str) -> list[str]:
+    """Return extra search terms for umlaut-tolerant DB matching.
+
+    Two variant types are generated (only those that differ from *text*):
+
+    * **Normalised form** – umlauts stripped (ä→a, ö→o, ü→u).  Useful when
+      the user typed WITH umlauts but the stored value uses ASCII vowels.
+
+    * **Single-substitution expansions** – for every plain vowel in *text*,
+      produce one variant where the *first* occurrence is replaced by its
+      umlaut counterpart (a→ä, o→ö, u→ü).  Useful when the user typed
+      WITHOUT umlauts but the stored value has them (e.g. "Mohre"→"Möhre").
+    """
+    variants: set[str] = set()
+    normalised = normalize_umlauts(text)
+    if normalised != text:
+        variants.add(normalised)
+    for plain, umlaut in _UMLAUT_PAIRS:
+        if plain in text:
+            variants.add(text.replace(plain, umlaut, 1))
+    variants.discard(text)
+    return list(variants)
+
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -107,13 +144,21 @@ class FoodViewSet(viewsets.ModelViewSet):
         # 1. Semantic Extraction
         low_energy_intent, high_energy_intent, clean_search = self._parse_search(search_query)
 
-        # 2. Filtering by name / bls_code
+        # 2. Filtering by name / bls_code (with umlaut-tolerant variants)
         if clean_search:
             terms = clean_search.split()
             name_query = Q(name__icontains=clean_search) | Q(bls_code__icontains=clean_search)
             for term in terms:
                 if len(term) >= 2:
                     name_query |= Q(name__icontains=term)
+            # Add umlaut-normalised/expanded forms so that e.g. "Mohre" finds
+            # "Möhre" and "Möhre" also finds a hypothetical "Mohre" in the DB.
+            all_variants: set[str] = set(_umlaut_search_variants(clean_search))
+            for term in terms:
+                all_variants.update(_umlaut_search_variants(term))
+            for variant in all_variants:
+                if len(variant) >= 2:
+                    name_query |= Q(name__icontains=variant) | Q(bls_code__icontains=variant)
             queryset = queryset.filter(name_query)
 
         # 3. Weighted Relevance Ranking
@@ -152,17 +197,24 @@ class FoodViewSet(viewsets.ModelViewSet):
         name_food_ids = {f.id for f in name_foods}
 
         # Alias search (Python-side, using the cached index)
+        # Both the search term and the stored alias are normalised (ä→a, ö→o,
+        # ü→u) before the substring check so that e.g. "Erdapfel" matches the
+        # alias "Erdäpfel" and "Möhre" matches the alias "Mohre".
         alias_matches: dict[int, str] = {}  # food_id → best matching alias string
         if len(search_query) >= 2:
             _, _, clean_search = self._parse_search(search_query)
             if clean_search:
-                search_lower = clean_search.lower()
-                terms = [t for t in clean_search.split() if len(t) >= 2]
+                search_norm = normalize_umlauts(clean_search.lower())
+                terms_norm = [
+                    normalize_umlauts(t.lower())
+                    for t in clean_search.split()
+                    if len(t) >= 2
+                ]
                 alias_index = get_alias_index()
                 for food_id, aliases in alias_index.items():
                     for alias in aliases:
-                        alias_lower = alias.lower()
-                        if search_lower in alias_lower or any(t.lower() in alias_lower for t in terms):
+                        alias_norm = normalize_umlauts(alias.lower())
+                        if search_norm in alias_norm or any(t in alias_norm for t in terms_norm):
                             alias_matches[food_id] = alias
                             break
 
