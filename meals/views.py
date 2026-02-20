@@ -26,25 +26,65 @@ def normalize_umlauts(text: str) -> str:
 
 
 def _umlaut_search_variants(text: str) -> list[str]:
-    """Return extra search terms for umlaut-tolerant DB matching.
+    """Return extra DB search terms covering all umlaut substitution combinations.
 
-    Two variant types are generated (only those that differ from *text*):
+    Strategy
+    --------
+    1. **Normalised form** (ä→a, ö→o, ü→u) – covers the case where the user
+       typed WITH umlauts but the stored value uses plain ASCII vowels
+       (e.g. "Tomäte" → also searches "Tomate").
 
-    * **Normalised form** – umlauts stripped (ä→a, ö→o, ü→u).  Useful when
-      the user typed WITH umlauts but the stored value uses ASCII vowels.
+    2. **All permutations** of substituting every plain vowel back to its umlaut
+       in the fully-normalised base string – covers the case where the user
+       typed WITHOUT umlauts but the stored value has them, including words
+       with *multiple* umlauts (e.g. "Gemusebruhe" → also searches "Gemüsebrühe"
+       by replacing both 'u' positions simultaneously).
 
-    * **Single-substitution expansions** – for every plain vowel in *text*,
-      produce one variant where the *first* occurrence is replaced by its
-      umlaut counterpart (a→ä, o→ö, u→ü).  Useful when the user typed
-      WITHOUT umlauts but the stored value has them (e.g. "Mohre"→"Möhre").
+    The number of variants is at most 2^n − 1 where n is the count of
+    umlaut-substitutable character positions.  For n > 6 the function falls
+    back to single-position substitutions to avoid an exponential blow-up
+    on pathological inputs (in practice German food names rarely exceed 3–4
+    such positions).
     """
     variants: set[str] = set()
+
+    # 1. Fully normalised form (handles user-typed-with-umlaut → plain-in-DB)
     normalised = normalize_umlauts(text)
     if normalised != text:
         variants.add(normalised)
+
+    # 2. Locate every substitutable position in the normalised base
+    base = normalised
+    positions: list[tuple[int, str, str]] = []  # (index, plain_char, umlaut_char)
     for plain, umlaut in _UMLAUT_PAIRS:
-        if plain in text:
-            variants.add(text.replace(plain, umlaut, 1))
+        start = 0
+        while True:
+            idx = base.find(plain, start)
+            if idx == -1:
+                break
+            positions.append((idx, plain, umlaut))
+            start = idx + 1
+
+    if positions:
+        n = len(positions)
+        base_chars = list(base)
+        if n <= 6:
+            # Enumerate all 2^n − 1 non-empty substitution masks
+            for mask in range(1, 1 << n):
+                chars = base_chars[:]
+                for bit, (idx, _, umlaut) in enumerate(positions):
+                    if mask >> bit & 1:
+                        chars[idx] = umlaut
+                variant = ''.join(chars)
+                if variant != text:
+                    variants.add(variant)
+        else:
+            # Fallback: single-position substitutions only
+            for idx, _, umlaut in positions:
+                variant = base[:idx] + umlaut + base[idx + 1:]
+                if variant != text:
+                    variants.add(variant)
+
     variants.discard(text)
     return list(variants)
 
