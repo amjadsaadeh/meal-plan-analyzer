@@ -115,6 +115,7 @@ def get_default_visible_nutrients():
 
 class MealPlan(models.Model):
     name = models.CharField(max_length=255, default="Neuer Plan")
+    subtitle = models.CharField(max_length=500, blank=True, default='')
     creation_date = models.DateTimeField(auto_now_add=True)
     change_date = models.DateTimeField(auto_now=True)
     visible_nutrients = models.JSONField(default=get_default_visible_nutrients, blank=True)
@@ -192,6 +193,7 @@ class MealPlanFood(models.Model):
     meal_plan_day = models.ForeignKey(MealPlanDay, on_delete=models.CASCADE)
     food = models.ForeignKey(Food, on_delete=models.CASCADE)
     amount_in_g = models.FloatField()
+    export_name = models.CharField(max_length=255, blank=True, default='')
     meal_type = models.CharField(
         max_length=20,
         choices=MealType.choices,
