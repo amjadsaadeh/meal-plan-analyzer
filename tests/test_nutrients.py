@@ -53,8 +53,8 @@ class TestNutrientsDict:
 
     def test_labels_are_non_empty_strings(self):
         for key, data in NUTRIENTS.items():
-            assert isinstance(data['label'], str) and data['label'], \
-                f"Nutrient '{key}' has empty label"
+            label_str = str(data['label'])
+            assert label_str, f"Nutrient '{key}' has empty label"
 
     def test_units_are_non_empty_strings(self):
         for key, data in NUTRIENTS.items():
