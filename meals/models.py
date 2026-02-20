@@ -1,8 +1,30 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.core.cache import cache
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 import jsonschema
 from .nutrients import THRESHOLD_SCHEMA, NUTRIENT_IDS
+
+ALIAS_CACHE_KEY = 'food_aliases_index'
+
+
+def get_alias_index():
+    """Return a cached dict mapping food_id → list[alias_string].
+
+    The index is built from FoodAlias rows on the first call and then stored
+    in Django's cache backend for up to one hour to keep database load low.
+    Cache-invalidation signals (see bottom of file) clear the entry whenever
+    any FoodAlias row is created, changed, or deleted.
+    """
+    index = cache.get(ALIAS_CACHE_KEY)
+    if index is None:
+        index = {}
+        for fa in FoodAlias.objects.select_related('food').values('food_id', 'alias'):
+            index.setdefault(fa['food_id'], []).append(fa['alias'])
+        cache.set(ALIAS_CACHE_KEY, index, timeout=3600)
+    return index
 
 
 class Food(models.Model):
@@ -196,3 +218,30 @@ class SiteSettings(models.Model):
     def get(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+
+class FoodAlias(models.Model):
+    """Alternative name/synonym for a food item used during search."""
+
+    food = models.ForeignKey(Food, on_delete=models.CASCADE, related_name='aliases')
+    alias = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ('food', 'alias')
+        ordering = ['alias']
+        verbose_name = 'Food Alias'
+        verbose_name_plural = 'Food Aliases'
+
+    def __str__(self):
+        return f"{self.alias} → {self.food.name}"
+
+
+# ---------------------------------------------------------------------------
+# Cache invalidation signals
+# ---------------------------------------------------------------------------
+
+@receiver(post_save, sender=FoodAlias)
+@receiver(post_delete, sender=FoodAlias)
+def invalidate_alias_cache(sender, **kwargs):
+    """Clear the alias index cache whenever aliases are added, changed, or removed."""
+    cache.delete(ALIAS_CACHE_KEY)
