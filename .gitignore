@@ -1,6 +1,6 @@
 .venv
 *.sqlite3
-*.xlsx
+/*.xlsx
 __pycache__
 .vault_password
 *.retry

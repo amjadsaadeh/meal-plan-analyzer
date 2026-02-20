@@ -1,5 +1,5 @@
 import pytest
-import os
+from pathlib import Path
 import openpyxl
 from django.core.management import call_command
 from meals.models import Food
@@ -7,16 +7,16 @@ from meals.models import Food
 @pytest.mark.django_db
 def test_food_import_from_xlsx():
     # Path to the generated test file
-    test_file_path = "/home/orchid/projects/rsos-meal-planning-app/tests/data/test_foods.xlsx"
+    test_file_path = Path(__file__).parent / "data" / "test_foods.xlsx"
     
     # Ensure file exists
-    assert os.path.exists(test_file_path), f"Test file not found at {test_file_path}"
+    assert test_file_path.exists(), f"Test file not found at {test_file_path}"
     
     # Clear existing foods to ensure a clean state
     Food.objects.all().delete()
     
     # Run the import command
-    call_command('import_foods', test_file_path)
+    call_command('import_foods', str(test_file_path))
     
     # Check if 100 foods were imported
     assert Food.objects.count() == 100
@@ -36,7 +36,7 @@ def test_food_import_from_xlsx():
 @pytest.mark.django_db
 def test_food_import_update_existing():
     # Test updating existing records
-    test_file_path = "/home/orchid/projects/rsos-meal-planning-app/tests/data/test_foods.xlsx"
+    test_file_path = Path(__file__).parent / "data" / "test_foods.xlsx"
     
     # Create a food that already exists but with different name
     wb = openpyxl.load_workbook(test_file_path, data_only=True)
@@ -51,7 +51,7 @@ def test_food_import_update_existing():
     )
     
     # Run import
-    call_command('import_foods', test_file_path)
+    call_command('import_foods', str(test_file_path))
     
     # Check if name was updated
     food = Food.objects.get(bls_code=code)

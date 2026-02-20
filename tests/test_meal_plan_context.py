@@ -11,8 +11,15 @@ This function is the core of the PDF/preview feature.  It:
 """
 
 import pytest
+from django.utils import translation
 from meals.models import Food, MealPlan, MealPlanDay, MealPlanFood
 from meals.views import get_meal_plan_context
+
+@pytest.fixture(autouse=True)
+def set_german_locale():
+    translation.activate('de')
+    yield
+    translation.deactivate()
 
 
 # ---------------------------------------------------------------------------

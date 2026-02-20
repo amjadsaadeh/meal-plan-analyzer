@@ -4,7 +4,10 @@ from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, filters
 from rest_framework.response import Response
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset, SiteSettings, get_alias_index
+from .models import (
+    Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset, 
+    SiteSettings, get_alias_index, FoodAlias, ALIAS_CACHE_KEY
+)
 from .serializers import (
     FoodSerializer, MealPlanSerializer, MealPlanDaySerializer,
     MealPlanFoodSerializer, ThresholdPresetSerializer
@@ -159,20 +162,61 @@ def meal_plan_detail(request, pk=None):
         'nutrients': NUTRIENTS,
     })
 
+def parse_food_search(search_query):
+    """Return (low_energy_intent, high_energy_intent, clean_search) for a raw query."""
+    low_energy_intent = bool(re.search(r'\blow\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
+    high_energy_intent = bool(re.search(r'\bhigh\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
+    clean_search = re.sub(r'\b(low|high)\b.*\b(energy|cal|kcal|kj)\b', '', search_query, flags=re.I).strip()
+    if not clean_search and not (low_energy_intent or high_energy_intent):
+        clean_search = search_query
+    return low_energy_intent, high_energy_intent, clean_search
+
+
+def get_food_search_query(clean_search):
+    """Return a Q object for filtering foods by name, bls_code, and umlaut variants."""
+    if not clean_search:
+        return Q()
+    terms = clean_search.split()
+    name_query = Q(name__icontains=clean_search) | Q(bls_code__icontains=clean_search)
+    for term in terms:
+        if len(term) >= 2:
+            name_query |= Q(name__icontains=term)
+    
+    all_variants: set[str] = set(_umlaut_search_variants(clean_search))
+    for term in terms:
+        all_variants.update(_umlaut_search_variants(term))
+    for variant in all_variants:
+        if len(variant) >= 2:
+            name_query |= Q(name__icontains=variant) | Q(bls_code__icontains=variant)
+    return name_query
+
+
+def get_food_ids_by_alias(clean_search):
+    """Return a set of food IDs that match the search query via their aliases."""
+    if not clean_search or len(clean_search) < 2:
+        return set()
+
+    search_norm = normalize_umlauts(clean_search.lower())
+    terms_norm = [
+        normalize_umlauts(t.lower())
+        for t in clean_search.split()
+        if len(t) >= 2
+    ]
+    alias_index = get_alias_index()
+    matched_ids = set()
+    for food_id, aliases in alias_index.items():
+        for alias in aliases:
+            alias_norm = normalize_umlauts(alias.lower())
+            if search_norm in alias_norm or any(t in alias_norm for t in terms_norm):
+                matched_ids.add(food_id)
+                break
+    return matched_ids
+
+
 class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
     pagination_class = None
-
-    @staticmethod
-    def _parse_search(search_query):
-        """Return (low_energy_intent, high_energy_intent, clean_search) for a raw query."""
-        low_energy_intent = bool(re.search(r'\blow\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
-        high_energy_intent = bool(re.search(r'\bhigh\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
-        clean_search = re.sub(r'\b(low|high)\b.*\b(energy|cal|kcal|kj)\b', '', search_query, flags=re.I).strip()
-        if not clean_search and not (low_energy_intent or high_energy_intent):
-            clean_search = search_query
-        return low_energy_intent, high_energy_intent, clean_search
 
     def get_queryset(self):
         queryset = Food.objects.all()
@@ -182,23 +226,11 @@ class FoodViewSet(viewsets.ModelViewSet):
             return queryset.none() if search_query else queryset
 
         # 1. Semantic Extraction
-        low_energy_intent, high_energy_intent, clean_search = self._parse_search(search_query)
+        low_energy_intent, high_energy_intent, clean_search = parse_food_search(search_query)
 
         # 2. Filtering by name / bls_code (with umlaut-tolerant variants)
         if clean_search:
-            terms = clean_search.split()
-            name_query = Q(name__icontains=clean_search) | Q(bls_code__icontains=clean_search)
-            for term in terms:
-                if len(term) >= 2:
-                    name_query |= Q(name__icontains=term)
-            # Add umlaut-normalised/expanded forms so that e.g. "Mohre" finds
-            # "Möhre" and "Möhre" also finds a hypothetical "Mohre" in the DB.
-            all_variants: set[str] = set(_umlaut_search_variants(clean_search))
-            for term in terms:
-                all_variants.update(_umlaut_search_variants(term))
-            for variant in all_variants:
-                if len(variant) >= 2:
-                    name_query |= Q(name__icontains=variant) | Q(bls_code__icontains=variant)
+            name_query = get_food_search_query(clean_search)
             queryset = queryset.filter(name_query)
 
         # 3. Weighted Relevance Ranking
@@ -242,7 +274,7 @@ class FoodViewSet(viewsets.ModelViewSet):
         # alias "Erdäpfel" and "Möhre" matches the alias "Mohre".
         alias_matches: dict[int, str] = {}  # food_id → best matching alias string
         if len(search_query) >= 2:
-            _, _, clean_search = self._parse_search(search_query)
+            _, _, clean_search = parse_food_search(search_query)
             if clean_search:
                 search_norm = normalize_umlauts(clean_search.lower())
                 terms_norm = [
@@ -294,6 +326,44 @@ class MealPlanDayViewSet(viewsets.ModelViewSet):
 class MealPlanFoodViewSet(viewsets.ModelViewSet):
     queryset = MealPlanFood.objects.all()
     serializer_class = MealPlanFoodSerializer
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        self._handle_export_name_alias(instance)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self._handle_export_name_alias(instance)
+
+    def _handle_export_name_alias(self, instance):
+        """
+        Check if the export_name can be found by the current food search.
+        If not (or if it doesn't match the current food), add it as an alias.
+        """
+        from django.core.cache import cache
+        export_name = instance.export_name
+        if not export_name or len(export_name) < 2:
+            return
+
+        _, _, clean_search = parse_food_search(export_name)
+        if not clean_search:
+            return
+
+        # 1. check if the export name can be found by name/bls search
+        name_query = get_food_search_query(clean_search)
+        is_found = Food.objects.filter(name_query).filter(id=instance.food_id).exists()
+
+        # 2. if not found, check alias search
+        if not is_found:
+            alias_ids = get_food_ids_by_alias(clean_search)
+            if instance.food_id in alias_ids:
+                is_found = True
+
+        # 3. if still not found, add as alias and invalidate cache
+        if not is_found:
+            FoodAlias.objects.get_or_create(food=instance.food, alias=export_name)
+            # Signal handles invalidation, but we do it explicitly as requested
+            cache.delete(ALIAS_CACHE_KEY)
 
 class ThresholdPresetViewSet(viewsets.ModelViewSet):
     queryset = ThresholdPreset.objects.all()
