@@ -354,7 +354,9 @@ def get_meal_plan_context(pk):
             label = meal_type_labels.get(mpf.meal_type, 'Other')
             if label in day_info['meals']:
                 day_info['meals'][label].append({
+                    'mpf_id': mpf.id,
                     'food': mpf.food,
+                    'export_name': mpf.export_name,
                     'amount_in_g': mpf.amount_in_g,
                     'nutrients': item_nutrients
                 })

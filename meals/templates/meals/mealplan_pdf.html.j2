@@ -359,6 +359,110 @@
             height: auto;
         }
 
+        /* Subtitle / subheading */
+        .subtitle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            min-height: 22px;
+        }
+
+        .subtitle-pen {
+            color: #bbb;
+            flex-shrink: 0;
+        }
+
+        .plan-subtitle {
+            font-size: 12pt;
+            color: #888;
+            outline: none;
+            border-radius: 4px;
+            padding: 2px 4px;
+            display: inline-block;
+            min-width: 50px;
+        }
+
+        @media screen {
+            .plan-subtitle:empty::before {
+                content: attr(data-placeholder);
+                color: #ccc;
+                font-style: italic;
+            }
+
+            .plan-subtitle:hover {
+                background: rgba(106, 217, 198, 0.06);
+            }
+
+            .plan-subtitle:focus {
+                background: rgba(106, 217, 198, 0.06);
+                border-bottom: 1px dashed #6AD9C6;
+            }
+        }
+
+        /* Renamed badge */
+        .renamed-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #e8f4fd;
+            color: #4180A6;
+            border: 1px solid #c3ddf0;
+            border-radius: 4px;
+            font-size: 7pt;
+            font-weight: 600;
+            padding: 1px 5px;
+            white-space: nowrap;
+            position: relative;
+            cursor: default;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+
+        .renamed-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 5px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3338;
+            color: #fff;
+            font-size: 8pt;
+            font-weight: 400;
+            padding: 4px 8px;
+            border-radius: 5px;
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .renamed-badge:hover .renamed-tooltip {
+            display: block;
+        }
+
+        @media screen {
+            .food-display-name {
+                outline: none;
+                border-radius: 3px;
+                padding: 1px 3px;
+            }
+
+            .food-display-name:empty::before {
+                content: attr(data-original-name);
+                color: #ccc;
+                font-style: italic;
+            }
+
+            .food-display-name:hover {
+                background: rgba(106, 217, 198, 0.07);
+            }
+
+            .food-display-name:focus {
+                background: rgba(106, 217, 198, 0.1);
+                border-bottom: 1px dashed #6AD9C6;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -411,6 +515,16 @@
             <img src="{% if logo_path %}{{ logo_path }}{% else %}{% static 'meals/img/logo.png' %}{% endif %}" alt="Reizdarm SOS Logo">
         </div>
         <h1>{% trans "Analysis" %}: {{ plan.name }}</h1>
+        <div class="subtitle-wrapper">
+            <svg class="subtitle-pen no-print" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span class="plan-subtitle"
+                  contenteditable="true"
+                  data-placeholder="{% trans "Add a subtitle..." %}"
+                  id="planSubtitle">{{ plan.subtitle }}</span>
+        </div>
         <p><strong>{% trans "Average daily intake" %}</strong> ({% blocktrans with count=days_count %}over {{ count }} days{% endblocktrans %})</p>
 
         <table class="summary-table">
@@ -472,7 +586,13 @@
                 <tbody>
                     {% for item in foods %}
                     <tr>
-                        <td>{{ item.food.name }}</td>
+                        <td>
+                            <span class="food-display-name"
+                                  contenteditable="true"
+                                  data-mpf-id="{{ item.mpf_id }}"
+                                  data-original-name="{{ item.food.name }}"
+                            >{% if item.export_name %}{{ item.export_name }}{% else %}{{ item.food.name }}{% endif %}</span>{% if item.export_name %}<span class="renamed-badge no-print">{% trans "renamed" %}<span class="renamed-tooltip">{{ item.food.name }}</span></span>{% endif %}
+                        </td>
                         <td class="text-center">{{ item.amount_in_g }}</td>
                         {% for nutrient in visible_nutrients %}
                             <td class="text-right">{{ item.nutrients|get_item:nutrient.key|floatformat:1 }}</td>
@@ -509,26 +629,97 @@
             input.addEventListener('change', async (e) => {
                 const visibleNutrients = Array.from(document.querySelectorAll('.col-option input:checked'))
                                               .map(i => i.dataset.key);
-                
-                // Add energy_in_kcal if it's not there, as it's usually mandatory/special
-                if (!visibleNutrients.includes('energy_in_kcal')) {
-                    // But wait, energy_in_kcal is excluded from the list in HTML, 
-                    // should we add it here explicitly?
-                }
 
                 try {
                     const response = await fetch(`/api/mealplans/${PLAN_ID}/`, {
                         method: 'PATCH',
-                        headers: { 
-                            'Content-Type': 'application/json', 
-                            'X-CSRFToken': CSRF_TOKEN 
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': CSRF_TOKEN
                         },
                         body: JSON.stringify({ visible_nutrients: visibleNutrients })
                     });
-                    
+
                     if (response.ok) {
-                        // Reload to update the tables
                         window.location.reload();
+                    }
+                } catch (e) { console.error(e); }
+            });
+        });
+
+        // Subtitle save
+        const RENAMED_LABEL = "{% trans 'renamed' %}";
+        const planSubtitle = document.getElementById('planSubtitle');
+        if (planSubtitle) {
+            let savedSubtitle = planSubtitle.innerText.trim();
+
+            planSubtitle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); planSubtitle.blur(); }
+                if (e.key === 'Escape') { planSubtitle.innerText = savedSubtitle; planSubtitle.blur(); }
+            });
+
+            planSubtitle.addEventListener('blur', async () => {
+                const subtitle = planSubtitle.innerText.trim();
+                if (subtitle === savedSubtitle) return;
+                try {
+                    const res = await fetch(`/api/mealplans/${PLAN_ID}/`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                        body: JSON.stringify({ subtitle })
+                    });
+                    if (res.ok) savedSubtitle = subtitle;
+                } catch (e) { console.error(e); }
+            });
+        }
+
+        // Food name rename
+        document.querySelectorAll('.food-display-name').forEach(span => {
+            const originalName = span.dataset.originalName;
+            const mpfId = span.dataset.mpfId;
+            let savedExportName = span.innerText.trim() !== originalName ? span.innerText.trim() : '';
+
+            span.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); span.blur(); }
+                if (e.key === 'Escape') {
+                    span.innerText = savedExportName || originalName;
+                    span.blur();
+                }
+            });
+
+            span.addEventListener('blur', async () => {
+                const text = span.innerText.trim();
+                const exportName = (text === '' || text === originalName) ? '' : text;
+                if (exportName === savedExportName) return;
+
+                // Restore display if cleared
+                if (!text) span.innerText = originalName;
+
+                try {
+                    const res = await fetch(`/api/mealplan-foods/${mpfId}/`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                        body: JSON.stringify({ export_name: exportName })
+                    });
+
+                    if (res.ok) {
+                        savedExportName = exportName;
+                        const td = span.closest('td');
+                        let badge = td.querySelector('.renamed-badge');
+
+                        if (exportName) {
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.className = 'renamed-badge no-print';
+                                const tooltip = document.createElement('span');
+                                tooltip.className = 'renamed-tooltip';
+                                tooltip.textContent = originalName;
+                                badge.textContent = RENAMED_LABEL;
+                                badge.appendChild(tooltip);
+                                td.appendChild(badge);
+                            }
+                        } else {
+                            if (badge) badge.remove();
+                        }
                     }
                 } catch (e) { console.error(e); }
             });
