@@ -86,15 +86,15 @@ def test_delete_ingredient(logged_in_page, live_server, test_user, meal_plan_wit
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
 
-    # One real ingredient row must exist
-    expect(logged_in_page.locator(".ingredient-row")).to_have_count(1)
+    # Only rows with data-id are real (persisted) ingredients; blank rows have no data-id
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(1)
 
     # Accept the confirmation dialog
     logged_in_page.on("dialog", lambda dialog: dialog.accept())
-    logged_in_page.locator(".ingredient-row .delete-btn").first.click()
+    logged_in_page.locator(".ingredient-row[data-id] .delete-btn").first.click()
 
-    # Row should be removed from the DOM
-    expect(logged_in_page.locator(".ingredient-row")).to_have_count(0)
+    # Real row should be removed from the DOM
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(0)
 
 
 # ---------------------------------------------------------------------------
@@ -138,15 +138,16 @@ def test_nutrient_calculation_js_recalc(logged_in_page, live_server, test_user):
     amount_input = row.locator(".amount-input")
 
     # Change amount from 100 g to 250 g
+    # oninput fires updateNutrients() which recalculates cells immediately
     amount_input.fill("250")
-    amount_input.dispatch_event("input")
 
     # 250g × 100 kcal/100 g = 250.0
     expect(row.locator(".energy_in_kcal-cell")).to_have_text("250.0")
     # 250g × 10 g protein/100 g = 25.0
     expect(row.locator(".protein_in_g-cell")).to_have_text("25.0")
 
-    # Wait for the debounced save to complete
+    # onblur fires saveRow() which sends the API request
+    amount_input.blur()
     expect(logged_in_page.locator("#syncText")).to_have_text("Saved", timeout=10000)
 
 
@@ -176,15 +177,16 @@ def test_mealplan_detail_food_search_and_add(logged_in_page, live_server, test_u
 
     expect(name_cell).to_contain_text("Super Banana")
 
-    # Update amount
+    # Update amount — oninput recalculates cells, onblur triggers saveRow()
     row = name_cell.locator("xpath=./ancestor::tr")
     amount_input = row.locator(".amount-input")
     amount_input.fill("200")
-    amount_input.dispatch_event("input")
 
     # 200g × 89 kcal/100 g = 178.0
     expect(row.locator(".energy_in_kcal-cell")).to_have_text("178.0")
 
+    # Blur to trigger onblur → saveRow() → API call
+    amount_input.blur()
     expect(logged_in_page.locator("#syncText")).to_have_text("Saved", timeout=10000)
 
 

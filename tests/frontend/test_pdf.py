@@ -59,8 +59,8 @@ def test_get_meal_plan_context_nutrient_totals():
     # With 1 day, the average equals the single day's total
     summary = {n["label"]: n for n in ctx["summary_nutrients"]}
 
-    # Energie (kcal): 250 g × 400 kcal/100 g = 1000 kcal
-    assert abs(summary["Energie"]["value"] - 1000.0) < 0.01
+    # Energy (kcal): 250 g × 400 kcal/100 g = 1000 kcal
+    assert abs(summary["Energy"]["value"] - 1000.0) < 0.01
     # Protein: 250 g × 40 g/100 g = 100 g
     assert abs(summary["Protein"]["value"] - 100.0) < 0.01
 
@@ -140,5 +140,7 @@ def test_pdf_preview_iframe_content(logged_in_page, live_server, test_user):
     logged_in_page.wait_for_selector(".preview-frame")
     iframe = logged_in_page.frame_locator(".preview-frame")
 
-    expect(iframe.locator("h1")).to_contain_text("Iframe Preview Plan")
+    # The template renders one h1 per section (plan title + each day);
+    # use .first to target the plan-level heading specifically.
+    expect(iframe.locator("h1").first).to_contain_text("Iframe Preview Plan")
     expect(iframe.locator("body")).to_contain_text("Average daily intake")
