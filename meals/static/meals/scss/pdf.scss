@@ -1,0 +1,430 @@
+// ============================================================
+// pdf.scss – styles for PDF export (mealplan_pdf.html.j2)
+// Rendered by WeasyPrint. No base template is extended.
+//
+// NOTE: @page bottom-center content and ::after page-number
+// strings require Django {% trans %} tags and therefore live
+// in a small <style> block inside the template itself.
+// ============================================================
+
+// Google Fonts – loaded here so WeasyPrint picks it up when
+// it renders the HTML string (base_url is set in the view).
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+
+// SCSS design tokens (no :root block needed for PDF)
+$primary:     #6AD9C6;
+$primary-hover: #4fada0;
+$text-main:   #2c3338;
+$text-dim:    #666E73;
+$success:     #41A66D;
+$warning:     #DEACA4;
+$danger:      #A64143;
+$border:      #e2e8f0;
+
+// ── @page rules ──────────────────────────────────────────────
+// The @bottom-center content string with {% trans %} lives in
+// the template; landscape page rule stays here.
+@page landscape {
+    size: A4 landscape;
+    margin: 1.5cm;
+}
+
+// ── Base ─────────────────────────────────────────────────────
+* {
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: $text-main;
+    font-size: 11pt;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 15pt;
+    color: $primary;
+    margin-bottom: 20px;
+    border-bottom: 2px solid $primary;
+    padding-bottom: 10px;
+}
+
+h2 {
+    font-size: 18pt;
+    color: $primary;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+h3 {
+    font-size: 14pt;
+    color: $text-dim;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid $border;
+    padding-bottom: 5px;
+}
+
+// ── Summary page ─────────────────────────────────────────────
+.summary-page { page: portrait; }
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 10pt;
+
+    th,
+    td {
+        padding: 6px 8px;
+        border: 1px solid $border;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f8fafc;
+        color: $text-dim;
+        font-weight: 600;
+    }
+}
+
+.bar-container {
+    width: 100px;
+    height: 10px;
+    background-color: $border;
+    border-radius: 5px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+.bar {
+    height: 100%;
+    border-radius: 5px;
+}
+
+.status-ok    { color: $success; }
+.status-warn  { color: $warning; }
+.status-alert { color: $danger; }
+
+.bar-ok    { background-color: $success; }
+.bar-warn  { background-color: $warning; }
+.bar-alert { background-color: $danger; }
+
+// ── Day pages ────────────────────────────────────────────────
+.day-container {
+    page: landscape;
+    page-break-before: always;
+}
+
+.day-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 9pt;
+    table-layout: auto;
+
+    th,
+    td {
+        padding: 4px 6px;
+        border: 1px solid $border;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+    }
+
+    th {
+        background-color: #f0f4f7;
+        font-weight: 600;
+        text-align: left;
+        vertical-align: bottom;
+    }
+
+    td { vertical-align: top; }
+}
+
+.text-right  { text-align: right !important; }
+.text-center { text-align: center !important; }
+
+.total-row {
+    background-color: rgba($success, 0.08);
+    font-weight: 600;
+}
+
+.meal-type-header {
+    background-color: rgba($primary, 0.1) !important;
+    color: $primary-hover;
+    font-size: 12pt;
+}
+
+.num-right {
+    text-align: right !important;
+    padding-right: 5px !important;
+}
+
+.unit-col {
+    text-align: center;
+    color: $text-dim;
+    font-size: 0.9em;
+    width: 40px;
+}
+
+.num-left {
+    text-align: left;
+    padding-left: 5px !important;
+}
+
+// ── Print: hide interactive controls ────────────────────────
+@media print {
+    .no-print { display: none !important; }
+}
+
+// ── Export toolbar ───────────────────────────────────────────
+.export-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 0;
+    color: $text-dim;
+    text-decoration: none;
+    font-weight: 400;
+    transition: color 0.2s;
+
+    &:hover { color: $primary; }
+
+    svg { margin-right: 8px; }
+}
+
+.export-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: $primary;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    &:hover { background-color: $primary-hover; }
+
+    svg { margin-right: 8px; }
+}
+
+.col-select-container {
+    position: relative;
+    display: inline-block;
+}
+
+.col-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 1px solid $border;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 10px;
+    display: none;
+    width: 220px;
+    text-align: left;
+
+    &.active { display: block; }
+}
+
+.col-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    cursor: pointer;
+    font-size: 9pt;
+    color: $text-main;
+
+    input {
+        cursor: pointer;
+        accent-color: $primary;
+    }
+}
+
+.btn-col-select {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: white;
+    color: $text-dim;
+    border-radius: 8px;
+    border: 1px solid $border;
+    font-weight: 400;
+    transition: all 0.2s;
+    cursor: pointer;
+
+    &:hover {
+        border-color: $primary;
+        color: $primary;
+    }
+
+    svg { margin-right: 8px; }
+}
+
+// ── Web preview: simulated A4 pages on screen ────────────────
+@media screen {
+    body {
+        background-color: #f1f5f9;
+        padding: 40px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+    }
+
+    .export-container {
+        width: 90%;
+        max-width: 297mm;
+        margin-bottom: 0;
+        background: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .summary-page,
+    .day-container {
+        background-color: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+        position: relative;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .summary-page {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 2cm;
+    }
+
+    .day-container {
+        width: 297mm;
+        min-height: 210mm;
+        padding: 1.5cm;
+    }
+}
+
+// ── Logo header ──────────────────────────────────────────────
+.logo-header {
+    text-align: right;
+    margin-bottom: 25px;
+
+    img {
+        max-width: 200px;
+        max-height: 100px;
+        height: auto;
+    }
+}
+
+// ── Subtitle / subheading ────────────────────────────────────
+.subtitle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    min-height: 22px;
+}
+
+.subtitle-pen { color: #bbb; flex-shrink: 0; }
+
+.plan-subtitle {
+    font-size: 12pt;
+    color: #888;
+    outline: none;
+    border-radius: 4px;
+    padding: 2px 4px;
+    display: inline-block;
+    min-width: 50px;
+
+    @media screen {
+        &:empty::before {
+            content: attr(data-placeholder);
+            color: #ccc;
+            font-style: italic;
+        }
+
+        &:hover { background: rgba($primary, 0.06); }
+
+        &:focus {
+            background: rgba($primary, 0.06);
+            border-bottom: 1px dashed $primary;
+        }
+    }
+}
+
+// ── Renamed badge / tooltip ──────────────────────────────────
+.renamed-badge {
+    display: inline-flex;
+    align-items: center;
+    background: #e8f4fd;
+    color: #4180A6;
+    border: 1px solid #c3ddf0;
+    border-radius: 4px;
+    font-size: 7pt;
+    font-weight: 600;
+    padding: 1px 5px;
+    white-space: nowrap;
+    position: relative;
+    cursor: default;
+    vertical-align: middle;
+    margin-left: 5px;
+
+    &:hover .renamed-tooltip { display: block; }
+}
+
+.renamed-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: $text-main;
+    color: #fff;
+    font-size: 8pt;
+    font-weight: 400;
+    padding: 4px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+// ── Editable food name (preview mode only) ───────────────────
+@media screen {
+    .food-display-name {
+        outline: none;
+        border-radius: 3px;
+        padding: 1px 3px;
+
+        &:empty::before {
+            content: attr(data-original-name);
+            color: #ccc;
+            font-style: italic;
+        }
+
+        &:hover { background: rgba($primary, 0.07); }
+
+        &:focus {
+            background: rgba($primary, 0.1);
+            border-bottom: 1px dashed $primary;
+        }
+    }
+}

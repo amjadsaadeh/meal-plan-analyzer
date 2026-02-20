@@ -1,4 +1,4 @@
-{% load static i18n %}
+{% load static i18n sass_tags %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -9,106 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6AD9C6;
-            --primary-hover: #4fada0;
-            --primary-glow: rgba(106, 217, 198, 0.2);
-            --bg: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.9);
-            --text-main: #2c3338;
-            --text-dim: #666E73;
-            --glass-border: rgba(0, 0, 0, 0.08);
-            --shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            --row-hover: rgba(106, 217, 198, 0.05);
-            --success: #41A66D;
-            --warning: #DEACA4;
-            --danger: #A64143;
-            --top-bar-height: 60px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 300;
-        }
-
-        body {
-            background: radial-gradient(circle at top right, #e2e8f0, #f8fafc);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .top-bar {
-            width: 100%;
-            height: var(--top-bar-height);
-            padding: 0 2.5%;
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--glass-border);
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            z-index: 1000;
-            position: sticky;
-            top: 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-        }
-
-        .user-nav-container {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.95rem;
-            color: var(--text-dim);
-        }
-
-        .user-info strong {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .btn-logout {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            background: transparent;
-            color: var(--text-dim);
-            text-decoration: none;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 400;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid var(--glass-border);
-        }
-
-        .btn-logout:hover {
-            background: rgba(166, 65, 67, 0.05);
-            color: var(--danger);
-            border-color: rgba(166, 65, 67, 0.2);
-            transform: translateY(-1px);
-        }
-
-        /* Common Utility Classes */
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 2.5%;
-            flex-grow: 1;
-        }
-
-    </style>
+    <link rel="stylesheet" href="{% sass_src 'meals/scss/main.scss' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>

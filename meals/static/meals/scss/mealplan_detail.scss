@@ -1,0 +1,999 @@
+// ============================================================
+// mealplan_detail.scss – styles for the meal plan detail/edit page
+// Loaded via the extra_css block in mealplan_detail.html.j2
+// ============================================================
+
+@import 'variables';
+
+// ── Body & container overrides ──────────────────────────────
+body {
+    align-items: stretch;
+    padding-top: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    padding: 40px 2.5%;
+    z-index: 10;
+}
+
+// ── Page header ─────────────────────────────────────────────
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    @media screen and (max-width: $bp-md) {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.plan-title-wrapper { flex-grow: 1; }
+
+h1.editable-title {
+    font-size: 2.5rem;
+    font-weight: 400;
+    background: linear-gradient(135deg, #4180A6 0%, $text-dim 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    outline: none;
+    cursor: text;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin-left: -8px;
+    transition: background 0.2s;
+
+    &:hover,
+    &:focus {
+        background-color: rgba(0, 0, 0, 0.02);
+        -webkit-text-fill-color: initial;
+        color: var(--text-main);
+    }
+}
+
+.title-container {
+    display: flex;
+    align-items: center;
+
+    &:hover .edit-icon-btn { opacity: 0.8; }
+}
+
+.edit-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    opacity: 0.3;
+
+    &:hover {
+        color: var(--primary);
+        background: rgba($primary, 0.1);
+        opacity: 1;
+    }
+}
+
+.header-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+
+    @media screen and (max-width: $bp-md) {
+        align-items: flex-start !important;
+    }
+}
+
+.plan-id {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+.sync-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+// ── Day title ───────────────────────────────────────────────
+.day-title-container {
+    display: flex;
+    align-items: center;
+    margin-top: 3rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary);
+
+    &:hover .edit-icon-btn { opacity: 0.8; }
+}
+
+h2.editable-day-title {
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--text-main);
+    outline: none;
+    cursor: text;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin-left: -8px;
+    transition: all 0.2s;
+    flex-grow: 1;
+
+    &:hover,
+    &:focus { background-color: rgba(0, 0, 0, 0.02); }
+}
+
+// ── Sync status icons ────────────────────────────────────────
+.status-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-saved  { color: var(--success); }
+.status-pending { color: var(--warning); cursor: pointer; }
+
+// ── PDF button ───────────────────────────────────────────────
+.btn-pdf {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--primary);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+
+    &:hover { background-color: var(--primary-hover); }
+}
+
+// ── Table card ───────────────────────────────────────────────
+.table-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+
+    &::-webkit-scrollbar        { height: 6px; }
+    &::-webkit-scrollbar-track  { background: transparent; }
+    &::-webkit-scrollbar-thumb  {
+        background-color: var(--primary);
+        border-radius: 20px;
+    }
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    table-layout: fixed;
+}
+
+th {
+    padding: 1.2rem 0.75rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--glass-border);
+    text-align: center;
+
+    &:first-child {
+        text-align: left;
+        padding-left: 1.5rem;
+    }
+}
+
+td {
+    padding: 0;
+    border-bottom: 1px solid var(--glass-border);
+    position: relative;
+}
+
+.cell-content {
+    padding: 1rem 0.75rem;
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.ingredient-name-cell {
+    padding-left: 1.5rem;
+    justify-content: flex-start;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.editable-cell {
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover { background: var(--row-hover); }
+}
+
+input.table-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    color: var(--text-main);
+    outline: none;
+    padding: 1rem 0.75rem;
+    text-align: center;
+}
+
+// Nutrient value cells
+.kcal-cell,
+.protein-cell,
+.fat-cell,
+.fibre-cell,
+.iron-cell,
+.sugar-cell,
+.omega3-cell,
+.vitc-cell,
+.magnesium-cell,
+.zinc-cell,
+.vitb12-cell,
+.vita-cell,
+.calcium-cell,
+.vitd-cell {
+    color: var(--text-dim);
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.nutrient-header { font-size: 0.75rem !important; }
+
+// ── In-table food search dropdown ───────────────────────────
+.search-dropdown {
+    position: fixed;
+    background: white;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 2000;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+
+    &.active { display: block; }
+}
+
+.search-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &:hover { background: var(--row-hover); }
+
+    .name  { font-weight: 400; display: block; }
+    .code  { font-size: 0.8rem; color: var(--text-dim); font-weight: 300; }
+    .kcal  { font-size: 0.8rem; color: var(--text-dim); }
+}
+
+// ── Alias badge / tooltip ────────────────────────────────────
+.alias-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: rgba($primary, 0.15);
+    color: #4180A6;
+    border: 1px solid rgba($primary, 0.45);
+    border-radius: 4px;
+    font-size: 0.68rem;
+    padding: 1px 6px;
+    margin-left: 6px;
+    cursor: default;
+    font-weight: 400;
+    vertical-align: middle;
+    white-space: nowrap;
+    user-select: none;
+
+    &:hover .alias-tooltip { display: block; }
+}
+
+.alias-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 7px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: $text-main;
+    color: #fff;
+    font-size: 0.76rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 3000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: $text-main;
+    }
+
+    strong { color: var(--primary); font-weight: 600; }
+}
+
+// ── Loader spinner ───────────────────────────────────────────
+.loader {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--glass-border);
+    border-top: 2px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+// ── Back link ────────────────────────────────────────────────
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+
+    &:hover { color: var(--primary); }
+}
+
+[contenteditable]:empty:before {
+    content: attr(placeholder);
+    color: var(--text-dim);
+    cursor: text;
+}
+
+strong {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.energy-badge {
+    background: rgba($primary, 0.1);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: $primary-hover;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+.bls-code {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    margin-left: 10px;
+    font-weight: 300;
+}
+
+.delete-btn {
+    color: var(--text-dim);
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    &:hover {
+        color: $danger;
+        background: rgba($danger, 0.1);
+    }
+}
+
+.actions-cell { width: 50px; text-align: center; }
+
+tfoot tr {
+    background: rgba($primary, 0.03);
+    font-weight: 600;
+}
+
+.total-value {
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+// ── Meal sections ────────────────────────────────────────────
+.meal-section { margin-bottom: 4rem; }
+
+.meal-header {
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
+    color: var(--primary);
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    svg { opacity: 0.7; }
+}
+
+// ── Day summary (sticky side panel) ─────────────────────────
+.day-summary,
+.meal-summary {
+    padding: 1.5rem;
+    background: white;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.day-summary {
+    position: sticky;
+    top: calc(var(--top-bar-height) + 15px);
+    z-index: 100;
+}
+
+.meal-summary {
+    margin-top: 3rem;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+
+    .summary-grid {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .summary-item {
+        flex: 0 1 auto;
+        min-width: 110px;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 1rem;
+        background: white;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .summary-label { margin-bottom: 6px; font-size: 0.85rem; }
+    .summary-val   { font-size: 1.1rem; color: var(--primary); }
+}
+
+.summary-title {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.8rem;
+}
+
+.summary-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg);
+    border-radius: 10px;
+    transition: all 0.2s;
+    overflow: hidden;
+
+    &:hover { background: var(--row-hover); }
+}
+
+.summary-label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: none;
+    margin-bottom: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 8px;
+}
+
+.summary-values-wrapper {
+    display: grid;
+    grid-template-columns: 50px 75px 50px;
+    align-items: center;
+    gap: 4px;
+    justify-items: center;
+    flex-shrink: 0;
+    width: 183px;
+}
+
+.summary-val {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary);
+    text-align: center;
+    width: 100%;
+    transition: color 0.3s;
+}
+
+.status-under { color: var(--danger) !important; }
+.status-over  { color: var(--danger) !important; }
+
+// ── Threshold inputs ─────────────────────────────────────────
+.threshold-input {
+    width: 100%;
+    height: 28px;
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 0.7rem;
+    text-align: center;
+    background: white;
+    outline: none;
+    transition: all 0.2s;
+    color: var(--text-dim);
+
+    &:focus {
+        border-color: var(--primary);
+        color: var(--text-main);
+        box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+
+    &::placeholder { color: #cbd5e1; font-size: 0.65rem; }
+
+    // Hide number input arrows
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    &[type=number] { -moz-appearance: textfield; }
+}
+
+// ── Content layout (table + side panel) ─────────────────────
+.content-layout {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 2rem;
+    width: 100%;
+
+    @media screen and (max-width: $bp-lg) {
+        flex-direction: column-reverse;
+        gap: 2rem;
+    }
+}
+
+.meal-sections-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.side-panel {
+    width: 330px;
+    flex-shrink: 0;
+
+    @media screen and (max-width: $bp-lg) {
+        width: 100%;
+        position: relative;
+        top: 0 !important;
+    }
+}
+
+@media screen and (max-width: $bp-lg) {
+    .day-summary {
+        position: relative;
+        top: 0 !important;
+    }
+
+    .meal-sections-wrapper { margin-left: 0; }
+}
+
+// ── Toolbar ──────────────────────────────────────────────────
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.preset-search-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.preset-label {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    font-weight: 400;
+}
+
+.preset-input-wrapper { position: relative; }
+
+.preset-search-input {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    padding: 8px 12px;
+    border-radius: 10px;
+    width: 250px;
+    outline: none;
+    transition: all 0.2s;
+    color: var(--text-main);
+    box-shadow: var(--shadow);
+    font-size: 0.9rem;
+
+    &:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+}
+
+.preset-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 3000;
+    margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+
+    &.active { display: block; }
+}
+
+.preset-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--glass-border);
+    font-size: 0.9rem;
+    transition: background 0.2s;
+    color: var(--text-main);
+    text-align: left;
+
+    &:last-child { border-bottom: none; }
+
+    &:hover {
+        background: var(--row-hover);
+        color: var(--primary);
+    }
+}
+
+.col-select-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dim);
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+
+    &:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+}
+
+.btn-secondary {
+    background: rgba($primary, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--primary);
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    width: 100%;
+    margin-top: 1.5rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+
+    &:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+}
+
+// ── Modal dialogs ────────────────────────────────────────────
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+
+    &.active { display: flex; }
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    width: 400px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    text-align: left;
+}
+
+.modal-header {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+
+    h3 {
+        font-size: 1.5rem;
+        color: var(--text-main);
+        margin-bottom: 1rem;
+    }
+}
+
+.modal-body {
+    margin-bottom: 1.5rem;
+
+    p { color: var(--text-dim); margin-bottom: 1rem; }
+}
+
+.modal-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    outline: none;
+    font-size: 1rem;
+    transition: all 0.2s;
+
+    &:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+}
+
+.modal-error {
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    min-height: 1.2rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 2rem;
+}
+
+.btn-modal {
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-modal-cancel {
+    background: #f1f5f9;
+    color: var(--text-dim);
+
+    &:hover { background: #e2e8f0; }
+}
+
+.btn-modal-save {
+    background: var(--primary);
+    color: white;
+
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:hover:not(:disabled) { background: var(--primary-hover); }
+}
+
+.modal-card {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-warning {
+    font-size: 0.9rem;
+    color: var(--danger) !important;
+    font-weight: 400;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 400;
+    transition: all 0.2s;
+
+    &:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+    }
+}
+
+// ── Column visibility dropdown ───────────────────────────────
+.col-dropdown {
+    position: fixed;
+    background: white;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
+    padding: 12px;
+    display: none;
+    width: 200px;
+
+    &.active { display: block; }
+}
+
+.col-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-main);
+
+    input {
+        cursor: pointer;
+        accent-color: var(--primary);
+    }
+}
+
+.hidden-col { display: none !important; }
+
+// ── Sticky bar ───────────────────────────────────────────────
+.sticky-bar {
+    position: fixed;
+    top: var(--top-bar-height);
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 2500;
+    padding: 0;
+    transform: translateY(-200%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: center;
+
+    &.visible { transform: translateY(0); }
+
+    .sync-status { margin-top: 0; }
+
+    .col-select-btn {
+        background: transparent;
+        box-shadow: none;
+        border-color: transparent;
+        font-size: 0.9rem;
+
+        &:hover { background: var(--row-hover); }
+    }
+}
+
+.sticky-bar-inner {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    padding: 0 2.5%;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sticky-plan-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary);
+    max-width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sticky-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+// ── Text utilities ───────────────────────────────────────────
+.text-right  { text-align: right; }
+.text-center { text-align: center; }

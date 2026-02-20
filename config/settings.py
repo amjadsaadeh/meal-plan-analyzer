@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sass_processor',
     'rest_framework',
     'meals',
 ]
@@ -147,6 +148,25 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'sass_processor.finders.CssFinder',
+]
+
+# Compiled SCSS output directory.  Excluded from version control.
+# - Dev server:    {% sass_src %} compiles on demand and stores here.
+#                  CssFinder serves the compiled CSS from here at runtime.
+# - Deployment:    run `python manage.py build_scss` to populate this dir,
+#                  then `collectstatic` copies CSS to STATIC_ROOT via the
+#                  STATICFILES_DIRS entry below.
+SASS_PROCESSOR_ROOT = BASE_DIR / 'sass_cache'
+
+# Expose compiled SCSS output to collectstatic.
+STATICFILES_DIRS = [
+    BASE_DIR / 'sass_cache',
+]
 
 STORAGES = {
     "default": {

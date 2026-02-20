@@ -1,0 +1,67 @@
+// ============================================================
+// Shared layout: top navigation bar and page container
+// ============================================================
+
+.top-bar {
+    width: 100%;
+    height: var(--top-bar-height);
+    padding: 0 2.5%;
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    z-index: 1000;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.user-nav-container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--text-dim);
+
+    strong {
+        color: var(--primary);
+        font-weight: 600;
+    }
+}
+
+.btn-logout {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    color: var(--text-dim);
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 400;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--glass-border);
+
+    &:hover {
+        background: rgba($danger, 0.05);
+        color: var(--danger);
+        border-color: rgba($danger, 0.2);
+        transform: translateY(-1px);
+    }
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 2.5%;
+    flex-grow: 1;
+}
