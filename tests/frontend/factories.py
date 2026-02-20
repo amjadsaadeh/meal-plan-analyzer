@@ -37,3 +37,13 @@ class MealPlanDayFactory(factory.django.DjangoModelFactory):
 
     meal_plan = factory.SubFactory(MealPlanFactory)
     name = factory.Sequence(lambda n: f"Tag {n+1}")
+
+
+class MealPlanFoodFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MealPlanFood
+
+    meal_plan_day = factory.SubFactory(MealPlanDayFactory)
+    food = factory.SubFactory(FoodFactory)
+    amount_in_g = 100.0
+    meal_type = "breakfast"
