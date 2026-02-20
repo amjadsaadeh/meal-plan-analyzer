@@ -302,7 +302,7 @@ def test_mealplan_detail_pdf_export_preview(logged_in_page, live_server, test_us
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
 
     with logged_in_page.expect_popup() as popup_info:
-        logged_in_page.click("text=Preview")
+        logged_in_page.click("text=Export PDF")
 
     preview_page = popup_info.value
     preview_page.wait_for_load_state("networkidle")
