@@ -163,6 +163,11 @@ STATICFILES_FINDERS = [
 #                  STATICFILES_DIRS entry below.
 SASS_PROCESSOR_ROOT = BASE_DIR / 'sass_cache'
 
+# Always compile on demand so {% sass_src %} uses CssFinder (not the
+# CompressedManifestStaticFilesStorage manifest) to resolve URLs.  This
+# keeps tests working in CI where collectstatic is never run.
+SASS_PROCESSOR_ENABLED = True
+
 # Expose compiled SCSS output to collectstatic.
 STATICFILES_DIRS = [
     BASE_DIR / 'sass_cache',
