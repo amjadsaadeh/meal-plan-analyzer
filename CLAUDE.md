@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-RSOS Meal Planner is a Django web application for meal planning and nutritional analysis. Food data is sourced from the **Bundes Lebensmittel Schlüssel (BLS)** — the German national food composition database. Users can create meal plans, assign foods to daily meals, track nutrient totals against configurable thresholds, and export plans as PDFs.
+RSOS Meal Planner is a Django 6.0 web application for meal planning and nutritional analysis. Food data is sourced from the **Bundes Lebensmittel Schlüssel (BLS)** — the German national food composition database. Users can create meal plans, assign foods to daily meals, track nutrient totals against configurable thresholds, and export plans as PDFs.
 
 ---
 
@@ -49,6 +49,7 @@ The compose stack spins up a PostgreSQL 16 container and the Django app on port 
 uv run pytest              # full suite (API + frontend)
 uv run pytest tests/api/   # API tests only
 uv run pytest tests/frontend/  # Playwright browser tests only
+uv run pytest tests/test_*.py  # top-level unit/integration tests only
 ```
 
 `pytest.ini` sets:
@@ -57,7 +58,15 @@ uv run pytest tests/frontend/  # Playwright browser tests only
 
 The session-scoped `django_db_setup` fixture in `tests/conftest.py` auto-loads `tests/data/food_fixtures.json`.
 
-Frontend tests use **Playwright** (`pytest-playwright`). They require a running live server (pytest-django's `live_server` fixture handles this automatically).
+Frontend tests use **Playwright** (`pytest-playwright`). They require a running live server (pytest-django's `live_server` fixture handles this automatically). Playwright must be installed with:
+```bash
+uv run playwright install --with-deps chromium
+```
+
+Before running frontend tests locally, compile SCSS:
+```bash
+uv run python manage.py build_scss
+```
 
 ---
 
@@ -79,28 +88,51 @@ meal-plan-analyzer/
 │   ├── nutrients.py         # NUTRIENTS dict, NUTRIENT_IDS, THRESHOLD_SCHEMA
 │   ├── admin.py             # Django admin registration
 │   ├── apps.py
+│   ├── locale/              # i18n translation files (de, en)
+│   │   ├── de/LC_MESSAGES/django.po
+│   │   └── en/LC_MESSAGES/django.po
 │   ├── templatetags/
 │   │   └── meal_extras.py   # Custom template filters
-│   ├── templates/meals/     # Jinja2-style .html.j2 templates
-│   ├── static/meals/img/    # Static assets (logo, etc.)
-│   ├── migrations/          # Django migrations (0001–0017)
+│   ├── templates/meals/     # Django template engine (.html.j2 files)
+│   ├── static/meals/
+│   │   ├── img/             # Static assets (logo, etc.)
+│   │   └── scss/            # SCSS source files
+│   ├── migrations/          # Django migrations (0001–0020)
 │   └── management/commands/
-│       └── import_foods.py  # BLS Excel import command
+│       ├── import_foods.py  # BLS Excel import command
+│       └── build_scss.py    # SCSS compilation command
 │
 ├── tests/
 │   ├── conftest.py          # Shared fixtures (api_client, user, authenticated_client)
 │   ├── data/
-│   │   └── food_fixtures.json  # Seed data for tests
+│   │   ├── food_fixtures.json  # Seed data for tests
+│   │   └── test_foods.xlsx     # Excel file for import tests
 │   ├── api/
 │   │   ├── test_foods.py
 │   │   ├── test_mealplans.py
-│   │   └── test_mealplandays.py
-│   └── frontend/
-│       ├── conftest.py      # Playwright fixtures (logged_in_page)
-│       ├── factories.py     # factory-boy factories
-│       ├── test_mealplan_list.py
-│       ├── test_mealplan_detail.py
-│       └── test_pdf.py
+│   │   ├── test_mealplandays.py
+│   │   ├── test_mealplan_foods.py
+│   │   ├── test_threshold_presets.py
+│   │   ├── test_food_search_semantics.py
+│   │   └── test_export_name_auto_alias.py
+│   ├── frontend/
+│   │   ├── conftest.py      # Playwright fixtures (logged_in_page)
+│   │   ├── factories.py     # factory-boy factories
+│   │   ├── test_mealplan_list.py
+│   │   ├── test_mealplan_detail.py
+│   │   └── test_pdf.py
+│   ├── test_admin.py
+│   ├── test_error_handling.py
+│   ├── test_extended_backend.py
+│   ├── test_food_import.py
+│   ├── test_meal_plan_context.py
+│   ├── test_model_constraints.py
+│   ├── test_model_validation.py
+│   ├── test_nutrients.py
+│   ├── test_pdf_views.py
+│   ├── test_search_utilities.py
+│   ├── test_template_filters.py
+│   └── generate_test_data.py
 │
 ├── ansible/                 # Deployment playbooks for k3s
 ├── k8s/                     # Kubernetes manifests
@@ -110,10 +142,12 @@ meal-plan-analyzer/
 ├── docker-compose.yml
 ├── .env.example             # Environment variable template
 ├── .python-version          # Python 3.12
+├── agent.md                 # Top-level agent guidelines (uv usage)
 └── .agent/                  # AI agent rules and workflows
     ├── rules/
     │   ├── backend-package-manager.md
-    │   └── running-backend-tests.md
+    │   ├── running-backend-tests.md
+    │   └── command-whitelist.md
     └── workflows/
         └── run-tests.md
 ```
@@ -131,72 +165,93 @@ Represents a food item from the BLS database.
 | `name` | CharField(255) | Food name |
 | `energy_in_kj_per_100g` | FloatField | |
 | `energy_in_kcal_per_100g` | FloatField | |
-| `protein_in_g_per_100g` | FloatField | |
-| `fat_in_g_per_100g` | FloatField | |
-| `carbohydrate_in_g_per_100g` | FloatField | |
-| `fibre_in_g_per_100g` | FloatField | |
-| `iron_in_mg_per_100g` | FloatField | |
-| `sugar_in_g_per_100g` | FloatField | |
-| `omega3_in_g_per_100g` | FloatField | |
-| `vitc_in_mg_per_100g` | FloatField | Vitamin C |
-| `magnesium_in_mg_per_100g` | FloatField | |
-| `zinc_in_mg_per_100g` | FloatField | |
-| `vitb12_in_mug_per_100g` | FloatField | Vitamin B12 (µg) |
-| `vita_in_mug_per_100g` | FloatField | Vitamin A (µg) |
-| `calcium_in_mg_per_100g` | FloatField | |
-| `vitd_in_mug_per_100g` | FloatField | Vitamin D (µg) |
+| `protein_in_g_per_100g` | FloatField | default 0.0 |
+| `fat_in_g_per_100g` | FloatField | default 0.0 |
+| `carbohydrate_in_g_per_100g` | FloatField | default 0.0 |
+| `fibre_in_g_per_100g` | FloatField | default 0.0 |
+| `iron_in_mg_per_100g` | FloatField | default 0.0 |
+| `sugar_in_g_per_100g` | FloatField | default 0.0 |
+| `omega3_in_g_per_100g` | FloatField | default 0.0 |
+| `vitc_in_mg_per_100g` | FloatField | Vitamin C; default 0.0 |
+| `magnesium_in_mg_per_100g` | FloatField | default 0.0 |
+| `zinc_in_mg_per_100g` | FloatField | default 0.0 |
+| `vitb12_in_mug_per_100g` | FloatField | Vitamin B12 (µg); default 0.0 |
+| `vita_in_mug_per_100g` | FloatField | Vitamin A (µg); default 0.0 |
+| `calcium_in_mg_per_100g` | FloatField | default 0.0 |
+| `vitd_in_mug_per_100g` | FloatField | Vitamin D (µg); default 0.0 |
+
+### `FoodAlias`
+Alternative name/synonym for a `Food` item, used during search.
+
+- `food` — FK → `Food` (related_name `aliases`; CASCADE delete)
+- `alias` — CharField(255)
+- Unique constraint: `(food, alias)`
+- The alias index is cached in Django's cache backend (key `food_aliases_index`; 1-hour TTL). Cache is invalidated automatically via `post_save`/`post_delete` signals on `FoodAlias`.
+- `get_alias_index()` — module-level helper that returns a `dict[food_id → list[alias_string]]`.
 
 ### `MealPlan`
 A named collection of days.
 
 - `name` — default `"Neuer Plan"`
-- `creation_date` / `change_date` — auto timestamps
+- `subtitle` — CharField(500, blank); optional subtitle shown on PDFs
+- `creation_date` / `change_date` — auto timestamps; ordered by `-creation_date`
 - `visible_nutrients` — JSON list of nutrient keys (defaults to all); validated against `NUTRIENT_IDS`
 - `thresholds` — JSON dict `{ nutrient_key: { "min": float|null, "max": float|null } }`; validated by `THRESHOLD_SCHEMA`
-- `clean()` migrates legacy nutrient key names automatically (e.g. `protein` → `protein_in_g`)
+- `clean()` migrates legacy nutrient key names automatically (e.g. `protein` → `protein_in_g`, `kcal` → `energy_in_kcal`)
 - `save()` calls `full_clean()` — model-level validation always runs on save
 
 ### `MealPlanDay`
 One day within a meal plan.
 
 - `name` — default `"Neuer Tag"`
-- `meal_plan` — FK → `MealPlan` (nullable)
+- `meal_plan` — FK → `MealPlan` (nullable, CASCADE); related_name `days`
+- `creation_date` / `change_date` — auto timestamps; ordered by `-creation_date`
 - `foods` — M2M → `Food` via `MealPlanFood`
 - `removed` — soft-delete flag (default `False`); active days are always filtered with `removed=False`
 
 ### `MealPlanFood`
 Junction table between `MealPlanDay` and `Food`.
 
+- `meal_plan_day` — FK → `MealPlanDay` (CASCADE)
+- `food` — FK → `Food` (CASCADE)
 - `amount_in_g` — FloatField
-- `meal_type` — choices: `breakfast`, `lunch`, `dinner`
+- `meal_type` — choices: `breakfast`, `lunch`, `dinner` (TextChoices `MealType`)
+- `export_name` — CharField(255, blank, default `''`); custom display name for PDF exports. When set and the name is not already findable via food search, it is automatically added as a `FoodAlias` for the food.
 - Unique constraint: `(meal_plan_day, food, meal_type)`
 
 ### `ThresholdPreset`
-Reusable named threshold presets. Has `_min` / `_max` FloatField pairs for every nutrient tracked in `NUTRIENTS`.
+Reusable named threshold presets. Has `_min` / `_max` FloatField pairs (nullable) for every nutrient tracked in `NUTRIENTS`, plus `energy_in_kj_min`/`_max`.
+
+### `SiteSettings`
+Singleton model for site-wide settings.
+
+- `logo` — FileField (uploaded to `logos/`); used as the logo in PDF exports. Falls back to the static `meals/img/logo.png` if not set.
+- Enforces singleton via `save()` (always sets `pk=1`) and `SiteSettings.get()` classmethod.
+- Admin: list view auto-redirects to the single instance; add/delete are disabled.
 
 ---
 
 ## Nutrients (`meals/nutrients.py`)
 
-All nutrient logic flows through the `NUTRIENTS` ordered dict. Each entry maps a **nutrient key** to its label, unit, and the corresponding `Food` model field (`food_key`).
+All nutrient logic flows through the `NUTRIENTS` ordered dict. Each entry maps a **nutrient key** to its label (translated via `gettext_lazy`), unit, the corresponding `Food` model field (`food_key`), and a `precision` for decimal display.
 
-| Nutrient key | Label | Unit |
-|---|---|---|
-| `energy_in_kcal` | Energie | kcal |
-| `protein_in_g` | Protein | g |
-| `fat_in_g` | Fett | g |
-| `omega3_in_g` | O3 | g |
-| `carbohydrate_in_g` | KH | g |
-| `sugar_in_g` | Zucker | g |
-| `fibre_in_g` | Bst. | g |
-| `iron_in_mg` | Eisen | mg |
-| `vitc_in_mg` | Vit. C | mg |
-| `magnesium_in_mg` | Mg | mg |
-| `zinc_in_mg` | Zink | mg |
-| `vitb12_in_mug` | Vit. B12 | µg |
-| `vita_in_mug` | Vit. A | µg |
-| `calcium_in_mg` | Ca | mg |
-| `vitd_in_mug` | Vit. D | µg |
+| Nutrient key | Label (i18n) | Unit | Precision |
+|---|---|---|---|
+| `energy_in_kcal` | Energy | kcal | 1 |
+| `protein_in_g` | Protein | g | 1 |
+| `fat_in_g` | Fat | g | 1 |
+| `omega3_in_g` | Omega-3 | g | 2 |
+| `carbohydrate_in_g` | Carbs | g | 1 |
+| `sugar_in_g` | Sugar | g | 1 |
+| `fibre_in_g` | Fiber | g | 1 |
+| `iron_in_mg` | Iron | mg | 1 |
+| `vitc_in_mg` | Vit. C | mg | 1 |
+| `magnesium_in_mg` | Mg | mg | 1 |
+| `zinc_in_mg` | Zinc | mg | 1 |
+| `vitb12_in_mug` | Vit. B12 | µg | 2 |
+| `vita_in_mug` | Vit. A | µg | 1 |
+| `calcium_in_mg` | Ca | mg | 1 |
+| `vitd_in_mug` | Vit. D | µg | 2 |
 
 `NUTRIENT_IDS` is the list of all keys. `THRESHOLD_SCHEMA` is a jsonschema used to validate `MealPlan.thresholds`.
 
@@ -210,19 +265,29 @@ All endpoints require authentication (`IsAuthenticated`). The API uses DRF's `De
 
 | Endpoint | ViewSet | Notes |
 |---|---|---|
-| `/api/foods/` | `FoodViewSet` | Search via `?search=` with semantic intent parsing |
+| `/api/foods/` | `FoodViewSet` | Search via `?search=` with semantic intent parsing, umlaut tolerance, and alias matching |
 | `/api/mealplans/` | `MealPlanViewSet` | Nested days filtered to `removed=False` |
 | `/api/mealplan-days/` | `MealPlanDayViewSet` | Queryset pre-filtered to `removed=False` |
-| `/api/mealplan-foods/` | `MealPlanFoodViewSet` | Full CRUD |
+| `/api/mealplan-foods/` | `MealPlanFoodViewSet` | Full CRUD; auto-creates aliases from `export_name` |
 | `/api/threshold-presets/` | `ThresholdPresetViewSet` | Full CRUD |
 
 Default page size is 100. `FoodViewSet` disables pagination (`pagination_class = None`).
 
 ### Food search semantics
-The food search (`?search=`) supports intent detection:
-- `"low energy"` / `"low cal"` → sorts by lowest `energy_in_kcal_per_100g`
-- `"high cal"` → sorts by highest energy
-- Remaining terms are matched against `name` and `bls_code` with relevance ranking
+The food search (`?search=`) supports intent detection and multi-source matching:
+
+1. **Energy intent** — strips energy keywords and reorders results:
+   - `"low energy"` / `"low cal"` / `"low kcal"` / `"low kj"` → sorts by lowest `energy_in_kcal_per_100g`
+   - `"high cal"` / etc. → sorts by highest energy
+
+2. **Name/BLS code matching** — remaining terms are matched against `name` and `bls_code` with relevance ranking (exact → prefix → word-boundary → default).
+
+3. **Umlaut-tolerant matching** — queries automatically generate all substitution variants for German umlauts (ä↔a, ö↔o, ü↔u). Handles both user-typed-with-umlaut and user-typed-without-umlaut cases. For up to 6 substitutable positions, all 2^n−1 combinations are searched; for more positions, single substitutions are used as a fallback.
+
+4. **Alias matching** — after name-based results are gathered, the cached `FoodAlias` index is checked. Foods that match only via alias appear after name-matched foods and carry a non-null `matched_alias` field in the serialized response.
+
+### Auto-alias creation
+When a `MealPlanFood` is created or updated with a non-empty `export_name`, the system checks whether that name is already findable via food search (name or alias). If not, it automatically creates a `FoodAlias` linking the `export_name` to the food and invalidates the alias cache.
 
 ---
 
@@ -240,7 +305,9 @@ The food search (`?search=`) supports intent detection:
 | `/login/` | Django auth | `login` |
 | `/logout/` | Django auth | `logout` |
 
-All frontend views require login (`@login_required`). Creating a meal plan at `/meal-plan/new/` auto-creates a `MealPlanDay` and redirects to the new plan's detail page.
+All frontend views require login (`@login_required`). Creating a meal plan at `/meal-plan/new/` auto-creates a `MealPlanDay` (named "Day 1") and redirects to the new plan's detail page.
+
+The `meal_plan_preview_content` view has `@xframe_options_sameorigin` to allow embedding in the preview iframe.
 
 ---
 
@@ -262,6 +329,49 @@ Custom template filters (`meals/templatetags/meal_extras.py`):
 - `divide_by_100_mult(value, arg)` — `(value / 100) * arg` (nutrient calculation per amount)
 - `split_to_dict(value)` — splits `"key:val,key2:val2"` into list of pairs
 - `get_item(dictionary, key)` — safe dict lookup
+
+---
+
+## SCSS / Static Assets
+
+SCSS source files live in `meals/static/meals/scss/`. There are entry-point files (compiled) and partials (prefixed with `_`, imported by entry points).
+
+| File | Purpose |
+|---|---|
+| `main.scss` | Main entry point |
+| `mealplan_detail.scss` | Detail page styles |
+| `mealplan_list.scss` | List page styles |
+| `mealplan_preview.scss` | Preview page styles |
+| `pdf.scss` | PDF/print styles |
+| `food_search.scss` | Food search page styles |
+| `login.scss` | Login page styles |
+| `_layout.scss` | Shared layout partials |
+| `_reset.scss` | CSS reset partial |
+| `_variables.scss` | SCSS variables partial |
+
+**Development**: The `{% sass_src %}` template tag compiles SCSS on demand via `django-sass-processor`. No manual compilation needed.
+
+**Deployment/CI**: Run `uv run python manage.py build_scss` before `collectstatic`. This compiles all entry-point SCSS files to `sass_cache/` using `libsass`. Then `collectstatic` copies CSS to `STATIC_ROOT`.
+
+```bash
+uv run python manage.py build_scss           # compile SCSS → sass_cache/
+uv run python manage.py collectstatic        # copy to staticfiles/
+```
+
+`SASS_PROCESSOR_ROOT` is set to `BASE_DIR / 'sass_cache'` and is listed in `STATICFILES_DIRS` so compiled CSS is picked up by `collectstatic`.
+
+---
+
+## Internationalization (i18n)
+
+The application supports English and German via Django's i18n framework.
+
+- `USE_I18N = True`, `LANGUAGE_CODE = 'en'`
+- `LocaleMiddleware` is active (between `SessionMiddleware` and `CommonMiddleware`)
+- Translation files: `meals/locale/de/LC_MESSAGES/django.po` and `en/`
+- Context processor: `django.template.context_processors.i18n`
+- Nutrient labels in `nutrients.py` use `gettext_lazy(_(...))` for translation
+- User-facing strings in views use `gettext` (`_(...)`); default names like `"New Plan"` / `"Day 1"` are translated at request time
 
 ---
 
@@ -298,9 +408,27 @@ The command uses `openpyxl` with hard-coded BLS column mappings (e.g. column A =
 - **Soft deletes**: `MealPlanDay.removed` — never hard-delete days; set `removed=True` instead. Always filter with `removed=False` in queries.
 - **Nutrient keys**: Use the exact string keys from `NUTRIENT_IDS` (e.g. `"protein_in_g"`, not `"protein"`). The `MealPlan.clean()` method migrates old key names on save.
 - **Model validation**: `MealPlan.save()` always calls `full_clean()`. Do not bypass validation with `update()` if you need thresholds/nutrient integrity.
-- **PDF generation**: WeasyPrint requires system libraries (libpango, libcairo, etc.). The Dockerfile installs these. For local dev, ensure they are installed on the host.
+- **PDF generation**: WeasyPrint requires system libraries (libpango, libcairo, etc.). The Dockerfile installs these. For local dev, ensure they are installed on the host. See CI workflow for the exact apt packages.
 - **Templates**: Use `.html.j2` extension. Load `meal_extras` tags where nutrient calculations are needed.
-- **Default names are German**: `"Neuer Plan"`, `"Neuer Tag"`, meal type labels (`Frühstück`, `Mittagessen`, `Abendessen`). Keep user-facing strings in German.
+- **Default names are German**: `"Neuer Plan"`, `"Neuer Tag"`, meal type labels (`Frühstück`, `Mittagessen`, `Abendessen`) — but views use `_()` so these are translated at request time.
+- **Alias cache**: Do not call `FoodAlias.objects.filter(...)` in hot paths; use `get_alias_index()` instead. The cache is a `dict[food_id → list[alias_string]]` stored under the key `food_aliases_index`. It is invalidated automatically by signals on save/delete of `FoodAlias` rows.
+- **SiteSettings singleton**: Always access via `SiteSettings.get()`, never `SiteSettings.objects.get(pk=1)` directly.
+- **`export_name` on `MealPlanFood`**: Setting this field triggers automatic alias creation if the name is not already findable by search. This side-effect happens in `MealPlanFoodViewSet.perform_create/perform_update`.
+
+---
+
+## Admin
+
+All models are registered in `meals/admin.py`:
+
+| Model | Admin class | Notable features |
+|---|---|---|
+| `Food` | `FoodAdmin` | Inline `FoodAlias` editing; search on name/bls_code |
+| `FoodAlias` | `FoodAliasAdmin` | `raw_id_fields` for food lookup |
+| `MealPlan` | `MealPlanAdmin` | Inline `MealPlanDay` |
+| `MealPlanDay` | `MealPlanDayAdmin` | Inline `MealPlanFood` |
+| `ThresholdPreset` | `ThresholdPresetAdmin` | Search on name |
+| `SiteSettings` | `SiteSettingsAdmin` | List view redirects to single instance; add/delete disabled |
 
 ---
 
@@ -311,6 +439,10 @@ The command uses `openpyxl` with hard-coded BLS column mappings (e.g. column A =
 ```bash
 docker compose up --build
 ```
+
+The Dockerfile uses a multi-stage build:
+1. **builder** (`ghcr.io/astral-sh/uv:python3.12-bookworm-slim`): installs Python dependencies via `uv sync --frozen --no-dev`
+2. **final** (`python:3.12-slim-bookworm`): copies the venv, installs WeasyPrint system libs, runs gunicorn
 
 ### Kubernetes (via Ansible)
 
@@ -325,8 +457,18 @@ Manifests live in `k8s/`. The Ansible playbook handles DNS, database, and app de
 
 ## Testing Conventions
 
-- API tests use `@pytest.mark.django_db` and the `authenticated_client` / `api_client` fixtures.
-- Frontend tests use the `logged_in_page` fixture (Playwright `Page` already logged in).
-- Factory definitions for test objects are in `tests/frontend/factories.py`.
+- API tests (`tests/api/`) use `@pytest.mark.django_db` and the `authenticated_client` / `api_client` fixtures.
+- Frontend tests (`tests/frontend/`) use the `logged_in_page` fixture (Playwright `Page` already logged in).
+- Top-level tests (`tests/test_*.py`) cover models, views, admin, nutrients, template filters, search utilities, PDF views, and food import.
+- Factory definitions for test objects are in `tests/frontend/factories.py` (`FoodFactory`, `MealPlanFactory`, `MealPlanDayFactory`, `MealPlanFoodFactory`).
 - Test food data is loaded from `tests/data/food_fixtures.json` once per session.
+- `tests/conftest.py` provides: `api_client`, `user`, `authenticated_client`; also disables `CompressedManifestStaticFilesStorage` for tests.
 - Use `--create-db` flag to rebuild the test database if migrations change.
+
+### CI (GitHub Actions)
+
+Two separate jobs in `.github/workflows/tests.yml` run on pull requests to `main`:
+- **API Tests**: `uv run pytest tests/api/ --create-db`
+- **Frontend Tests**: `uv run python manage.py build_scss` → `uv run playwright install --with-deps chromium` → `uv run pytest tests/frontend/ --create-db`
+
+Both jobs install WeasyPrint system dependencies via apt before running.
