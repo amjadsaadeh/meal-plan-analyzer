@@ -1,0 +1,163 @@
+// ============================================================
+// food_search.scss – standalone page (index.html.j2)
+// Does not extend base, so this file includes variables,
+// reset, and all food-search-specific styles.
+// ============================================================
+
+@import 'variables';
+@import 'reset';
+
+body {
+    align-items: center;
+    padding-top: 10vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    z-index: 10;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+h1 {
+    font-size: 3.5rem;
+    font-weight: 400;
+    background: linear-gradient(135deg, #4180A6 0%, $text-dim 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+p.subtitle {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.search-bar {
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    background: #ffffff;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    outline: none;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+
+    &:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 20px var(--primary-glow);
+        transform: translateY(-2px);
+    }
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+
+    &::-webkit-scrollbar      { width: 8px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb {
+        background: var(--glass-border);
+        border-radius: 10px;
+    }
+
+    &.active {
+        display: block;
+        animation: slideIn 0.3s ease-out;
+    }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.food-item {
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &:last-child { border-bottom: none; }
+
+    &:hover { background: rgba(255, 255, 255, 0.05); }
+}
+
+.food-info {
+    h4 {
+        font-weight: 400;
+        margin-bottom: 0.25rem;
+    }
+
+    span {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+    }
+}
+
+.energy-badge {
+    background: rgba($primary, 0.1);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: $primary-hover;
+    white-space: nowrap;
+    font-weight: 400;
+}
+
+strong {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.loading-spinner {
+    position: absolute;
+    right: 1.5rem;
+    top: 1.25rem;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--glass-border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.no-results {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-dim);
+}

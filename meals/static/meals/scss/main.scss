@@ -1,0 +1,10 @@
+// ============================================================
+// main.scss – loaded by base.html.j2
+// Contains shared styles: variables, reset, and layout.
+// Page-specific styles are in separate files loaded via the
+// extra_css block of each extending template.
+// ============================================================
+
+@import 'variables';
+@import 'reset';
+@import 'layout';

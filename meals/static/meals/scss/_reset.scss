@@ -1,0 +1,20 @@
+// ============================================================
+// Global reset and typography base
+// Font (Outfit) is loaded via <link> in the HTML templates.
+// ============================================================
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+}
+
+body {
+    background: radial-gradient(circle at top right, #e2e8f0, $bg);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}

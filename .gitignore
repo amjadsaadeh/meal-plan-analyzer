@@ -11,3 +11,4 @@ __pycache__
 .env
 staticfiles/
 media/
+sass_cache/

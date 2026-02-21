@@ -1,0 +1,43 @@
+// ============================================================
+// Design tokens – defined as both CSS custom properties
+// (consumed at runtime) and SCSS variables (used in SCSS logic)
+// ============================================================
+
+// CSS custom properties (runtime)
+:root {
+    --primary:        #6AD9C6;
+    --primary-hover:  #4fada0;
+    --primary-glow:   rgba(106, 217, 198, 0.2);
+    --bg:             #f8fafc;
+    --card-bg:        rgba(255, 255, 255, 0.9);
+    --text-main:      #2c3338;
+    --text-dim:       #666E73;
+    --glass-border:   rgba(0, 0, 0, 0.08);
+    --shadow:         0 4px 15px rgba(0, 0, 0, 0.03);
+    --row-hover:      rgba(106, 217, 198, 0.05);
+    --success:        #41A66D;
+    --warning:        #DEACA4;
+    --danger:         #A64143;
+    --top-bar-height: 60px;
+}
+
+// SCSS variables (compile-time)
+$primary:        #6AD9C6;
+$primary-hover:  #4fada0;
+$primary-glow:   rgba(106, 217, 198, 0.2);
+$bg:             #f8fafc;
+$card-bg:        rgba(255, 255, 255, 0.9);
+$text-main:      #2c3338;
+$text-dim:       #666E73;
+$glass-border:   rgba(0, 0, 0, 0.08);
+$shadow:         0 4px 15px rgba(0, 0, 0, 0.03);
+$row-hover:      rgba(106, 217, 198, 0.05);
+$success:        #41A66D;
+$warning:        #DEACA4;
+$danger:         #A64143;
+$top-bar-height: 60px;
+
+// Breakpoints
+$bp-sm:   600px;
+$bp-md:   768px;
+$bp-lg:   1280px;

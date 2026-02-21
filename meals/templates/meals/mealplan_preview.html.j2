@@ -1,62 +1,10 @@
 {% extends "meals/base.html.j2" %}
-{% load i18n %}
+{% load i18n sass_tags %}
 
 {% block title %}{% trans "PDF Preview" %} - {{ plan.name }}{% endblock %}
 
 {% block extra_css %}
-<style>
-    /* Force the entire page structure to be full-height */
-    html, body {
-        height: 100vh !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-    }
-
-    /* Target the top bar to ensure we know its height */
-    .top-bar {
-        height: var(--top-bar-height) !important;
-        flex-shrink: 0;
-    }
-
-    /* Target the main tags and containers from base.html to remove their padding/constraints */
-    main {
-        height: calc(100vh - var(--top-bar-height)) !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    .container {
-        flex: 1 !important;
-        width: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    .preview-wrapper {
-        flex: 1 !important;
-        width: 100% !important;
-        height: 100% !important;
-        position: relative !important;
-        overflow: hidden !important;
-    }
-
-    .preview-frame {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        border: none !important;
-        background: #f1f5f9 !important;
-    }
-</style>
+<link rel="stylesheet" href="{% sass_src 'meals/scss/mealplan_preview.scss' %}">
 {% endblock %}
 
 {% block content %}
