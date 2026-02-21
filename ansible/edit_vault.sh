@@ -1,3 +1,3 @@
 #! /bin/bash
 
-uv run ansible-vault edit --vault-id saadeh.devk3s@vault-key-client vault.yml
+uv run ansible-vault edit --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client vault.yml

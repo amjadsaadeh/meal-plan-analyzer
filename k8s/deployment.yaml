@@ -19,7 +19,7 @@ spec:
         - name: regcred
       initContainers:
         - name: collect-static
-          image: index.docker.io/amjadsaadeh/rsos-meal-planner:latest
+          image: {{ image_name }}
           imagePullPolicy: Always
           command: ["python", "manage.py", "collectstatic", "--noinput"]
           envFrom:
@@ -31,7 +31,7 @@ spec:
             - name: staticfiles
               mountPath: /app/staticfiles
         - name: migrate
-          image: index.docker.io/amjadsaadeh/rsos-meal-planner:latest
+          image: {{ image_name }}
           imagePullPolicy: Always
           command: ["python", "manage.py", "migrate"]
           envFrom:
@@ -41,7 +41,7 @@ spec:
                 name: meal-planner-secret
       containers:
         - name: meal-planner
-          image: index.docker.io/amjadsaadeh/rsos-meal-planner:latest
+          image: {{ image_name }}
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

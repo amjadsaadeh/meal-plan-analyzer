@@ -8,10 +8,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - mealplanner.saadeh.dev
+        - mealplanner.{{ tld }}
       secretName: meal-planner-tls
   rules:
-    - host: mealplanner.saadeh.dev
+    - host: mealplanner.{{ tld }}
       http:
         paths:
           - path: /
