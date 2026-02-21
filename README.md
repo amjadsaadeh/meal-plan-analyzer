@@ -16,6 +16,6 @@ Prepare your k8s config.
 
 ```bash
 cd ansible
-uv run ansible-playbook --vault-id your-vault-id@vault-key-client deploy.yml
+uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy.yml
 ```
 

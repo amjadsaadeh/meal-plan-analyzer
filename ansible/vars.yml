@@ -1,3 +1,3 @@
-tld: "your-domain.example.com"
-mealplanner_ipv4_addr: "YOUR_SERVER_IPV4_ADDRESS"
-mealplanner_ipv6_addr: "YOUR_SERVER_IPV6_ADDRESS"
+tld: "{{ lookup('env', 'TLD') }}"
+mealplanner_ipv4_addr: "{{ lookup('env', 'MEALPLANNER_IPV4_ADDR') }}"
+mealplanner_ipv6_addr: "{{ lookup('env', 'MEALPLANNER_IPV6_ADDR') }}"

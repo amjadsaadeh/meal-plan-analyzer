@@ -9,7 +9,7 @@
     # Default values - override these with -e "variable=value"
     docker_user: ""
     docker_password: ""
-    image_name: "your-registry/your-image:latest"
+    image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
     project_root: "../"
 
   tasks:

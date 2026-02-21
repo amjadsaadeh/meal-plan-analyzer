@@ -8,10 +8,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - mealplanner.your-domain.example.com
+        - mealplanner.{{ tld }}
       secretName: meal-planner-tls
   rules:
-    - host: mealplanner.your-domain.example.com
+    - host: mealplanner.{{ tld }}
       http:
         paths:
           - path: /
