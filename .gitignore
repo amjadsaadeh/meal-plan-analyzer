@@ -12,3 +12,4 @@ __pycache__
 staticfiles/
 media/
 sass_cache/
+.worktrees/
