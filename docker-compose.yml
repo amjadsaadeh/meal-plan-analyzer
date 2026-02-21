@@ -24,7 +24,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SECRET_KEY=django-insecure-deg0ov9=8p5opt71i9hkgf5d6u*5c)lmuwp2e+ziw(=mw6s9d9
+      - SECRET_KEY=${SECRET_KEY:-change-me-generate-a-real-key-for-production}
       - DEBUG=True
       - ALLOWED_HOSTS=localhost,127.0.0.1
       - DATABASE_URL=postgres://mealplanner:mealplanner@db:5432/mealplanner

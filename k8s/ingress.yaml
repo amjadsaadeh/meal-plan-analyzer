@@ -8,10 +8,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - mealplanner.saadeh.dev
+        - mealplanner.your-domain.example.com
       secretName: meal-planner-tls
   rules:
-    - host: mealplanner.saadeh.dev
+    - host: mealplanner.your-domain.example.com
       http:
         paths:
           - path: /

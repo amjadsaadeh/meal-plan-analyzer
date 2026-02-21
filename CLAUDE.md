@@ -448,7 +448,7 @@ The Dockerfile uses a multi-stage build:
 
 ```bash
 cd ansible
-uv run ansible-playbook --vault-id saadeh.devk3s@vault-key-client deploy.yml
+uv run ansible-playbook --vault-id your-vault-id@vault-key-client deploy.yml
 ```
 
 Manifests live in `k8s/`. The Ansible playbook handles DNS, database, and app deployment to a k3s cluster.

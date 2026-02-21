@@ -9,7 +9,7 @@
     # Default values - override these with -e "variable=value"
     docker_user: ""
     docker_password: ""
-    image_name: "index.docker.io/amjadsaadeh/rsos-meal-planner:latest"
+    image_name: "your-registry/your-image:latest"
     project_root: "../"
 
   tasks:
