@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: meal-analyzer-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns-issuer
+spec:
+  tls:
+    - hosts:
+        - mealanalyzer.{{ tld }}
+      secretName: meal-analyzer-tls
+  rules:
+    - host: mealanalyzer.{{ tld }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: meal-analyzer-service
+                port:
+                  number: 80
