@@ -52,13 +52,7 @@ uv run playwright install --with-deps chromium   # first-time setup
 
 ### Initial Setup (run once)
 
-1. **Bootstrap DNS records:**
-```bash
-cd deployment/ansible
-uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client bootstrap-dns.yml
-```
-
-2. **Bootstrap databases:**
+**Bootstrap databases:**
 ```bash
 cd deployment/ansible
 uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client bootstrap-databases.yml
