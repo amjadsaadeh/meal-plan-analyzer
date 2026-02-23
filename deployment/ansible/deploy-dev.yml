@@ -20,9 +20,6 @@
         msg: "Please provide 'branch' via -e 'branch=feature-x'"
       when: branch == ""
 
-    - name: Include database configuration
-      include_tasks: database-dev.yml
-
     - name: Build Docker image
       community.docker.docker_image_build:
         path: "{{ project_root }}"

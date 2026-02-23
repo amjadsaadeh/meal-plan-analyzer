@@ -18,12 +18,6 @@
 
   tasks:
 
-    - name: Include DNS configuration
-      include_tasks: dns.yml
-
-    - name: Include database configuration
-      include_tasks: database-prod.yml
-
     - name: Ensure Docker variables are provided
       fail:
         msg: "Please provide 'docker_user' and 'docker_password' via -e 'docker_user=... docker_password=...'"

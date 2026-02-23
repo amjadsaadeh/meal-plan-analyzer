@@ -1,0 +1,63 @@
+---
+# Bootstrap playbook - run once to set up infrastructure
+# This should be run manually or as part of initial setup, not on every deploy
+
+- name: Bootstrap Infrastructure
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+    - vault.yml
+
+  tasks:
+    - name: Set A record for mealplanner
+      community.general.netcup_dns:
+        api_key: "{{ netcup_dns_api_key }}"
+        api_password: "{{ netcup_dns_api_password }}"
+        customer_id: "{{ netcup_dns_api_usernumber }}"
+        domain: "{{ tld }}"
+        name: "mealplanner"
+        type: "A"
+        value: "{{ mealplanner_ipv4_addr }}"
+        solo: true
+      delegate_to: localhost
+      connection: local
+
+    - name: Set AAAA record for mealplanner
+      community.general.netcup_dns:
+        api_key: "{{ netcup_dns_api_key }}"
+        api_password: "{{ netcup_dns_api_password }}"
+        customer_id: "{{ netcup_dns_api_usernumber }}"
+        domain: "{{ tld }}"
+        name: "mealplanner"
+        type: "AAAA"
+        value: "{{ mealplanner_ipv6_addr }}"
+        solo: true
+      delegate_to: localhost
+      connection: local
+
+    - name: Set wildcard A record for dev
+      community.general.netcup_dns:
+        api_key: "{{ netcup_dns_api_key }}"
+        api_password: "{{ netcup_dns_api_password }}"
+        customer_id: "{{ netcup_dns_api_usernumber }}"
+        domain: "{{ tld }}"
+        name: "mealplanalyzer-dev"
+        type: "A"
+        value: "{{ mealplanner_ipv4_addr }}"
+        solo: true
+      delegate_to: localhost
+      connection: local
+
+    - name: Set wildcard AAAA record for dev
+      community.general.netcup_dns:
+        api_key: "{{ netcup_dns_api_key }}"
+        api_password: "{{ netcup_dns_api_password }}"
+        customer_id: "{{ netcup_dns_api_usernumber }}"
+        domain: "{{ tld }}"
+        name: "mealplanalyzer-dev"
+        type: "AAAA"
+        value: "{{ mealplanner_ipv6_addr }}"
+        solo: true
+      delegate_to: localhost
+      connection: local
