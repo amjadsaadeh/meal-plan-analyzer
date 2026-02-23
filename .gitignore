@@ -11,4 +11,5 @@ __pycache__
 .env
 staticfiles/
 media/
+.worktrees/
 sass_cache/
