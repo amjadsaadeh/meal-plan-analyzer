@@ -50,11 +50,28 @@ uv run playwright install --with-deps chromium   # first-time setup
 
 ## Deployment
 
-Prepare your Kubernetes config, then:
+### Production
 
 ```bash
 cd ansible
-uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy.yml
+uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy-prod.yml \
+  -e "docker_user=xxx docker_password=xxx"
+```
+
+### Dev (Feature Branches)
+
+Maintainers can deploy a PR for testing by commenting `/deploy` on the PR.
+
+The preview will be available at: `https://{branch}.mealanalyzer-dev.{tld}`
+
+Cleanup is automatic when the PR is closed or merged.
+
+### Manual Dev Deployment
+
+```bash
+cd ansible
+uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy-dev.yml \
+  -e "branch=feature-x"
 ```
 
 ## License
