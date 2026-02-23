@@ -7,7 +7,7 @@
     - vault.yml
   vars:
     image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
-    project_root: "../"
+    project_root: "../../"
     branch: ""
     namespace: "meal-plan-analyzer-{{ branch | regex_replace('[^a-z0-9-]', '-') | lower }}"
     secret_key: "{{ meal_plan_analyzer_dev_secret_key }}"
@@ -53,7 +53,7 @@
 
     - name: Apply dev overlay with branch-specific namespace
       shell: |
-        cd ../k8s/overlays/dev
+        cd ../../k8s/overlays/dev
         kustomize edit set namespace {{ namespace }}
         kubectl apply -k .
 

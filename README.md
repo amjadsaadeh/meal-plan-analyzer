@@ -53,7 +53,7 @@ uv run playwright install --with-deps chromium   # first-time setup
 ### Production
 
 ```bash
-cd ansible
+cd deployment/ansible
 uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy-prod.yml \
   -e "docker_user=xxx docker_password=xxx"
 ```
@@ -69,7 +69,7 @@ Cleanup is automatic when the PR is closed or merged.
 ### Manual Dev Deployment
 
 ```bash
-cd ansible
+cd deployment/ansible
 uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy-dev.yml \
   -e "branch=feature-x"
 ```

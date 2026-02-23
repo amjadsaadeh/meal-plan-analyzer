@@ -9,7 +9,7 @@
     docker_user: ""
     docker_password: ""
     image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
-    project_root: "../"
+    project_root: "../../"
     env: prod
     namespace: meal-plan-analyzer
     secret_key: "{{ meal_plan_analyzer_prod_secret_key }}"
@@ -52,7 +52,7 @@
     - name: Apply Kubernetes Namespace
       kubernetes.core.k8s:
         state: present
-        src: "../k8s/overlays/{{ env }}/namespace.yaml"
+        src: "../../k8s/overlays/{{ env }}/namespace.yaml"
 
     - name: Create Docker Registry Secret using kubectl
       shell: >
@@ -63,7 +63,7 @@
         --dry-run=client -o yaml | kubectl apply -f -
 
     - name: Apply Kubernetes manifests with Kustomize
-      shell: kubectl apply -k ../k8s/overlays/{{ env }}/
+      shell: kubectl apply -k ../../k8s/overlays/{{ env }}/
 
     - name: Restart Deployment
       shell: kubectl rollout restart deployment/meal-plan-analyzer -n {{ namespace }}
