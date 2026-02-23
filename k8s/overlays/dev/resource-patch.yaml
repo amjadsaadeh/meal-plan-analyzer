@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: meal-analyzer
+  name: meal-plan-analyzer
 spec:
   template:
     spec:
       containers:
-        - name: meal-analyzer
+        - name: meal-plan-analyzer
           resources:
             limits:
               cpu: "500m"

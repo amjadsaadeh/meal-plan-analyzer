@@ -19,4 +19,4 @@ jobs:
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
         run: |
-          kubectl delete namespace meal-analyzer-${{ steps.branch.outputs.name }} --ignore-not-found=true
+          kubectl delete namespace meal-plan-analyzer-${{ steps.branch.outputs.name }} --ignore-not-found=true

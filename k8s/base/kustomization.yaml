@@ -9,4 +9,4 @@ resources:
   - service.yaml
 
 commonLabels:
-  app: meal-analyzer
+  app: meal-plan-analyzer

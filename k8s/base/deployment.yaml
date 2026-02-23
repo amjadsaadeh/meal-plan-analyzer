@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: meal-analyzer
+  name: meal-plan-analyzer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: meal-analyzer
+      app: meal-plan-analyzer
   template:
     metadata:
       labels:
-        app: meal-analyzer
+        app: meal-plan-analyzer
     spec:
       imagePullSecrets:
         - name: regcred
@@ -21,9 +21,9 @@ spec:
           command: ["python", "manage.py", "collectstatic", "--noinput"]
           envFrom:
             - configMapRef:
-                name: meal-analyzer-config
+                name: meal-plan-analyzer-config
             - secretRef:
-                name: meal-analyzer-secret
+                name: meal-plan-analyzer-secret
           volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles
@@ -33,29 +33,29 @@ spec:
           command: ["python", "manage.py", "migrate"]
           envFrom:
             - configMapRef:
-                name: meal-analyzer-config
+                name: meal-plan-analyzer-config
             - secretRef:
-                name: meal-analyzer-secret
+                name: meal-plan-analyzer-secret
         - name: import-foods
           image: "{{ image_name }}"
           imagePullPolicy: Always
           command: ["python", "manage.py", "import_foods", "https://blsdb.de/assets/uploads/BLS_4_0_2025_DE.zip"]
           envFrom:
             - configMapRef:
-                name: meal-analyzer-config
+                name: meal-plan-analyzer-config
             - secretRef:
-                name: meal-analyzer-secret
+                name: meal-plan-analyzer-secret
       containers:
-        - name: meal-analyzer
+        - name: meal-plan-analyzer
           image: "{{ image_name }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
           envFrom:
             - configMapRef:
-                name: meal-analyzer-config
+                name: meal-plan-analyzer-config
             - secretRef:
-                name: meal-analyzer-secret
+                name: meal-plan-analyzer-secret
           volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles
@@ -78,4 +78,4 @@ spec:
           emptyDir: {}
         - name: media
           persistentVolumeClaim:
-            claimName: meal-analyzer-media-pvc
+            claimName: meal-plan-analyzer-media-pvc

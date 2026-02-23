@@ -11,10 +11,10 @@
     image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
     project_root: "../"
     env: prod
-    namespace: meal-analyzer
-    secret_key: "{{ meal_analyzer_prod_secret_key }}"
-    db_password: "{{ meal_analyzer_prod_db_password }}"
-    database_url: "postgresql://meal_analyzer:{{ db_password }}@pgcluster-rw.cloudnative-pg.svc.cluster.local:5432/meal_analyzer"
+    namespace: meal-plan-analyzer
+    secret_key: "{{ meal_plan_analyzer_prod_secret_key }}"
+    db_password: "{{ meal_plan_analyzer_prod_db_password }}"
+    database_url: "postgresql://meal_plan_analyzer:{{ db_password }}@pgcluster-rw.cloudnative-pg.svc.cluster.local:5432/meal_plan_analyzer"
 
   tasks:
 
@@ -66,4 +66,4 @@
       shell: kubectl apply -k ../k8s/overlays/{{ env }}/
 
     - name: Restart Deployment
-      shell: kubectl rollout restart deployment/meal-analyzer -n {{ namespace }}
+      shell: kubectl rollout restart deployment/meal-plan-analyzer -n {{ namespace }}

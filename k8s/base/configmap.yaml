@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: meal-analyzer-config
+  name: meal-plan-analyzer-config
 data:
   DEBUG: "False"
   ALLOWED_HOSTS: "*"

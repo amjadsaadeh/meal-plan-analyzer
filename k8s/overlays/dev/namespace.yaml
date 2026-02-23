@@ -1,4 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: meal-analyzer-dev
+  name: meal-plan-analyzer-dev

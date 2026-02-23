@@ -9,10 +9,10 @@
     image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
     project_root: "../"
     branch: ""
-    namespace: "meal-analyzer-{{ branch | regex_replace('[^a-z0-9-]', '-') | lower }}"
-    secret_key: "{{ meal_analyzer_dev_secret_key }}"
-    db_password: "{{ meal_analyzer_dev_db_password }}"
-    database_url: "postgresql://meal_analyzer_dev:{{ db_password }}@pgcluster-rw.cloudnative-pg.svc.cluster.local:5432/meal_analyzer_dev"
+    namespace: "meal-plan-analyzer-{{ branch | regex_replace('[^a-z0-9-]', '-') | lower }}"
+    secret_key: "{{ meal_plan_analyzer_dev_secret_key }}"
+    db_password: "{{ meal_plan_analyzer_dev_db_password }}"
+    database_url: "postgresql://meal_plan_analyzer_dev:{{ db_password }}@pgcluster-rw.cloudnative-pg.svc.cluster.local:5432/meal_plan_analyzer_dev"
 
   tasks:
     - name: Fail if branch not provided
@@ -58,8 +58,8 @@
         kubectl apply -k .
 
     - name: Restart Deployment
-      shell: kubectl rollout restart deployment/meal-analyzer -n {{ namespace }}
+      shell: kubectl rollout restart deployment/meal-plan-analyzer -n {{ namespace }}
 
     - name: Get deployment URL
       debug:
-        msg: "Deployed to https://{{ branch | regex_replace('[^a-z0-9-]', '-') | lower }}.mealanalyzer-dev.{{ tld }}"
+        msg: "Deployed to https://{{ branch | regex_replace('[^a-z0-9-]', '-') | lower }}.mealplanalyzer-dev.{{ tld }}"
