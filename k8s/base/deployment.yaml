@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meal-analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: meal-analyzer
+  template:
+    metadata:
+      labels:
+        app: meal-analyzer
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      initContainers:
+        - name: collect-static
+          image: {{ image_name }}
+          imagePullPolicy: Always
+          command: ["python", "manage.py", "collectstatic", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: meal-analyzer-config
+            - secretRef:
+                name: meal-analyzer-secret
+          volumeMounts:
+            - name: staticfiles
+              mountPath: /app/staticfiles
+        - name: migrate
+          image: {{ image_name }}
+          imagePullPolicy: Always
+          command: ["python", "manage.py", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: meal-analyzer-config
+            - secretRef:
+                name: meal-analyzer-secret
+        - name: import-foods
+          image: {{ image_name }}
+          imagePullPolicy: Always
+          command: ["python", "manage.py", "import_foods", "https://blsdb.de/assets/uploads/BLS_4_0_2025_DE.zip"]
+          envFrom:
+            - configMapRef:
+                name: meal-analyzer-config
+            - secretRef:
+                name: meal-analyzer-secret
+      containers:
+        - name: meal-analyzer
+          image: {{ image_name }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: meal-analyzer-config
+            - secretRef:
+                name: meal-analyzer-secret
+          volumeMounts:
+            - name: staticfiles
+              mountPath: /app/staticfiles
+            - name: media
+              mountPath: /app/media
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: staticfiles
+          emptyDir: {}
+        - name: media
+          persistentVolumeClaim:
+            claimName: meal-analyzer-media-pvc
