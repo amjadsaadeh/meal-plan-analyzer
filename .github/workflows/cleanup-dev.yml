@@ -1,0 +1,22 @@
+name: Cleanup Dev Deployment
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sanitize branch name
+        id: branch
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          SANITIZED=$(echo "$BRANCH" | sed 's/[^a-z0-9-]/-/g' | tr '[:upper:]' '[:lower:]')
+          echo "name=$SANITIZED" >> $GITHUB_OUTPUT
+
+      - name: Delete namespace
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          kubectl delete namespace meal-analyzer-${{ steps.branch.outputs.name }} --ignore-not-found=true
