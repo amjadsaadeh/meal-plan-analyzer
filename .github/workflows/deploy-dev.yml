@@ -49,11 +49,6 @@ jobs:
           SANITIZED=$(echo "$BRANCH" | sed 's/[^a-z0-9-]/-/g' | tr '[:upper:]' '[:lower:]')
           echo "name=$SANITIZED" >> $GITHUB_OUTPUT
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
       - name: Install Ansible
         run: pip install ansible kubernetes-core community-docker
 
@@ -63,12 +58,11 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           TLD: ${{ secrets.TLD }}
-          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+          DEV_SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
+          DEV_DB_PASSWORD: ${{ secrets.DEV_DB_PASSWORD }}
         run: |
-          echo "$ANSIBLE_VAULT_PASSWORD" > vault_pass.txt
           ansible-playbook deployment/ansible/deploy-dev.yml \
-            -e "branch=${{ steps.branch.outputs.name }}" \
-            --vault-password-file vault_pass.txt
+            -e "branch=${{ steps.branch.outputs.name }}"
 
       - name: Comment preview URL
         uses: actions/github-script@v7

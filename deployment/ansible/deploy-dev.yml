@@ -4,14 +4,13 @@
   gather_facts: false
   vars_files:
     - vars.yml
-    - vault.yml
   vars:
     image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
     project_root: "../../"
     branch: ""
     namespace: "meal-plan-analyzer-{{ branch | regex_replace('[^a-z0-9-]', '-') | lower }}"
-    secret_key: "{{ meal_plan_analyzer_dev_secret_key }}"
-    db_password: "{{ meal_plan_analyzer_dev_db_password }}"
+    secret_key: "{{ lookup('env', 'DEV_SECRET_KEY') }}"
+    db_password: "{{ lookup('env', 'DEV_DB_PASSWORD') }}"
     database_url: "postgresql://meal_plan_analyzer_dev:{{ db_password }}@pgcluster-rw.cloudnative-pg.svc.cluster.local:5432/meal_plan_analyzer_dev"
 
   tasks:
