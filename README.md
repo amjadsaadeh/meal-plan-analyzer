@@ -66,20 +66,12 @@ uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy-p
   -e "docker_user=xxx docker_password=xxx"
 ```
 
-### Dev (Feature Branches)
-
-Maintainers can deploy a PR for testing by commenting `/deploy` on the PR.
-
-The preview will be available at: `https://{branch}.mealplanalyzer-dev.{tld}`
-
-Cleanup is automatic when the PR is closed or merged.
-
-### Manual Dev Deployment
+### Development
 
 ```bash
 cd deployment/ansible
 uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy-dev.yml \
-  -e "branch=feature-x"
+  -e "docker_user=xxx docker_password=xxx"
 ```
 
 ## License
