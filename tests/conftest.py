@@ -1,6 +1,14 @@
+import sys
 import pytest
 import os
 from pathlib import Path
+
+# Ensure the project root is importable so tests.frontend.factories works
+# regardless of how pytest resolves sys.path (worktree vs regular checkout).
+_project_root = str(Path(__file__).resolve().parent.parent)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
 from django.core.management import call_command
 from django.conf import settings
 import os

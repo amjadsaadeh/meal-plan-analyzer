@@ -1,0 +1,30 @@
+{% extends 'meals/base.html.j2' %}
+{% load django_vite i18n %}
+
+{% block title %}{% trans "Meal Plans" %} | Modern Nutrition{% endblock %}
+
+{% block content %}
+<script>
+window.__I18N__ = {
+  mealPlans: "{% trans 'Meal Plans' %}",
+  createNewPlan: "{% trans 'Create New Plan' %}",
+  searchPlansPlaceholder: "{% trans 'Search plans...' %}",
+  columnName: "{% trans 'Name' %}",
+  columnDays: "{% trans 'Days' %}",
+  columnCreated: "{% trans 'Created' %}",
+  columnLastChanged: "{% trans 'Last Changed' %}",
+  noDays: "{% trans 'No days' %}",
+  noMealPlansFound: "{% trans 'No meal plans found.' %}",
+  confirmDeletePlan: "{% trans 'Are you sure you want to delete this meal plan?' %}",
+  errorDeletingPlan: "{% trans 'Error deleting plan' %}",
+  cancel: "{% trans 'Cancel' %}",
+  delete: "{% trans 'Delete' %}",
+};
+</script>
+<div id="app"></div>
+{% endblock %}
+
+{% block extra_js %}
+{% vite_hmr_client %}
+{% vite_asset 'src/main.ts' %}
+{% endblock %}

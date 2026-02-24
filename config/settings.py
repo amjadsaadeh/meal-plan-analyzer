@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sass_processor',
+    'django_vite',
     'rest_framework',
     'meals',
 ]
@@ -173,6 +174,16 @@ STATICFILES_DIRS = [
     BASE_DIR / 'sass_cache',
 ]
 
+# VITE_DEV_MODE=true to enable Vite HMR dev server (requires `pnpm dev` running).
+# Defaults to False so tests and CI always use the pre-built dist manifest.
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": env.bool('VITE_DEV_MODE', default=False),
+        "manifest_path": BASE_DIR / "meals/static/meals/dist/.vite/manifest.json",
+        "static_url_prefix": "meals/dist",
+    }
+}
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -195,6 +206,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'meals.pagination.StandardPagination',
     'PAGE_SIZE': 100,
 }

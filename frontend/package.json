@@ -1,0 +1,38 @@
+{
+  "name": "rsos-meal-planner-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/vue-query": "^5.80",
+    "axios": "^1.8",
+    "pinia": "^2.3",
+    "vue": "^3.5",
+    "vue-i18n": "^10.0",
+    "vue-router": "^4.5"
+  },
+  "devDependencies": {
+    "@pinia/testing": "^0.1",
+    "@types/node": "^25.3.0",
+    "@vitejs/plugin-vue": "^5.2",
+    "@vue/test-utils": "^2.4",
+    "happy-dom": "^17.4",
+    "sass": "^1.86",
+    "typescript": "~5.8",
+    "vite": "^6.3",
+    "vitest": "^3.1",
+    "vue-tsc": "^2.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "vue-demi"
+    ]
+  }
+}

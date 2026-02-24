@@ -82,9 +82,10 @@ def test_mealplan_list_delete_plan(logged_in_page, live_server, test_user):
     logged_in_page.goto(live_server.url + "/")
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
 
-    # Accept the browser confirm() dialog that the delete button triggers
-    logged_in_page.on("dialog", lambda dialog: dialog.accept())
+    # Click delete button to open the Vue confirmation modal
     logged_in_page.locator(".delete-btn").first.click()
+    # Confirm deletion in the modal
+    logged_in_page.locator("[data-testid='confirm-delete-btn']").click()
 
     # Row should disappear without a full page reload
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(0)

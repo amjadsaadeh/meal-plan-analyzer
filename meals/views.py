@@ -133,10 +133,7 @@ def meal_plan_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    return render(request, 'meals/mealplan_list.html.j2', {
-        'page_obj': page_obj,
-        'search_query': search_query
-    })
+    return render(request, 'meals/mealplan_list_vue.html.j2')
 
 @login_required
 def meal_plan_detail(request, pk=None):
@@ -312,7 +309,9 @@ from django.db.models import Prefetch
 class MealPlanViewSet(viewsets.ModelViewSet):
     queryset = MealPlan.objects.all()
     serializer_class = MealPlanSerializer
-    
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
+
     def get_queryset(self):
         active_days = MealPlanDay.objects.filter(removed=False)
         return MealPlan.objects.prefetch_related(

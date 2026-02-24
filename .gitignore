@@ -13,3 +13,5 @@ staticfiles/
 media/
 sass_cache/
 .worktrees/
+frontend/node_modules/
+meals/static/meals/dist/
