@@ -1,8 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: meal-planner-media-pvc
-  namespace: meal-planner
+  name: meal-plan-analyzer-media-pvc
 spec:
   accessModes:
     - ReadWriteOnce

@@ -50,11 +50,28 @@ uv run playwright install --with-deps chromium   # first-time setup
 
 ## Deployment
 
-Prepare your Kubernetes config, then:
+### Initial Setup (run once)
+
+**Bootstrap databases:**
+```bash
+cd deployment/ansible
+uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client bootstrap-databases.yml
+```
+
+### Production
 
 ```bash
-cd ansible
-uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy.yml
+cd deployment/ansible
+uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy-prod.yml \
+  -e "docker_user=xxx docker_password=xxx"
+```
+
+### Development
+
+```bash
+cd deployment/ansible
+uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy-dev.yml \
+  -e "docker_user=xxx docker_password=xxx"
 ```
 
 ## License

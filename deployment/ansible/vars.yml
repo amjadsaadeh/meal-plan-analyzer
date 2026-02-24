@@ -1,0 +1,3 @@
+tld: "{{ lookup('env', 'TLD') }}"
+mealplanalyzer_ipv4_addr: "{{ lookup('env', 'MEALPLANALYZER_IPV4_ADDR') }}"
+mealplanalyzer_ipv6_addr: "{{ lookup('env', 'MEALPLANALYZER_IPV6_ADDR') }}"

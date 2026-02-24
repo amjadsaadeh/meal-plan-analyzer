@@ -1,0 +1,11 @@
+# Ansible Vault Secrets Template
+# Copy this file to vault.yml and fill in your values
+# Then encrypt: ansible-vault encrypt vault.yml
+
+# Production secrets
+meal_plan_analyzer_prod_secret_key: "your-django-secret-key"
+meal_plan_analyzer_prod_db_password: "your-db-password"
+
+# Dev secrets (for per-branch deployments)
+meal_plan_analyzer_dev_secret_key: "another-django-secret-key"
+meal_plan_analyzer_dev_db_password: "another-db-password"

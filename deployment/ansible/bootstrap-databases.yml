@@ -1,0 +1,27 @@
+---
+# Bootstrap databases - run once to create databases and users
+# Creates both prod and dev databases
+
+- name: Bootstrap Databases
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+    - vault.yml
+  vars:
+    db_password: ""
+
+  tasks:
+    - name: Set prod db_password from vault
+      set_fact:
+        db_password: "{{ meal_plan_analyzer_prod_db_password }}"
+
+    - name: Include prod database configuration
+      include_tasks: database-prod.yml
+
+    - name: Set dev db_password from vault
+      set_fact:
+        db_password: "{{ meal_plan_analyzer_dev_db_password }}"
+
+    - name: Include dev database configuration
+      include_tasks: database-dev.yml

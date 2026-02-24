@@ -1,0 +1,63 @@
+---
+- name: Build, Push, and Deploy to Kubernetes (Prod)
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+    - vault.yml
+  vars:
+    docker_user: ""
+    docker_password: ""
+    image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
+    project_root: "../../"
+    env: prod
+    namespace: meal-plan-analyzer
+    secret_key: "{{ meal_plan_analyzer_prod_secret_key }}"
+    db_password: "{{ meal_plan_analyzer_prod_db_password }}"
+    database_url: "postgresql://meal_plan_analyzer_prod:{{ db_password }}@pgcluster-rw.cloudnative-pg.svc.cluster.local:5432/meal_plan_analyzer_prod"
+
+  tasks:
+
+    - name: Ensure Docker variables are provided
+      fail:
+        msg: "Please provide 'docker_user' and 'docker_password' via -e 'docker_user=... docker_password=...'"
+      when: docker_user == "" or docker_password == ""
+
+    - name: Log into DockerHub
+      community.docker.docker_login:
+        username: "{{ docker_user }}"
+        password: "{{ docker_password }}"
+        registry_url: index.docker.io
+
+    - name: Build Docker image
+      community.docker.docker_image_build:
+        path: "{{ project_root }}"
+        name: "{{ image_name }}"
+        rebuild: "always"
+        outputs:
+          - type: "docker"
+            name: "{{ image_name }}"
+            push: true
+    
+    - name: Push Docker image
+      community.docker.docker_image_push:
+        name: "{{ image_name }}"
+
+    - name: Apply Kubernetes Namespace
+      kubernetes.core.k8s:
+        state: present
+        src: "../../k8s/overlays/{{ env }}/namespace.yaml"
+
+    - name: Create Docker Registry Secret using kubectl
+      shell: >
+        kubectl create secret docker-registry regcred -n {{ namespace }}
+        --docker-server=https://index.docker.io/v1/
+        --docker-username={{ docker_user }}
+        --docker-password={{ docker_password }}
+        --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Apply Kubernetes manifests with Kustomize
+      shell: kubectl apply -k ../../k8s/overlays/{{ env }}/
+
+    - name: Restart Deployment
+      shell: kubectl rollout restart deployment/meal-plan-analyzer -n {{ namespace }}
