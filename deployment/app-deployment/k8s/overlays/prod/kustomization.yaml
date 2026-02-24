@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: meal-plan-analyzer
+
+resources:
+  - ingress.yaml
+  - ../../base
+
+images:
+  - name: image_name
+    newName: "{{ image_name }}"

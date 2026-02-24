@@ -4,9 +4,12 @@ kind: Kustomization
 namespace: meal-plan-analyzer-dev
 
 resources:
-  - namespace.yaml
-  - ../../base
   - ingress.yaml
+  - ../../base
+
+images:
+  - name: image_name
+    newName: "{{ image_name }}"
 
 patches:
   - path: resource-patch.yaml

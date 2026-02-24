@@ -1,21 +1,27 @@
 ---
-- name: Deploy Dev Environment
+- name: Build, Push, and Deploy to Kubernetes
   hosts: localhost
   gather_facts: false
   vars_files:
     - vars.yml
+    - ../../../ansible/vault.yml
   vars:
     docker_user: ""
     docker_password: ""
     image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
-    project_root: "../../"
-    env: dev
-    namespace: meal-plan-analyzer-dev
-    secret_key: "{{ lookup('env', 'DEV_SECRET_KEY') }}"
-    db_password: "{{ lookup('env', 'DEV_DB_PASSWORD') }}"
-    database_url: "postgresql://meal_plan_analyzer_dev:{{ db_password }}@pgcluster-rw.cloudnative-pg.svc.cluster.local:5432/meal_plan_analyzer_dev"
+    project_root: "../../../"
 
   tasks:
+    - name: Ensure environment is specified
+      fail:
+        msg: "Please specify environment with -e env=prod|dev"
+      when: env is not defined
+
+    - name: Set environment-specific variables
+      set_fact:
+        namespace: "{{ 'meal-plan-analyzer' if env == 'prod' else 'meal-plan-analyzer-dev' }}"
+        image_tag: "{{ 'latest' if env == 'prod' else 'dev' }}"
+        full_image_name: "{{ image_name }}:{{ image_tag }}"
 
     - name: Ensure Docker variables are provided
       fail:
@@ -31,25 +37,19 @@
     - name: Build Docker image
       community.docker.docker_image_build:
         path: "{{ project_root }}"
-        name: "{{ image_name }}"
-        tag: "dev"
+        name: "{{ full_image_name }}"
+        tag: "{{ image_tag }}"
         rebuild: "always"
         outputs:
           - type: "docker"
-            name: "{{ image_name }}:dev"
+            name: "{{ full_image_name }}"
             push: true
 
     - name: Push Docker image
       community.docker.docker_image_push:
-        name: "{{ image_name }}"
-        tag: "dev"
+        name: "{{ full_image_name }}"
 
-    - name: Apply Kubernetes Namespace
-      kubernetes.core.k8s:
-        state: present
-        src: "../../k8s/overlays/{{ env }}/namespace.yaml"
-
-    - name: Create Docker Registry Secret using kubectl
+    - name: Create Docker Registry Secret
       shell: >
         kubectl create secret docker-registry regcred -n {{ namespace }}
         --docker-server=https://index.docker.io/v1/

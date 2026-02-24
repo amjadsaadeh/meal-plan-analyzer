@@ -1,0 +1,13 @@
+# Deployment variables
+# Required: -e env=prod|dev
+env: ""
+
+# Docker image
+image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
+
+# Project root for Docker build
+project_root: "../../../"
+
+# Namespaces
+prod_namespace: "meal-plan-analyzer"
+dev_namespace: "meal-plan-analyzer-dev"

@@ -1,0 +1,12 @@
+# Bootstrap variables
+# Set bootstrap_env to 'prod' or 'dev' to bootstrap specific environment
+# Leave empty to bootstrap both
+bootstrap_env: ""
+
+# Database connection
+db_host: "pgcluster-rw.cloudnative-pg.svc.cluster.local"
+db_port: "5432"
+
+# K8s namespace
+prod_namespace: "meal-plan-analyzer"
+dev_namespace: "meal-plan-analyzer-dev"

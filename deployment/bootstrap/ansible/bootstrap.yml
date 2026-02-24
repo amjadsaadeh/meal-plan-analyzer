@@ -1,0 +1,68 @@
+---
+- name: Bootstrap Databases
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+    - ../../../ansible/vault.yml
+  vars:
+    db_password: ""
+
+  tasks:
+    - name: Set prod db_password from vault
+      set_fact:
+        db_password: "{{ meal_plan_analyzer_prod_db_password }}"
+
+    - name: Include prod database configuration
+      include_tasks: database-prod.yml
+
+    - name: Set dev db_password from vault
+      set_fact:
+        db_password: "{{ meal_plan_analyzer_dev_db_password }}"
+
+    - name: Include dev database configuration
+      include_tasks: database-dev.yml
+
+- name: Bootstrap Kubernetes Resources
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+    - ../../../ansible/vault.yml
+
+  tasks:
+    - name: Bootstrap Prod Kubernetes Resources
+      when: bootstrap_env is not defined or bootstrap_env == 'prod'
+      block:
+        - name: Set prod secrets
+          set_fact:
+            secret_key: "{{ meal_plan_analyzer_prod_secret_key }}"
+            db_password: "{{ meal_plan_analyzer_prod_db_password }}"
+            env: "prod"
+
+        - name: Render prod secrets.env
+          ansible.builtin.template:
+            src: secrets.env.j2
+            dest: ../k8s/overlays/prod/secrets.env
+            mode: '0600'
+
+        - name: Apply prod bootstrap kustomize
+          shell: kubectl apply -k ../k8s/overlays/prod/
+
+    - name: Bootstrap Dev Kubernetes Resources
+      when: bootstrap_env is not defined or bootstrap_env == 'dev'
+      block:
+        - name: Set dev secrets
+          set_fact:
+            secret_key: "{{ meal_plan_analyzer_dev_secret_key }}"
+            db_password: "{{ meal_plan_analyzer_dev_db_password }}"
+            env: "dev"
+
+        - name: Render dev secrets.env
+          ansible.builtin.template:
+            src: secrets.env.j2
+            dest: ../k8s/overlays/dev/secrets.env
+            mode: '0600'
+
+        - name: Apply dev bootstrap kustomize
+          shell: kubectl apply -k ../k8s/overlays/dev/

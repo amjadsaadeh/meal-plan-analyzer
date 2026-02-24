@@ -1,5 +1,4 @@
 ---
-    # Prod database configuration
     - name: Fetch meal_plan_analyzer_prod database user existance
       ansible.builtin.shell:
         cmd: |

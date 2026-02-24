@@ -16,7 +16,7 @@ spec:
         - name: regcred
       initContainers:
         - name: collect-static
-          image: "{{ image_name }}"
+          image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "collectstatic", "--noinput"]
           envFrom:
@@ -28,7 +28,7 @@ spec:
             - name: staticfiles
               mountPath: /app/staticfiles
         - name: migrate
-          image: "{{ image_name }}"
+          image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "migrate"]
           envFrom:
@@ -37,7 +37,7 @@ spec:
             - secretRef:
                 name: meal-plan-analyzer-secret
         - name: import-foods
-          image: "{{ image_name }}"
+          image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "import_foods", "https://blsdb.de/assets/uploads/BLS_4_0_2025_DE.zip"]
           envFrom:
@@ -47,7 +47,7 @@ spec:
                 name: meal-plan-analyzer-secret
       containers:
         - name: meal-plan-analyzer
-          image: "{{ image_name }}"
+          image: image_name
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
