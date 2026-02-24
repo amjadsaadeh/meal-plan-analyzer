@@ -13,3 +13,4 @@ staticfiles/
 media/
 .worktrees/
 sass_cache/
+secrets.env
