@@ -4,7 +4,7 @@
   gather_facts: false
   vars_files:
     - vars.yml
-    - ../../../ansible/vault.yml
+    - ../../vault.yml
   vars:
     db_password: ""
 
@@ -28,7 +28,7 @@
   gather_facts: false
   vars_files:
     - vars.yml
-    - ../../../ansible/vault.yml
+    - ../../vault.yml
 
   tasks:
     - name: Bootstrap Prod Kubernetes Resources
