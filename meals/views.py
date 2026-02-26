@@ -323,7 +323,7 @@ class MealPlanDayViewSet(viewsets.ModelViewSet):
     serializer_class = MealPlanDaySerializer
 
 class MealPlanFoodViewSet(viewsets.ModelViewSet):
-    queryset = MealPlanFood.objects.all()
+    queryset = MealPlanFood.objects.order_by('id')
     serializer_class = MealPlanFoodSerializer
 
     def perform_create(self, serializer):
@@ -365,7 +365,7 @@ class MealPlanFoodViewSet(viewsets.ModelViewSet):
             cache.delete(ALIAS_CACHE_KEY)
 
 class ThresholdPresetViewSet(viewsets.ModelViewSet):
-    queryset = ThresholdPreset.objects.all()
+    queryset = ThresholdPreset.objects.order_by('id')
     serializer_class = ThresholdPresetSerializer
 
 
