@@ -46,6 +46,15 @@ class Food(models.Model):
     vita_in_mug_per_100g = models.FloatField(default=0.0)
     calcium_in_mg_per_100g = models.FloatField(default=0.0)
     vitd_in_mug_per_100g = models.FloatField(default=0.0)
+    vitb1_in_mg_per_100g = models.FloatField(default=0.0)
+    vitb2_in_mg_per_100g = models.FloatField(default=0.0)
+    vitb3_in_mg_per_100g = models.FloatField(default=0.0)
+    vitb5_in_mg_per_100g = models.FloatField(default=0.0)
+    vitb6_in_mug_per_100g = models.FloatField(default=0.0)
+    biotin_in_mug_per_100g = models.FloatField(default=0.0)
+    iodine_in_mug_per_100g = models.FloatField(default=0.0)
+    copper_in_mug_per_100g = models.FloatField(default=0.0)
+    manganese_in_mug_per_100g = models.FloatField(default=0.0)
 
     class Meta:
         ordering = ['name']
@@ -103,6 +112,33 @@ class ThresholdPreset(models.Model):
     
     vitd_in_mug_min = models.FloatField(null=True, blank=True)
     vitd_in_mug_max = models.FloatField(null=True, blank=True)
+    
+    vitb1_in_mg_min = models.FloatField(null=True, blank=True)
+    vitb1_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    vitb2_in_mg_min = models.FloatField(null=True, blank=True)
+    vitb2_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    vitb3_in_mg_min = models.FloatField(null=True, blank=True)
+    vitb3_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    vitb5_in_mg_min = models.FloatField(null=True, blank=True)
+    vitb5_in_mg_max = models.FloatField(null=True, blank=True)
+    
+    vitb6_in_mug_min = models.FloatField(null=True, blank=True)
+    vitb6_in_mug_max = models.FloatField(null=True, blank=True)
+    
+    biotin_in_mug_min = models.FloatField(null=True, blank=True)
+    biotin_in_mug_max = models.FloatField(null=True, blank=True)
+    
+    iodine_in_mug_min = models.FloatField(null=True, blank=True)
+    iodine_in_mug_max = models.FloatField(null=True, blank=True)
+    
+    copper_in_mug_min = models.FloatField(null=True, blank=True)
+    copper_in_mug_max = models.FloatField(null=True, blank=True)
+    
+    manganese_in_mug_min = models.FloatField(null=True, blank=True)
+    manganese_in_mug_max = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -146,6 +182,15 @@ class MealPlan(models.Model):
             'vita': 'vita_in_mug',
             'calcium': 'calcium_in_mg',
             'vitd': 'vitd_in_mug',
+            'vitb1': 'vitb1_in_mg',
+            'vitb2': 'vitb2_in_mg',
+            'vitb3': 'vitb3_in_mg',
+            'vitb5': 'vitb5_in_mg',
+            'vitb6': 'vitb6_in_mug',
+            'biotin': 'biotin_in_mug',
+            'iodine': 'iodine_in_mug',
+            'copper': 'copper_in_mug',
+            'manganese': 'manganese_in_mug',
             'kcal': 'energy_in_kcal'
         }
 
