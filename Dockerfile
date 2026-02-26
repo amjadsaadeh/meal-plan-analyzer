@@ -1,16 +1,26 @@
-# Use a Python image with uv installed
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+# Node/Vite build stage
+FROM node:22-slim AS node-builder
 
-# Set the working directory
 WORKDIR /app
 
-# Enable bytecode compilation
-ENV UV_COMPILE_BYTECODE=1
+RUN corepack enable pnpm
 
-# Copy from the cache instead of linking since it's a separate volume
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY vite.config.js ./
+COPY frontend/src/ frontend/src/
+
+RUN pnpm build
+
+# Python dependency build stage
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+
+WORKDIR /app
+
+ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
-# Install dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
@@ -32,20 +42,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgdk-pixbuf2.0-0 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy the environment from the builder
+# Copy the Python virtualenv from the builder
 COPY --from=builder /app/.venv /app/.venv
 
-# Add the virtualenv to the PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy the application code
 COPY . .
 
+# Copy built JS assets from node builder
+COPY --from=node-builder /app/frontend/dist/ /app/frontend/dist/
+
 # Create directory for static files
 RUN mkdir -p /app/staticfiles
 
-# Expose the port
 EXPOSE 8000
 
-# Run the application
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "--capture-output", "config.wsgi:application"]

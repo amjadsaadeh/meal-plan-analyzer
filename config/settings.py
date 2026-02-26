@@ -33,8 +33,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
+import sys
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+# Force DEBUG=False if running tests (required for django-vite assets)
+DEBUG = env('DEBUG') if 'pytest' not in sys.modules and 'test' not in sys.argv else False
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
@@ -56,6 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'sass_processor',
     'rest_framework',
+    'django_vite',
     'meals',
 ]
 
@@ -171,6 +174,7 @@ SASS_PROCESSOR_ENABLED = True
 # Expose compiled SCSS output to collectstatic.
 STATICFILES_DIRS = [
     BASE_DIR / 'sass_cache',
+    BASE_DIR / 'frontend/dist',
 ]
 
 STORAGES = {
@@ -186,6 +190,15 @@ STORAGES = {
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,
+        "dev_server_host": env("VITE_DEV_SERVER_HOST", default="localhost"),
+        "dev_server_port": 5173,
+        "manifest_path": BASE_DIR / "frontend/dist/.vite/manifest.json",
+    }
+}
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'meal-plan-list'

@@ -25,6 +25,10 @@ h1 {
     margin-bottom: 0.5rem;
 }
 
+.container {
+    min-width: 720px;
+}
+
 .top-actions {
     display: flex;
     gap: 1rem;

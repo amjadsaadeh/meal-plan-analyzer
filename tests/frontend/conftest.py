@@ -13,6 +13,7 @@ from tests.frontend.factories import (
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 
+
 @pytest.fixture
 def test_password():
     return "pass1234"
