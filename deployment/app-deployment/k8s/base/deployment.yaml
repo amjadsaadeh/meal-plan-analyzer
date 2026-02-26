@@ -15,6 +15,18 @@ spec:
       imagePullSecrets:
         - name: regcred
       initContainers:
+        - name: build-scss
+          image: image_name
+          imagePullPolicy: Always
+          command: ["python", "manage.py", "build_scss"]
+          envFrom:
+            - configMapRef:
+                name: meal-plan-analyzer-config
+            - secretRef:
+                name: meal-plan-analyzer-secret
+          volumeMounts:
+            - name: sass-cache
+              mountPath: /app/sass_cache
         - name: collect-static
           image: image_name
           imagePullPolicy: Always
@@ -27,6 +39,8 @@ spec:
           volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles
+            - name: sass-cache
+              mountPath: /app/sass_cache
         - name: migrate
           image: image_name
           imagePullPolicy: Always
@@ -75,6 +89,8 @@ spec:
             periodSeconds: 5
       volumes:
         - name: staticfiles
+          emptyDir: {}
+        - name: sass-cache
           emptyDir: {}
         - name: media
           persistentVolumeClaim:

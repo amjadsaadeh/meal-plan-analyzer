@@ -32,7 +32,7 @@
 
   tasks:
     - name: Bootstrap Prod Kubernetes Resources
-      when: bootstrap_env is not defined or bootstrap_env == 'prod'
+      when: env is not defined or env == 'prod'
       block:
         - name: Set prod secrets
           set_fact:
@@ -50,7 +50,7 @@
           shell: kubectl apply -k ../k8s/overlays/prod/
 
     - name: Bootstrap Dev Kubernetes Resources
-      when: bootstrap_env is not defined or bootstrap_env == 'dev'
+      when: env is not defined or env == 'dev'
       block:
         - name: Set dev secrets
           set_fact:

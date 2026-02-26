@@ -1,7 +1,7 @@
 # Bootstrap variables
-# Set bootstrap_env to 'prod' or 'dev' to bootstrap specific environment
+# Set env to 'prod' or 'dev' to bootstrap specific environment
 # Leave empty to bootstrap both
-bootstrap_env: ""
+env: ""
 
 # Database connection
 db_host: "pgcluster-rw.cloudnative-pg.svc.cluster.local"

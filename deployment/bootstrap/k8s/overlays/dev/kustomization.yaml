@@ -11,3 +11,6 @@ secretGenerator:
   - name: meal-plan-analyzer-secret
     envs:
       - secrets.env
+
+generatorOptions:
+  disableNameSuffixHash: true

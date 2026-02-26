@@ -6,8 +6,8 @@
     - vars.yml
     - ../../../ansible/vault.yml
   vars:
-    docker_user: ""
-    docker_password: ""
+    docker_user: "{{ lookup('env', 'DOCKER_USER') }}"
+    docker_password: "{{ lookup('env', 'DOCKER_PASSWORD') }}"
     image_name: "{{ lookup('env', 'DOCKER_IMAGE') }}"
     project_root: "../../../"
 
@@ -21,11 +21,14 @@
       set_fact:
         namespace: "{{ 'meal-plan-analyzer' if env == 'prod' else 'meal-plan-analyzer-dev' }}"
         image_tag: "{{ 'latest' if env == 'prod' else 'dev' }}"
+
+    - name: Set full image name
+      set_fact:
         full_image_name: "{{ image_name }}:{{ image_tag }}"
 
     - name: Ensure Docker variables are provided
       fail:
-        msg: "Please provide 'docker_user' and 'docker_password' via -e 'docker_user=... docker_password=...'"
+        msg: "Please provide 'DOCKER_USER' and 'DOCKER_PASSWORD' in the environment"
       when: docker_user == "" or docker_password == ""
 
     - name: Log into DockerHub
@@ -58,7 +61,7 @@
         --dry-run=client -o yaml | kubectl apply -f -
 
     - name: Apply Kubernetes manifests with Kustomize
-      shell: kubectl apply -k ../../k8s/overlays/{{ env }}/
+      shell: kubectl apply -k ../k8s/overlays/{{ env }}/
 
     - name: Restart Deployment
       shell: kubectl rollout restart deployment/meal-plan-analyzer -n {{ namespace }}

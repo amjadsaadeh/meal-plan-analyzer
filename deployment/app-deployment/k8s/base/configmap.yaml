@@ -5,3 +5,4 @@ metadata:
 data:
   DEBUG: "False"
   ALLOWED_HOSTS: "*"
+  PYTHONUNBUFFERED: "1"

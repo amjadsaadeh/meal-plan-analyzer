@@ -7,10 +7,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - mealplanalyzer-dev.{{ tld }}
+        - mealplananalyzer-dev.saadeh.dev
       secretName: meal-plan-analyzer-dev-tls
   rules:
-    - host: mealplanalyzer-dev.{{ tld }}
+    - host: mealplananalyzer-dev.saadeh.dev
       http:
         paths:
           - path: /
