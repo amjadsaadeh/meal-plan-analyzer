@@ -14,3 +14,6 @@ media/
 .worktrees/
 sass_cache/
 secrets.env
+node_modules/
+frontend/dist/
+.vite/

@@ -18,6 +18,7 @@ dependencies = [
     "playwright==1.56.0",
     "django-sass-processor>=1.4.2",
     "libsass>=0.23.0",
+    "django-vite>=3.1.0",
 ]
 
 [dependency-groups]

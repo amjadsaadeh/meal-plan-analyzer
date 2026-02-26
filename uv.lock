@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -337,6 +337,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/22/5c/4247e8c01634770f8c88fb8cc96d656c560f50bc2379131fd613a3f11c69/django_sass_processor-1.4.2.tar.gz", hash = "sha256:59c1028b5a5bd0158a0ea92ac5d538e5d89eb547e910a45e334d9c7b3b814b18", size = 20175, upload-time = "2025-06-26T12:36:44.598Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/98/aa/21adbffc3ad330ea5971a3c7fa5c5c4e50142dd848659e9bb9c8c562d108/django_sass_processor-1.4.2-py3-none-any.whl", hash = "sha256:604b00b19f7bbccfb838f766a284257bad3bb4ec3012f0770a1415913783bacc", size = 20579, upload-time = "2025-06-26T12:36:43.306Z" },
+]
+
+[[package]]
+name = "django-vite"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/23/fe/4be07f538bbf9bf8bf73b045552ec2a1b4fba67e3176abb30490b643368e/django_vite-3.1.0.tar.gz", hash = "sha256:8b4ffe4a9fa81ff568bfb195e74dde8694aaf13fd4b656ae60bf59cce08b85e8", size = 25434, upload-time = "2025-02-23T15:32:07.914Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/59/7df4b1077fa41b43b4e542696d75138dbb86a65f44248c607b3e0f1014ce/django_vite-3.1.0-py3-none-any.whl", hash = "sha256:4e46572bd6b1ce70784be129205dc2ffcbc7a3c19fea50bebfb72b327bbde5fc", size = 23579, upload-time = "2025-02-23T15:32:06.603Z" },
 ]
 
 [[package]]
@@ -1203,6 +1215,7 @@ dependencies = [
     { name = "django" },
     { name = "django-environ" },
     { name = "django-sass-processor" },
+    { name = "django-vite" },
     { name = "djangorestframework" },
     { name = "gunicorn" },
     { name = "jsonschema" },
@@ -1231,6 +1244,7 @@ requires-dist = [
     { name = "django", specifier = ">=6.0" },
     { name = "django-environ", specifier = ">=0.11.2" },
     { name = "django-sass-processor", specifier = ">=1.4.2" },
+    { name = "django-vite", specifier = ">=3.1.0" },
     { name = "djangorestframework", specifier = ">=3.16.1" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "jsonschema", specifier = ">=4.26.0" },

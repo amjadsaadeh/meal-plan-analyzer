@@ -38,6 +38,12 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
+      - name: Install pnpm and build JS
+        run: |
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+          pnpm build
+
       - name: Run API tests
         run: uv run pytest tests/api/ --create-db
 
@@ -72,6 +78,12 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --frozen
+
+      - name: Install pnpm and build JS
+        run: |
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+          pnpm build
 
       - name: Compile SCSS
         run: uv run python manage.py build_scss
