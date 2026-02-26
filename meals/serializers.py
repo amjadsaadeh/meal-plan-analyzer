@@ -19,6 +19,11 @@ class FoodSerializer(serializers.ModelSerializer):
             'magnesium_in_mg_per_100g', 'zinc_in_mg_per_100g',
             'vitb12_in_mug_per_100g', 'vita_in_mug_per_100g',
             'calcium_in_mg_per_100g', 'vitd_in_mug_per_100g',
+            'vitb1_in_mg_per_100g', 'vitb2_in_mg_per_100g',
+            'vitb3_in_mg_per_100g', 'vitb5_in_mg_per_100g',
+            'vitb6_in_mug_per_100g', 'biotin_in_mug_per_100g',
+            'iodine_in_mug_per_100g', 'copper_in_mug_per_100g',
+            'manganese_in_mug_per_100g',
             'matched_alias',
         ]
 

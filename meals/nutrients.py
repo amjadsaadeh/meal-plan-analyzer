@@ -91,6 +91,60 @@ NUTRIENTS = {
         'food_key': 'vitd_in_mug_per_100g',
         'precision': 2
     },
+    'vitb1_in_mg': {
+        'label': _('Vit. B1'),
+        'unit': 'mg',
+        'food_key': 'vitb1_in_mg_per_100g',
+        'precision': 2
+    },
+    'vitb2_in_mg': {
+        'label': _('Vit. B2'),
+        'unit': 'mg',
+        'food_key': 'vitb2_in_mg_per_100g',
+        'precision': 2
+    },
+    'vitb3_in_mg': {
+        'label': _('Vit. B3'),
+        'unit': 'mg',
+        'food_key': 'vitb3_in_mg_per_100g',
+        'precision': 2
+    },
+    'vitb5_in_mg': {
+        'label': _('Vit. B5'),
+        'unit': 'mg',
+        'food_key': 'vitb5_in_mg_per_100g',
+        'precision': 2
+    },
+    'vitb6_in_mug': {
+        'label': _('Vit. B6'),
+        'unit': 'µg',
+        'food_key': 'vitb6_in_mug_per_100g',
+        'precision': 1
+    },
+    'biotin_in_mug': {
+        'label': _('Biotin'),
+        'unit': 'µg',
+        'food_key': 'biotin_in_mug_per_100g',
+        'precision': 1
+    },
+    'iodine_in_mug': {
+        'label': _('Iodine'),
+        'unit': 'µg',
+        'food_key': 'iodine_in_mug_per_100g',
+        'precision': 1
+    },
+    'copper_in_mug': {
+        'label': _('Copper'),
+        'unit': 'µg',
+        'food_key': 'copper_in_mug_per_100g',
+        'precision': 1
+    },
+    'manganese_in_mug': {
+        'label': _('Manganese'),
+        'unit': 'µg',
+        'food_key': 'manganese_in_mug_per_100g',
+        'precision': 1
+    },
 }
 
 NUTRIENT_IDS = list(NUTRIENTS.keys())

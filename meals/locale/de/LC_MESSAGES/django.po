@@ -88,6 +88,33 @@ msgstr "Ca"
 msgid "Vit. D"
 msgstr "Vit. D"
 
+msgid "Vit. B1"
+msgstr "Vit. B1"
+
+msgid "Vit. B2"
+msgstr "Vit. B2"
+
+msgid "Vit. B3"
+msgstr "Vit. B3"
+
+msgid "Vit. B5"
+msgstr "Vit. B5"
+
+msgid "Vit. B6"
+msgstr "Vit. B6"
+
+msgid "Biotin"
+msgstr "Biotin"
+
+msgid "Iodine"
+msgstr "Jod"
+
+msgid "Copper"
+msgstr "Kupfer"
+
+msgid "Manganese"
+msgstr "Mangan"
+
 #: meals/templates/meals/base.html.j2:122
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>"

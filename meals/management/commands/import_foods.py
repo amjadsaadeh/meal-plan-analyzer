@@ -131,6 +131,15 @@ class Command(BaseCommand):
                 IDX_VITA = col_to_idx('AH')
                 IDX_CALCIUM = col_to_idx('EC')
                 IDX_VITD = col_to_idx('AW')
+                IDX_VITB1 = col_to_idx('CG')
+                IDX_VITB2 = col_to_idx('CJ')
+                IDX_VITB3 = col_to_idx('CM')
+                IDX_VITB5 = col_to_idx('CS')
+                IDX_VITB6 = col_to_idx('CV')
+                IDX_BIOTIN = col_to_idx('CY')
+                IDX_IODINE = col_to_idx('EU')
+                IDX_COPPER = col_to_idx('EX')
+                IDX_MANGANESE = col_to_idx('FA')
 
                 count = 0
                 rows = list(sheet.iter_rows(min_row=2, values_only=True))
@@ -164,6 +173,15 @@ class Command(BaseCommand):
                     vita = parse_float(row[IDX_VITA])
                     calcium = parse_float(row[IDX_CALCIUM])
                     vitd = parse_float(row[IDX_VITD])
+                    vitb1 = parse_float(row[IDX_VITB1])
+                    vitb2 = parse_float(row[IDX_VITB2])
+                    vitb3 = parse_float(row[IDX_VITB3])
+                    vitb5 = parse_float(row[IDX_VITB5])
+                    vitb6 = parse_float(row[IDX_VITB6])
+                    biotin = parse_float(row[IDX_BIOTIN])
+                    iodine = parse_float(row[IDX_IODINE])
+                    copper = parse_float(row[IDX_COPPER])
+                    manganese = parse_float(row[IDX_MANGANESE])
 
                     Food.objects.update_or_create(
                         bls_code=bls_code,
@@ -185,6 +203,15 @@ class Command(BaseCommand):
                             'vita_in_mug_per_100g': vita,
                             'calcium_in_mg_per_100g': calcium,
                             'vitd_in_mug_per_100g': vitd,
+                            'vitb1_in_mg_per_100g': vitb1,
+                            'vitb2_in_mg_per_100g': vitb2,
+                            'vitb3_in_mg_per_100g': vitb3,
+                            'vitb5_in_mg_per_100g': vitb5,
+                            'vitb6_in_mug_per_100g': vitb6,
+                            'biotin_in_mug_per_100g': biotin,
+                            'iodine_in_mug_per_100g': iodine,
+                            'copper_in_mug_per_100g': copper,
+                            'manganese_in_mug_per_100g': manganese,
                         }
                     )
                     count += 1
