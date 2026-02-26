@@ -33,8 +33,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
+import sys
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+# Force DEBUG=False if running tests (required for django-vite assets)
+DEBUG = env('DEBUG') if 'pytest' not in sys.modules and 'test' not in sys.argv else False
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
