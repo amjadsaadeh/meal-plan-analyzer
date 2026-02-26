@@ -148,7 +148,7 @@ def meal_plan_detail(request, pk=None):
         return redirect('meal-plan-detail', pk=parent_plan.pk)
     
     plan = get_object_or_404(MealPlan, pk=pk)
-    days = plan.days.filter(removed=False).order_by('-creation_date').prefetch_related('mealplanfood_set__food')
+    days = plan.days.filter(removed=False).order_by('creation_date').prefetch_related('mealplanfood_set__food')
     
     meal_types = [
         ('breakfast', _('Breakfast')),
@@ -314,7 +314,7 @@ class MealPlanViewSet(viewsets.ModelViewSet):
     serializer_class = MealPlanSerializer
     
     def get_queryset(self):
-        active_days = MealPlanDay.objects.filter(removed=False)
+        active_days = MealPlanDay.objects.filter(removed=False).order_by('creation_date')
         return MealPlan.objects.prefetch_related(
             Prefetch('days', queryset=active_days)
         ).all()
