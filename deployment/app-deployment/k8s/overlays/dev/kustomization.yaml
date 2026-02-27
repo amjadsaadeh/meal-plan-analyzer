@@ -10,6 +10,8 @@ resources:
 images:
   - name: image_name
     newName: "index.docker.io/amjadsaadeh/rsos-meal-planner"
+    newTag: "dev"
+
 
 # patches:
 #   - path: resource-patch.yaml
