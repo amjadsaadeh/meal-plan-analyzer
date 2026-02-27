@@ -396,6 +396,10 @@ msgstr "Keine Mahlzeitenpläne gefunden."
 msgid "Are you sure you want to delete this meal plan?"
 msgstr "Möchtest du diesen Mahlzeitenplan wirklich löschen?"
 
+#: meals/templates/meals/mealplan_list.html.j2
+msgid "Delete Meal Plan"
+msgstr "Mahlzeitenplan löschen"
+
 #: meals/templates/meals/mealplan_list.html.j2:330
 msgid "Error deleting plan"
 msgstr "Fehler beim Löschen des Plans"

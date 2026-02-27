@@ -44,7 +44,7 @@ const props = defineProps({
   noDaysText: { type: String, default: 'No days' },
 })
 
-const deletePlan = inject('deletePlan')
+const requestDelete = inject('requestDelete')
 
 const activeDays = computed(() => (props.plan.days || []).filter(d => !d.removed))
 
@@ -53,7 +53,7 @@ function navigate() {
 }
 
 function onDelete() {
-  deletePlan(props.plan.id)
+  requestDelete(props.plan.id, props.plan.name)
 }
 
 const SEMANTIC_KEYWORDS = new Set(['low', 'high', 'energy', 'cal', 'kcal', 'kj'])
