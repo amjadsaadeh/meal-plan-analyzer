@@ -252,6 +252,7 @@ class MealPlanFood(models.Model):
 class SiteSettings(models.Model):
     """Singleton model for site-wide settings, e.g. a custom PDF logo."""
     logo = models.FileField(upload_to='logos/', blank=True, null=True)
+    minilogo = models.FileField(upload_to='logos/', blank=True, null=True, help_text='Small logo (50×50 px) shown on the top-right of every PDF page except the first.')
 
     class Meta:
         verbose_name = 'Site Settings'

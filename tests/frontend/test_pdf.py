@@ -125,6 +125,113 @@ def test_pdf_generation_with_food():
 
 
 # ---------------------------------------------------------------------------
+# Unit: minilogo rendering in the PDF template
+# ---------------------------------------------------------------------------
+
+def test_minilogo_absent_when_not_in_context():
+    """No .day-minilogo element is rendered when minilogo_path is absent from context."""
+    from meals.views import get_meal_plan_context
+
+    plan = MealPlanFactory(name="No Minilogo Plan")
+    MealPlanDayFactory(meal_plan=plan)
+
+    ctx = get_meal_plan_context(plan.id)
+    # minilogo_path intentionally not set
+    html = render_to_string("meals/mealplan_pdf.html.j2", ctx)
+
+    assert "day-minilogo" not in html
+
+
+def test_minilogo_absent_when_none():
+    """No .day-minilogo element is rendered when minilogo_path is explicitly None."""
+    from meals.views import get_meal_plan_context
+
+    plan = MealPlanFactory(name="Minilogo None Plan")
+    MealPlanDayFactory(meal_plan=plan)
+
+    ctx = get_meal_plan_context(plan.id)
+    ctx["minilogo_path"] = None
+    html = render_to_string("meals/mealplan_pdf.html.j2", ctx)
+
+    assert "day-minilogo" not in html
+
+
+def test_minilogo_rendered_on_day_pages_not_summary():
+    """With minilogo_path set, .day-minilogo appears only in .day-container, not .summary-page."""
+    from meals.views import get_meal_plan_context
+
+    plan = MealPlanFactory(name="Minilogo Day Pages Plan")
+    MealPlanDayFactory(meal_plan=plan)
+
+    ctx = get_meal_plan_context(plan.id)
+    ctx["minilogo_path"] = "http://example.com/minilogo.png"
+    html = render_to_string("meals/mealplan_pdf.html.j2", ctx)
+
+    # Locate the summary-page block and check it has no minilogo div
+    summary_start = html.index('class="summary-page"')
+    day_start = html.index('class="day-container"')
+    summary_block = html[summary_start:day_start]
+    assert "day-minilogo" not in summary_block
+
+    # The day section must contain at least one minilogo div
+    day_section = html[day_start:]
+    assert "day-minilogo" in day_section
+
+
+def test_minilogo_img_src_matches_path():
+    """The minilogo img src attribute must equal the provided minilogo_path value."""
+    from meals.views import get_meal_plan_context
+
+    plan = MealPlanFactory(name="Minilogo Src Plan")
+    MealPlanDayFactory(meal_plan=plan)
+
+    ctx = get_meal_plan_context(plan.id)
+    ctx["minilogo_path"] = "/media/logos/mini.png"
+    html = render_to_string("meals/mealplan_pdf.html.j2", ctx)
+
+    # Every day-minilogo block must reference the correct src
+    assert 'src="/media/logos/mini.png"' in html
+    # The src must NOT appear inside the summary-page block
+    summary_start = html.index('class="summary-page"')
+    day_start = html.index('class="day-container"')
+    assert 'src="/media/logos/mini.png"' not in html[summary_start:day_start]
+
+
+def test_minilogo_count_matches_day_count():
+    """One minilogo div must be rendered per day page."""
+    from meals.views import get_meal_plan_context
+
+    plan = MealPlanFactory(name="Minilogo Count Plan")
+    MealPlanDayFactory(meal_plan=plan)
+    MealPlanDayFactory(meal_plan=plan)
+
+    ctx = get_meal_plan_context(plan.id)
+    ctx["minilogo_path"] = "http://example.com/minilogo.png"
+    html = render_to_string("meals/mealplan_pdf.html.j2", ctx)
+
+    assert html.count('class="day-minilogo"') == 2
+
+
+def test_pdf_generation_with_minilogo():
+    """WeasyPrint must produce a non-empty PDF when minilogo_path is set."""
+    from meals.views import get_meal_plan_context
+
+    plan = MealPlanFactory(name="PDF With Minilogo")
+    MealPlanDayFactory(meal_plan=plan)
+
+    ctx = get_meal_plan_context(plan.id)
+    logo_path = finders.find("meals/img/logo.png")
+    if logo_path:
+        ctx["logo_path"] = f"file://{logo_path}"
+        ctx["minilogo_path"] = f"file://{logo_path}"  # reuse static logo as minilogo
+
+    html_string = render_to_string("meals/mealplan_pdf.html.j2", ctx)
+    pdf = weasyprint.HTML(string=html_string, base_url="http://localhost:8001").write_pdf()
+
+    assert len(pdf) > 0
+
+
+# ---------------------------------------------------------------------------
 # Playwright: preview iframe renders the correct plan content
 # ---------------------------------------------------------------------------
 
@@ -144,3 +251,22 @@ def test_pdf_preview_iframe_content(logged_in_page, live_server, test_user):
     # use .first to target the plan-level heading specifically.
     expect(iframe.locator("h1").first).to_contain_text("Iframe Preview Plan")
     expect(iframe.locator("body")).to_contain_text("Average daily intake")
+
+
+def test_no_minilogo_in_preview_without_sitesettings(logged_in_page, live_server):
+    """Without a configured minilogo, .day-minilogo must not appear in the preview iframe."""
+    from playwright.sync_api import expect
+    from meals.models import SiteSettings
+
+    # Ensure SiteSettings exists but has no minilogo
+    settings = SiteSettings.get()
+    assert not settings.minilogo
+
+    plan = MealPlanFactory(name="No Minilogo Preview")
+    MealPlanDayFactory(meal_plan=plan)
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/preview/")
+    logged_in_page.wait_for_selector(".preview-frame")
+    iframe = logged_in_page.frame_locator(".preview-frame")
+
+    expect(iframe.locator(".day-minilogo")).to_have_count(0)

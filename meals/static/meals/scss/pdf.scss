@@ -117,6 +117,25 @@ h3 {
 .day-container {
     page: landscape;
     page-break-before: always;
+    position: relative;
+}
+
+// ── Mini logo on day pages (top-right, 50×50 px) ─────────────
+.day-minilogo {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    img {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+    }
+
+    @media screen {
+        top: 1.5cm;
+        right: 1.5cm;
+    }
 }
 
 .day-table {

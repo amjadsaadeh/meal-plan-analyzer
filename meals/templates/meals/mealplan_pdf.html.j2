@@ -143,6 +143,11 @@
     <!-- Day Pages -->
     {% for day in days_data %}
     <div class="day-container" data-page-index="{{ forloop.counter|add:1 }}">
+        {% if minilogo_path %}
+        <div class="day-minilogo">
+            <img src="{{ minilogo_path }}" alt="Logo">
+        </div>
+        {% endif %}
         <h1>{{ day.name }}</h1>
         
         {% for meal_type, foods in day.meals.items %}
