@@ -180,14 +180,9 @@
                                             {% for item in day.mealplanfood_set.all %}
                                             {% if item.meal_type == meal_slug %}
                                             <tr class="ingredient-row" data-id="{{ item.id }}" data-food-id="{{ item.food.id }}" 
-                                                data-energy_in_kcal="{{ item.food.energy_in_kcal_per_100g }}" data-protein_in_g="{{ item.food.protein_in_g_per_100g }}" 
-                                                data-fat_in_g="{{ item.food.fat_in_g_per_100g }}" data-carbohydrate_in_g="{{ item.food.carbohydrate_in_g_per_100g }}"
-                                                data-fibre_in_g="{{ item.food.fibre_in_g_per_100g }}" 
-                                                data-iron_in_mg="{{ item.food.iron_in_mg_per_100g }}" data-sugar_in_g="{{ item.food.sugar_in_g_per_100g }}" 
-                                                data-omega3_in_g="{{ item.food.omega3_in_g_per_100g }}" data-vitc_in_mg="{{ item.food.vitc_in_mg_per_100g }}" 
-                                                data-magnesium_in_mg="{{ item.food.magnesium_in_mg_per_100g }}" data-zinc_in_mg="{{ item.food.zinc_in_mg_per_100g }}" 
-                                                data-vitb12_in_mug="{{ item.food.vitb12_in_mug_per_100g }}" data-vita_in_mug="{{ item.food.vita_in_mug_per_100g }}" 
-                                                data-calcium_in_mg="{{ item.food.calcium_in_mg_per_100g }}" data-vitd_in_mug="{{ item.food.vitd_in_mug_per_100g }}">
+                                                {% for nut_id, nut_data in nutrients.items %}
+                                                data-{{ nut_id }}="{{ item.food|get_attr:nut_data.food_key }}"
+                                                {% endfor %}>
                                                 <td>
                                                     <div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0">
                                                         <span>{{ item.food.name }}</span>
@@ -198,20 +193,13 @@
                                                     <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)">
                                                 </td>
                                                 <td><div class="cell-content energy_in_kcal-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-protein_in_g"><div class="cell-content protein_in_g-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.protein_in_g_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-fat_in_g"><div class="cell-content fat_in_g-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.fat_in_g_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-omega3_in_g"><div class="cell-content omega3_in_g-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.omega3_in_g_per_100g|floatformat:2 }}</div></td>
-                                                <td class="col-carbohydrate_in_g"><div class="cell-content carbohydrate_in_g-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.carbohydrate_in_g_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-sugar_in_g"><div class="cell-content sugar_in_g-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.sugar_in_g_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-fibre_in_g"><div class="cell-content fibre_in_g-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.fibre_in_g_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-iron_in_mg"><div class="cell-content iron_in_mg-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.iron_in_mg_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-vitc_in_mg"><div class="cell-content vitc_in_mg-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.vitc_in_mg_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-magnesium_in_mg"><div class="cell-content magnesium_in_mg-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.magnesium_in_mg_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-zinc_in_mg"><div class="cell-content zinc_in_mg-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.zinc_in_mg_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-vitb12_in_mug"><div class="cell-content vitb12_in_mug-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.vitb12_in_mug_per_100g|floatformat:2 }}</div></td>
-                                                <td class="col-vita_in_mug"><div class="cell-content vita_in_mug-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.vita_in_mug_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-calcium_in_mg"><div class="cell-content calcium_in_mg-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.calcium_in_mg_per_100g|floatformat:1 }}</div></td>
-                                                <td class="col-vitd_in_mug"><div class="cell-content vitd_in_mug-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.vitd_in_mug_per_100g|floatformat:2 }}</div></td>
+                                                {% for nut_id, nut_data in nutrients.items %}{% if nut_id != 'energy_in_kcal' %}
+                                                <td class="col-{{ nut_id }}"><div class="cell-content {{ nut_id }}-cell">
+                                                    {% with food_val=item.food|get_attr:nut_data.food_key %}
+                                                    {{ item.amount_in_g|divide_by_100_mult:food_val|floatformat:nut_data.precision }}
+                                                    {% endwith %}
+                                                </div></td>
+                                                {% endif %}{% endfor %}
                                                 <td class="actions-cell">
                                                     <button class="delete-btn" onclick="deleteRow(this)">
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -225,20 +213,9 @@
                                             <tr>
                                                 <td colspan="2" style="text-align: right; padding-right: 1.5rem; color: var(--text-dim); text-transform: uppercase; font-size: 0.7rem;">{% trans "Subtotal:" %}</td>
                                                 <td><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="energy_in_kcal">0.0</div></td>
-                                                <td class="col-protein_in_g"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="protein_in_g">0.0</div></td>
-                                                <td class="col-fat_in_g"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="fat_in_g">0.0</div></td>
-                                                <td class="col-omega3_in_g"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="omega3_in_g">0.0</div></td>
-                                                <td class="col-carbohydrate_in_g"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="carbohydrate_in_g">0.0</div></td>
-                                                <td class="col-sugar_in_g"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="sugar_in_g">0.0</div></td>
-                                                <td class="col-fibre_in_g"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="fibre_in_g">0.0</div></td>
-                                                <td class="col-iron_in_mg"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="iron_in_mg">0.0</div></td>
-                                                <td class="col-vitc_in_mg"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="vitc_in_mg">0.0</div></td>
-                                                <td class="col-magnesium_in_mg"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="magnesium_in_mg">0.0</div></td>
-                                                <td class="col-zinc_in_mg"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="zinc_in_mg">0.0</div></td>
-                                                <td class="col-vitb12_in_mug"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="vitb12_in_mug">0.0</div></td>
-                                                <td class="col-vita_in_mug"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="vita_in_mug">0.0</div></td>
-                                                <td class="col-calcium_in_mg"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="calcium_in_mg">0.0</div></td>
-                                                <td class="col-vitd_in_mug"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="vitd_in_mug">0.0</div></td>
+                                                {% for nut_id, nut_data in nutrients.items %}{% if nut_id != 'energy_in_kcal' %}
+                                                <td class="col-{{ nut_id }}"><div class="cell-content total-value-meal" data-meal="{{ meal_slug }}" data-day-id="{{ day.id }}" data-nut="{{ nut_id }}">0.0</div></td>
+                                                {% endif %}{% endfor %}
                                                 <td></td>
                                             </tr>
                                         </tfoot>
@@ -359,13 +336,31 @@
             networkError: "{% trans "Network error while saving." %}",
         };
         let isPending = false;
-        let debounceTimer;
+        let planNameDebounceTimer;
+        let searchDebounceTimer;
         let activeSearchCell = null;
 
         // Nutrients for visibility tracking
-        const ALL_NUTRIENTS = ['protein_in_g', 'fat_in_g', 'omega3_in_g', 'carbohydrate_in_g', 'sugar_in_g', 'fibre_in_g', 'iron_in_mg', 'vitc_in_mg', 'magnesium_in_mg', 'zinc_in_mg', 'vitb12_in_mug', 'vita_in_mug', 'calcium_in_mg', 'vitd_in_mug'];
+        // Nutrients for visibility tracking (dynamically generated)
+        const ALL_NUTRIENTS = [{% for nut_id, nut_data in nutrients.items %}{% if nut_id != 'energy_in_kcal' %}'{{ nut_id }}',{% endif %}{% endfor %}];
+        const NUTRIENT_PRECISIONS = {
+            'energy_in_kcal': 1,
+            {% for nut_id, nut_data in nutrients.items %}
+            '{{ nut_id }}': {{ nut_data.precision|default:1 }},
+            {% endfor %}
+        };
         // Use visible_nutrients from the overarching plan
         let visibleNutrients = {{ plan.visible_nutrients|default:"[]"|safe }};
+
+        // Global Error Handling for debugging
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('JS Error:', msg, lineNo, columnNo, error);
+            // check if setSyncStatus is already defined
+            if (typeof setSyncStatus === 'function') {
+                setSyncStatus(false, "JS Error: " + msg);
+            }
+            return false;
+        };
 
         // Initial setup
         if (visibleNutrients.length === 0) {
@@ -477,18 +472,28 @@
         const ICON_SAVED = `<svg class="status-saved" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
         const ICON_PENDING = `<svg class="status-pending" onclick="forceSync()" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`;
 
-        function setSyncStatus(saved) {
+        function setSyncStatus(saved, errMsg = null) {
             isPending = !saved;
             const text = document.getElementById('syncText');
             const icon = document.getElementById('syncIcon');
             const stickyText = document.getElementById('stickySyncText');
             const stickyIcon = document.getElementById('stickySyncIcon');
-            const message = saved ? I18N.saved : I18N.unsavedChanges;
+            
+            let message = saved ? I18N.saved : (errMsg || I18N.unsavedChanges);
             const html = saved ? ICON_SAVED : ICON_PENDING;
+            
             if (text) text.innerText = message;
             if (icon) icon.innerHTML = html;
             if (stickyText) stickyText.innerText = message;
             if (stickyIcon) stickyIcon.innerHTML = html;
+        }
+
+        async function forceSync() {
+            setSyncStatus(false, "Syncing...");
+            await savePlanName();
+            await saveThresholds();
+            await saveVisibility();
+            // All rows should have been saved on blur, but we could iterate them here if needed.
         }
 
         const planNameEl = document.getElementById('planName');
@@ -498,14 +503,15 @@
             });
             planNameEl.addEventListener('input', () => {
                 setSyncStatus(false);
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(savePlanName, 1000);
+                clearTimeout(planNameDebounceTimer);
+                planNameDebounceTimer = setTimeout(savePlanName, 1000);
             });
             planNameEl.addEventListener('blur', () => { savePlanName(); });
         }
 
         async function savePlanName() {
             const name = document.getElementById('planName').innerText.trim();
+            console.log('Syncing plan name:', name);
             try {
                 const response = await fetch(`/api/mealplans/${PLAN_ID}/`, {
                     method: 'PATCH',
@@ -514,10 +520,17 @@
                 });
                 if (response.ok) {
                     setSyncStatus(true);
+                    console.log('Plan name synced successfully');
                     const stickyName = document.getElementById('stickyPlanName');
                     if (stickyName) stickyName.innerText = name;
+                } else {
+                    setSyncStatus(false, "Error: " + response.status);
+                    console.error('Failed to save plan name', response.status);
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error('Network Error in savePlanName:', e); 
+                setSyncStatus(false, "Network Error");
+            }
         }
 
         async function saveDayName(el) {
@@ -534,8 +547,13 @@
                     setSyncStatus(true);
                     const sideTitle = document.getElementById(`daySummaryTitle-${dayId}`);
                     if (sideTitle) sideTitle.innerText = `${name} - ${I18N.daySummaryOverview}`;
+                } else {
+                    console.error('Failed to save day name', response.status);
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e); 
+                setSyncStatus(false);
+            }
         }
 
         function handleDayNameKey(e, el) {
@@ -588,20 +606,26 @@
                 });
                 if (response.ok) {
                     setSyncStatus(true);
+                } else {
+                    console.error('Failed to save thresholds', response.status);
+                    setSyncStatus(false);
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e); 
+                setSyncStatus(false);
+            }
         }
 
         function updateNutrients(input) {
             const row = input.closest('tr');
             const amount = parseFloat(input.value) || 0;
             const factor = amount / 100;
-            const nutrients = ['energy_in_kcal', 'protein_in_g', 'fat_in_g', 'carbohydrate_in_g', 'fibre_in_g', 'iron_in_mg', 'sugar_in_g', 'omega3_in_g', 'vitc_in_mg', 'magnesium_in_mg', 'zinc_in_mg', 'vitb12_in_mug', 'vita_in_mug', 'calcium_in_mg', 'vitd_in_mug'];
+            const nutrients = ['energy_in_kcal', ...ALL_NUTRIENTS];
             nutrients.forEach(n => {
                 const per100 = parseFloat(row.dataset[n]) || 0;
                 const cell = row.querySelector(`.${n}-cell`);
                 if (cell) {
-                    const precision = (n === 'omega3_in_g' || n === 'vitb12_in_mug' || n === 'vitd_in_mug') ? 2 : 1;
+                    const precision = NUTRIENT_PRECISIONS[n] || 1;
                     cell.innerText = (factor * per100).toFixed(precision);
                 }
             });
@@ -612,7 +636,7 @@
         }
 
         function calculateTotals() {
-            const nutrients = ['energy_in_kcal', 'protein_in_g', 'fat_in_g', 'carbohydrate_in_g', 'fibre_in_g', 'iron_in_mg', 'sugar_in_g', 'omega3_in_g', 'vitc_in_mg', 'magnesium_in_mg', 'zinc_in_mg', 'vitb12_in_mug', 'vita_in_mug', 'calcium_in_mg', 'vitd_in_mug'];
+            const nutrients = ['energy_in_kcal', ...ALL_NUTRIENTS];
             
             const planTotals = {};
             nutrients.forEach(n => planTotals[n] = 0);
@@ -642,7 +666,7 @@
                 });
 
                 nutrients.forEach(n => {
-                    const precision = (n === 'omega3_in_g' || n === 'vitb12_in_mug' || n === 'vitd_in_mug') ? 2 : 1;
+                    const precision = NUTRIENT_PRECISIONS[n] || 1;
                     const grandEl = daySec.querySelector(`.total-day-summary[data-nut="${n}"]`);
                     if (grandEl) {
                         const val = grandTotals[n];
@@ -677,7 +701,7 @@
 
             // Update Plan Summary
             nutrients.forEach(n => {
-                const precision = (n === 'omega3_in_g' || n === 'vitb12_in_mug' || n === 'vitd_in_mug') ? 2 : 1;
+                const precision = NUTRIENT_PRECISIONS[n] || 1;
                 const planEl = document.querySelector(`.total-plan-summary[data-nut="${n}"]`);
                 if (planEl) {
                     const val = planTotals[n];
@@ -721,20 +745,26 @@
         async function saveRow(el) {
             const row = el.closest('tr');
             const foodId = row.dataset.foodId;
-            const amount = parseFloat(row.querySelector('.amount-input').value);
+            const amountInput = row.querySelector('.amount-input');
+            if (!amountInput) return;
+            const amount = parseFloat(amountInput.value);
             const id = row.dataset.id;
             const tbody = row.closest('tbody');
             const dayId = tbody.dataset.dayId;
             const mealType = tbody.dataset.mealType;
 
-            if (!foodId || isNaN(amount)) return;
+            if (!foodId || isNaN(amount)) {
+                console.log('Skipping row save: foodId or amount missing/invalid', {foodId, amount});
+                return;
+            }
 
             const method = id ? 'PATCH' : 'POST';
             const url = id ? `/api/mealplan-foods/${id}/` : `/api/mealplan-foods/`;
+            console.log(`Syncing row (${method}):`, {id, foodId, amount, mealType});
 
             const body = {
-                meal_plan_day: dayId,
-                food: foodId,
+                meal_plan_day: parseInt(dayId),
+                food: parseInt(foodId),
                 amount_in_g: amount,
                 meal_type: mealType
             };
@@ -745,30 +775,52 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
                     body: JSON.stringify(body)
                 });
-                const data = await response.json();
                 if (response.ok) {
+                    const data = await response.json();
                     row.dataset.id = data.id;
                     setSyncStatus(true);
+                    console.log('Row synced successfully, ID:', data.id);
+                } else {
+                    const errorText = await response.text();
+                    console.error('Failed to save row', response.status, errorText);
+                    setSyncStatus(false, "Error: " + response.status);
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error('Network Error in saveRow:', e); 
+                setSyncStatus(false, "Network Error");
+            }
         }
 
         function initSearch(cell) {
             if (activeSearchCell && activeSearchCell !== cell) restoreCell(activeSearchCell);
             if (cell.querySelector('input')) return;
             activeSearchCell = cell;
+
+            const row = cell.closest('tr');
+            const hasFood = !!row.dataset.foodId;
+
             const nameSpan = cell.querySelector('span:first-child');
             const blsSpan = cell.querySelector('.bls-code');
-            const originalName = nameSpan ? nameSpan.innerText.trim() : I18N.searchFood;
-            const originalBls = blsSpan ? blsSpan.innerText.trim() : '';
-            cell.dataset.prevName = originalName;
-            cell.dataset.prevBls = originalBls;
-            cell.innerHTML = `<input type="text" class="table-input" placeholder="${I18N.searchFood}" value="${originalName === I18N.searchFood ? '' : originalName}" autocomplete="off">`;
+            const currentText = nameSpan ? nameSpan.innerText.trim() : "";
+            const currentBls = blsSpan ? blsSpan.innerText.trim() : "";
+
+            cell.dataset.prevName = currentText;
+            cell.dataset.prevBls = currentBls;
+
+            // If it's a new row (no foodId) or the text matches our placeholder, start with empty input
+            let initialValue = hasFood ? currentText : "";
+            if (!hasFood || currentText === I18N.searchFood || currentText.toLowerCase().includes("search food")) {
+                initialValue = "";
+            }
+
+            cell.innerHTML = `<input type="text" class="table-input" placeholder="${I18N.searchFood}" value="${initialValue}" autocomplete="off">`;
             const input = cell.querySelector('input');
             input.focus();
+            if (initialValue) input.select();
+
             input.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => searchFood(input), 300);
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => searchFood(input), 300);
             });
             input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { restoreCell(cell); input.blur(); } });
             window.addEventListener('scroll', updateDropdownPosition, true);
@@ -845,21 +897,9 @@
         }
 
         const NUTRIENT_MAPPING = {
-            'energy_in_kcal': { min: 'energy_in_kcal_min', max: 'energy_in_kcal_max' },
-            'protein_in_g': { min: 'protein_in_g_min', max: 'protein_in_g_max' },
-            'fat_in_g': { min: 'fat_in_g_min', max: 'fat_in_g_max' },
-            'carbohydrate_in_g': { min: 'carbohydrate_in_g_min', max: 'carbohydrate_in_g_max' },
-            'fibre_in_g': { min: 'fibre_in_g_min', max: 'fibre_in_g_max' },
-            'iron_in_mg': { min: 'iron_in_mg_min', max: 'iron_in_mg_max' },
-            'sugar_in_g': { min: 'sugar_in_g_min', max: 'sugar_in_g_max' },
-            'omega3_in_g': { min: 'omega3_in_g_min', max: 'omega3_in_g_max' },
-            'vitc_in_mg': { min: 'vitc_in_mg_min', max: 'vitc_in_mg_max' },
-            'magnesium_in_mg': { min: 'magnesium_in_mg_min', max: 'magnesium_in_mg_max' },
-            'zinc_in_mg': { min: 'zinc_in_mg_min', max: 'zinc_in_mg_max' },
-            'vitb12_in_mug': { min: 'vitb12_in_mug_min', max: 'vitb12_in_mug_max' },
-            'vita_in_mug': { min: 'vita_in_mug_min', max: 'vita_in_mug_max' },
-            'calcium_in_mg': { min: 'calcium_in_mg_min', max: 'calcium_in_mg_max' },
-            'vitd_in_mug': { min: 'vitd_in_mug_min', max: 'vitd_in_mug_max' }
+            {% for nut_id, nut_data in nutrients.items %}
+            '{{ nut_id }}': { min: '{{ nut_id }}_min', max: '{{ nut_id }}_max' },
+            {% endfor %}
         };
 
         async function applyPreset(preset) {
@@ -1047,24 +1087,8 @@
                         const cell = activeSearchCell;
                         const row = cell.closest('tr');
                         row.dataset.foodId = food.id;
-                        ['energy_in_kcal','protein_in_g','fat_in_g','carbohydrate_in_g','fibre_in_g','iron_in_mg','sugar_in_g','omega3_in_g','vitc_in_mg','magnesium_in_mg','zinc_in_mg','vitb12_in_mug','vita_in_mug','calcium_in_mg','vitd_in_mug'].forEach(n => {
-                            let foodKey = n;
-                            if (n === 'energy_in_kcal') foodKey = 'energy_in_kcal_per_100g';
-                            else if (n === 'protein_in_g') foodKey = 'protein_in_g_per_100g';
-                            else if (n === 'fat_in_g') foodKey = 'fat_in_g_per_100g';
-                            else if (n === 'carbohydrate_in_g') foodKey = 'carbohydrate_in_g_per_100g';
-                            else if (n === 'fibre_in_g') foodKey = 'fibre_in_g_per_100g';
-                            else if (n === 'iron_in_mg') foodKey = 'iron_in_mg_per_100g';
-                            else if (n === 'sugar_in_g') foodKey = 'sugar_in_g_per_100g';
-                            else if (n === 'omega3_in_g') foodKey = 'omega3_in_g_per_100g';
-                            else if (n === 'vitc_in_mg') foodKey = 'vitc_in_mg_per_100g';
-                            else if (n === 'magnesium_in_mg') foodKey = 'magnesium_in_mg_per_100g';
-                            else if (n === 'zinc_in_mg') foodKey = 'zinc_in_mg_per_100g';
-                            else if (n === 'vitb12_in_mug') foodKey = 'vitb12_in_mug_per_100g';
-                            else if (n === 'vita_in_mug') foodKey = 'vita_in_mug_per_100g';
-                            else if (n === 'calcium_in_mg') foodKey = 'calcium_in_mg_per_100g';
-                            else if (n === 'vitd_in_mug') foodKey = 'vitd_in_mug_per_100g';
-                            
+                        ['energy_in_kcal','protein_in_g','fat_in_g','carbohydrate_in_g','fibre_in_g','iron_in_mg','sugar_in_g','omega3_in_g','vitc_in_mg','magnesium_in_mg','zinc_in_mg','vitb12_in_mug','vita_in_mug','calcium_in_mg','vitd_in_mug', 'vitb1_in_mg', 'vitb2_in_mg', 'vitb3_in_mg', 'vitb5_in_mg', 'vitb6_in_mug', 'biotin_in_mug', 'iodine_in_mug', 'copper_in_mug', 'manganese_in_mug'].forEach(n => {
+                            const foodKey = n === 'energy_in_kcal' ? 'energy_in_kcal_per_100g' : n + '_per_100g';
                             row.dataset[n] = food[foodKey];
                         });
                         // Manual overrides to be safe
@@ -1106,25 +1130,22 @@
             
             const isHidden = (col) => visibleNutrients.includes(col) ? '' : 'hidden-col';
 
+            let nutrientCells = '';
+            ALL_NUTRIENTS.forEach(n => {
+                const precision = NUTRIENT_PRECISIONS[n] || 1;
+                nutrientCells += `<td class="col-${n} ${isHidden(n)}"><div class="cell-content ${n}-cell">${(0).toFixed(precision)}</div></td>`;
+            });
+
             tr.innerHTML = `
                 <td><div class="cell-content editable-cell ingredient-name-cell" onclick="initSearch(this)" onfocus="initSearch(this)" tabindex="0"><span>Search Food...</span></div></td>
                 <td><input type="number" class="table-input amount-input" placeholder="0.0" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)"></td>
                 <td><div class="cell-content energy_in_kcal-cell">0.0</div></td>
-                <td class="col-protein_in_g ${isHidden('protein_in_g')}"><div class="cell-content protein_in_g-cell">0.0</div></td>
-                <td class="col-fat_in_g ${isHidden('fat_in_g')}"><div class="cell-content fat_in_g-cell">0.0</div></td>
-                <td class="col-omega3_in_g ${isHidden('omega3_in_g')}"><div class="cell-content omega3_in_g-cell">0.00</div></td>
-                <td class="col-carbohydrate_in_g ${isHidden('carbohydrate_in_g')}"><div class="cell-content carbohydrate_in_g-cell">0.0</div></td>
-                <td class="col-sugar_in_g ${isHidden('sugar_in_g')}"><div class="cell-content sugar_in_g-cell">0.0</div></td>
-                <td class="col-fibre_in_g ${isHidden('fibre_in_g')}"><div class="cell-content fibre_in_g-cell">0.0</div></td>
-                <td class="col-iron_in_mg ${isHidden('iron_in_mg')}"><div class="cell-content iron_in_mg-cell">0.0</div></td>
-                <td class="col-vitc_in_mg ${isHidden('vitc_in_mg')}"><div class="cell-content vitc_in_mg-cell">0.0</div></td>
-                <td class="col-magnesium_in_mg ${isHidden('magnesium_in_mg')}"><div class="cell-content magnesium_in_mg-cell">0.0</div></td>
-                <td class="col-zinc_in_mg ${isHidden('zinc_in_mg')}"><div class="cell-content zinc_in_mg-cell">0.0</div></td>
-                <td class="col-vitb12_in_mug ${isHidden('vitb12_in_mug')}"><div class="cell-content vitb12_in_mug-cell">0.00</div></td>
-                <td class="col-vita_in_mug ${isHidden('vita_in_mug')}"><div class="cell-content vita_in_mug-cell">0.0</div></td>
-                <td class="col-calcium_in_mg ${isHidden('calcium_in_mg')}"><div class="cell-content calcium_in_mg-cell">0.0</div></td>
-                <td class="col-vitd_in_mug ${isHidden('vitd_in_mug')}"><div class="cell-content vitd_in_mug-cell">0.00</div></td>
-                <td class="actions-cell"><button class="delete-btn" onclick="deleteRow(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button></td>
+                ${nutrientCells}
+                <td class="actions-cell">
+                    <button class="delete-btn" onclick="deleteRow(this)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    </button>
+                </td>
             `;
             tbody.appendChild(tr);
         }

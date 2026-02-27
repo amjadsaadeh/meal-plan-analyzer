@@ -56,3 +56,20 @@ class MealPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = MealPlan
         fields = ['id', 'name', 'subtitle', 'creation_date', 'change_date', 'days', 'visible_nutrients', 'thresholds']
+
+    def validate(self, attrs):
+        """
+        Perform model-level validation to catch Django's ValidationError
+        and convert it to DRF's ValidationError (avoiding 500 errors).
+        """
+        instance = MealPlan(**attrs)
+        try:
+            instance.full_clean()
+        except serializers.ValidationError as e:
+            raise e
+        except Exception as e:
+            from django.core.exceptions import ValidationError as DjangoValidationError
+            if isinstance(e, DjangoValidationError):
+                raise serializers.ValidationError(e.message_dict if hasattr(e, 'message_dict') else e.message)
+            raise e
+        return attrs

@@ -25,3 +25,7 @@ def get_item(dictionary, key):
     if not dictionary:
         return None
     return dictionary.get(key)
+
+@register.filter
+def get_attr(obj, attr_name):
+    return getattr(obj, attr_name, 0.0)
