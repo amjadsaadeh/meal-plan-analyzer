@@ -158,9 +158,15 @@ def test_mealplan_list_delete_plan(logged_in_page, live_server, test_user):
     logged_in_page.goto(live_server.url + "/")
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
 
-    # Accept the browser confirm() dialog
-    logged_in_page.on("dialog", lambda dialog: dialog.accept())
     logged_in_page.locator(".delete-btn").first.click()
+
+    # Custom modal should appear with the plan name
+    modal = logged_in_page.locator(".modal-overlay")
+    expect(modal).to_be_visible()
+    expect(modal.locator(".modal-plan-name")).to_have_text("Plan To Delete")
+
+    # Confirm deletion
+    modal.locator(".btn-modal-delete").click()
 
     # Row should disappear without a full page reload
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(0)
@@ -172,11 +178,15 @@ def test_mealplan_list_delete_cancel_keeps_plan(logged_in_page, live_server, tes
     logged_in_page.goto(live_server.url + "/")
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
 
-    # Dismiss the confirm dialog
-    logged_in_page.on("dialog", lambda dialog: dialog.dismiss())
     logged_in_page.locator(".delete-btn").first.click()
 
-    # Row must still be present
+    # Custom modal should appear
+    modal = logged_in_page.locator(".modal-overlay")
+    expect(modal).to_be_visible()
+
+    # Cancel — modal closes, plan stays
+    modal.locator(".btn-modal-cancel").click()
+    expect(modal).not_to_be_visible()
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
 
 

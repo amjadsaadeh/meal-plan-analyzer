@@ -1,5 +1,16 @@
 <template>
   <div>
+    <ConfirmDeleteModal
+      :open="modalOpen"
+      :plan-name="pendingDeleteName"
+      :title="i18n.deleteModalTitle"
+      :message="i18n.confirmDelete"
+      :hint="i18n.deleteModalHint"
+      :cancel-text="i18n.cancel"
+      :confirm-text="i18n.deleteBtn"
+      @confirm="doDelete"
+      @cancel="modalOpen = false"
+    />
     <div class="top-actions">
       <a :href="createUrl" class="btn-create">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
@@ -40,6 +51,7 @@ import { ref, computed, watch, onMounted, provide, inject } from 'vue'
 import SearchBar from './SearchBar.vue'
 import MealPlanTable from './MealPlanTable.vue'
 import Pagination from './Pagination.vue'
+import ConfirmDeleteModal from './ConfirmDeleteModal.vue'
 
 const csrfToken = inject('csrfToken')
 const createUrl = inject('createUrl')
@@ -49,6 +61,10 @@ const plans = ref([])
 const loading = ref(true)
 const searchQuery = ref('')
 const currentPage = ref(1)
+
+const modalOpen = ref(false)
+const pendingDeletePk = ref(null)
+const pendingDeleteName = ref('')
 
 const PAGE_SIZE = 10
 
@@ -79,8 +95,15 @@ async function fetchAllPlans() {
   loading.value = false
 }
 
-async function deletePlan(pk) {
-  if (!confirm(i18n.confirmDelete)) return
+function requestDelete(pk, name) {
+  pendingDeletePk.value = pk
+  pendingDeleteName.value = name
+  modalOpen.value = true
+}
+
+async function doDelete() {
+  modalOpen.value = false
+  const pk = pendingDeletePk.value
   const res = await fetch(`/api/mealplans/${pk}/`, {
     method: 'DELETE',
     headers: { 'X-CSRFToken': csrfToken },
@@ -95,7 +118,7 @@ async function deletePlan(pk) {
   }
 }
 
-provide('deletePlan', deletePlan)
+provide('requestDelete', requestDelete)
 
 function onPageChange(page) {
   currentPage.value = page

@@ -371,6 +371,10 @@ msgstr ""
 msgid "Are you sure you want to delete this meal plan?"
 msgstr ""
 
+#: meals/templates/meals/mealplan_list.html.j2
+msgid "Delete Meal Plan"
+msgstr ""
+
 #: meals/templates/meals/mealplan_list.html.j2:330
 msgid "Error deleting plan"
 msgstr ""
