@@ -97,7 +97,7 @@ meal-plan-analyzer/
 │   ├── static/meals/
 │   │   ├── img/             # Static assets (logo, etc.)
 │   │   └── scss/            # SCSS source files
-│   ├── migrations/          # Django migrations (0001–0020)
+│   ├── migrations/          # Django migrations (0001–0022)
 │   └── management/commands/
 │       ├── import_foods.py  # BLS Excel import command
 │       └── build_scss.py    # SCSS compilation command
@@ -105,8 +105,10 @@ meal-plan-analyzer/
 ├── tests/
 │   ├── conftest.py          # Shared fixtures (api_client, user, authenticated_client)
 │   ├── data/
-│   │   ├── food_fixtures.json  # Seed data for tests
-│   │   └── test_foods.xlsx     # Excel file for import tests
+│   │   ├── food_fixtures.json     # Seed data for tests
+│   │   ├── test_foods.xlsx        # Excel file for import tests
+│   │   ├── test_foods_Daten.zip   # ZIP file containing BLS Daten file for import tests
+│   │   └── test_foods_no_daten.zip  # ZIP file without Daten file for import error tests
 │   ├── api/
 │   │   ├── test_foods.py
 │   │   ├── test_mealplans.py
@@ -134,8 +136,9 @@ meal-plan-analyzer/
 │   ├── test_template_filters.py
 │   └── generate_test_data.py
 │
-├── ansible/                 # Deployment playbooks for k3s
-├── k8s/                     # Kubernetes manifests
+├── deployment/              # Kubernetes manifests and Ansible playbooks
+├── docs/                    # Development plans and documentation
+├── AGENTS.md                # Coding agent guidelines
 ├── pyproject.toml           # Project metadata and dependencies
 ├── pytest.ini
 ├── Dockerfile               # Multi-stage build (builder → python:3.12-slim)
@@ -179,6 +182,15 @@ Represents a food item from the BLS database.
 | `vita_in_mug_per_100g` | FloatField | Vitamin A (µg); default 0.0 |
 | `calcium_in_mg_per_100g` | FloatField | default 0.0 |
 | `vitd_in_mug_per_100g` | FloatField | Vitamin D (µg); default 0.0 |
+| `vitb1_in_mg_per_100g` | FloatField | Vitamin B1 (thiamine); default 0.0 |
+| `vitb2_in_mg_per_100g` | FloatField | Vitamin B2 (riboflavin); default 0.0 |
+| `vitb3_in_mg_per_100g` | FloatField | Vitamin B3 (niacin); default 0.0 |
+| `vitb5_in_mg_per_100g` | FloatField | Vitamin B5; default 0.0 |
+| `vitb6_in_mug_per_100g` | FloatField | Vitamin B6 (µg); default 0.0 |
+| `biotin_in_mug_per_100g` | FloatField | Biotin (µg); default 0.0 |
+| `iodine_in_mug_per_100g` | FloatField | Iodine (µg); default 0.0 |
+| `copper_in_mug_per_100g` | FloatField | Copper (µg); default 0.0 |
+| `manganese_in_mug_per_100g` | FloatField | Manganese (µg); default 0.0 |
 
 ### `FoodAlias`
 Alternative name/synonym for a `Food` item, used during search.
@@ -226,6 +238,7 @@ Reusable named threshold presets. Has `_min` / `_max` FloatField pairs (nullable
 Singleton model for site-wide settings.
 
 - `logo` — FileField (uploaded to `logos/`); used as the logo in PDF exports. Falls back to the static `meals/img/logo.png` if not set.
+- `minilogo` — FileField (uploaded to `logos/`); 50×50 px logo on top-right of every PDF page except first. Falls back to nothing if not set.
 - Enforces singleton via `save()` (always sets `pk=1`) and `SiteSettings.get()` classmethod.
 - Admin: list view auto-redirects to the single instance; add/delete are disabled.
 
@@ -252,6 +265,15 @@ All nutrient logic flows through the `NUTRIENTS` ordered dict. Each entry maps a
 | `vita_in_mug` | Vit. A | µg | 1 |
 | `calcium_in_mg` | Ca | mg | 1 |
 | `vitd_in_mug` | Vit. D | µg | 2 |
+| `vitb1_in_mg` | Vit. B1 | mg | 2 |
+| `vitb2_in_mg` | Vit. B2 | mg | 2 |
+| `vitb3_in_mg` | Vit. B3 | mg | 2 |
+| `vitb5_in_mg` | Vit. B5 | mg | 2 |
+| `vitb6_in_mug` | Vit. B6 | µg | 1 |
+| `biotin_in_mug` | Biotin | µg | 1 |
+| `iodine_in_mug` | Iodine | µg | 1 |
+| `copper_in_mug` | Copper | µg | 1 |
+| `manganese_in_mug` | Manganese | µg | 1 |
 
 `NUTRIENT_IDS` is the list of all keys. `THRESHOLD_SCHEMA` is a jsonschema used to validate `MealPlan.thresholds`.
 
@@ -329,6 +351,37 @@ Custom template filters (`meals/templatetags/meal_extras.py`):
 - `divide_by_100_mult(value, arg)` — `(value / 100) * arg` (nutrient calculation per amount)
 - `split_to_dict(value)` — splits `"key:val,key2:val2"` into list of pairs
 - `get_item(dictionary, key)` — safe dict lookup
+
+---
+
+## Vue Frontend
+
+The meal plan list page uses a Vue 3 / Vite SPA. Source lives in `frontend/src/mealplan-list/`.
+
+**JS package manager**: `pnpm` (never `npm` or `yarn`). Lock file: `pnpm-lock.yaml` in repo root.
+
+```bash
+pnpm install          # install dependencies
+pnpm dev              # start Vite dev server at :5173
+pnpm build            # build to frontend/dist/
+```
+
+`django-vite` 3.x bridges Vite and Django:
+- `DEBUG=True`: proxies asset requests to Vite dev server
+- `DEBUG=False`: reads `frontend/dist/.vite/manifest.json` for hashed asset URLs
+
+### Vue Component Tree (`frontend/src/mealplan-list/`)
+
+- `main.js` — mounts `MealPlanApp` on `#meal-plan-app`; provides csrfToken, i18n, createUrl
+- `MealPlanApp.vue` — fetches all plans via API (follows DRF `next` pagination); client-side filter + pagination (10/page); URL sync via `pushState`
+- `SearchBar.vue` — 300ms debounced search; `id="liveSearch"` for Playwright tests
+- `MealPlanTable.vue` — table of plans
+- `MealPlanRow.vue` — individual plan row
+- `DayBadge.vue` — day count badge
+- `Pagination.vue` — page navigation
+- `ConfirmDeleteModal.vue` — confirmation dialog for plan deletion
+
+i18n strings are passed via the `data-i18n` attribute on the mount element (Django renders translations server-side).
 
 ---
 
@@ -447,11 +500,11 @@ The Dockerfile uses a multi-stage build:
 ### Kubernetes (via Ansible)
 
 ```bash
-cd ansible
+cd deployment/app-deployment/ansible
 uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy.yml
 ```
 
-Manifests live in `k8s/`. The Ansible playbook handles DNS, database, and app deployment to a k3s cluster.
+Manifests live in `deployment/app-deployment/k8s/`. The Ansible playbook handles DNS, database, and app deployment to a k3s cluster.
 
 ---
 
