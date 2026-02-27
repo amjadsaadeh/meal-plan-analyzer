@@ -191,6 +191,88 @@ def test_mealplan_list_delete_cancel_keeps_plan(logged_in_page, live_server, tes
 
 
 # ---------------------------------------------------------------------------
+# Delete confirmation modal — specific modal behaviour
+# ---------------------------------------------------------------------------
+
+def test_delete_modal_shows_correct_plan_name_and_content(logged_in_page, live_server, test_user):
+    """Modal displays the targeted plan's name plus title and hint text."""
+    MealPlanFactory(name="Alpha Plan")
+    MealPlanFactory(name="Beta Plan")
+
+    logged_in_page.goto(live_server.url + "/")
+    expect(logged_in_page.locator(".meal-plan-row")).to_have_count(2)
+
+    # Open the modal via the row that contains "Alpha Plan"
+    logged_in_page.locator(".meal-plan-row", has_text="Alpha Plan").locator(".delete-btn").click()
+
+    modal = logged_in_page.locator(".modal-overlay")
+    expect(modal).to_be_visible()
+    expect(modal.locator(".modal-plan-name")).to_have_text("Alpha Plan")
+    expect(modal.locator(".modal-title")).to_have_text("Delete Meal Plan")
+    expect(modal.locator(".modal-hint")).to_contain_text("cannot be undone")
+
+    modal.locator(".btn-modal-cancel").click()
+    expect(modal).not_to_be_visible()
+
+
+def test_delete_modal_esc_key_dismisses(logged_in_page, live_server, test_user):
+    """Pressing Escape closes the modal without deleting the plan."""
+    MealPlanFactory(name="Plan To Keep")
+
+    logged_in_page.goto(live_server.url + "/")
+    expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
+
+    logged_in_page.locator(".delete-btn").first.click()
+
+    modal = logged_in_page.locator(".modal-overlay")
+    expect(modal).to_be_visible()
+
+    logged_in_page.keyboard.press("Escape")
+
+    expect(modal).not_to_be_visible()
+    expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
+
+
+def test_delete_modal_backdrop_click_dismisses(logged_in_page, live_server, test_user):
+    """Clicking the overlay backdrop closes the modal without deleting the plan."""
+    MealPlanFactory(name="Plan To Keep")
+
+    logged_in_page.goto(live_server.url + "/")
+    expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
+
+    logged_in_page.locator(".delete-btn").first.click()
+
+    modal = logged_in_page.locator(".modal-overlay")
+    expect(modal).to_be_visible()
+
+    # Click the top-left corner of the overlay — outside the centered modal card
+    modal.click(position={"x": 10, "y": 10})
+
+    expect(modal).not_to_be_visible()
+    expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
+
+
+def test_delete_modal_removes_only_targeted_plan(logged_in_page, live_server, test_user):
+    """Confirming deletion removes only the plan whose delete button was clicked."""
+    MealPlanFactory(name="Plan Alpha")
+    MealPlanFactory(name="Plan Beta")
+
+    logged_in_page.goto(live_server.url + "/")
+    expect(logged_in_page.locator(".meal-plan-row")).to_have_count(2)
+
+    # Target "Plan Alpha" specifically
+    logged_in_page.locator(".meal-plan-row", has_text="Plan Alpha").locator(".delete-btn").click()
+
+    modal = logged_in_page.locator(".modal-overlay")
+    expect(modal).to_be_visible()
+    expect(modal.locator(".modal-plan-name")).to_have_text("Plan Alpha")
+    modal.locator(".btn-modal-delete").click()
+
+    expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
+    expect(logged_in_page.locator(".meal-plan-row").first).to_contain_text("Plan Beta")
+
+
+# ---------------------------------------------------------------------------
 # Pagination appears when more than 10 plans exist
 # ---------------------------------------------------------------------------
 
