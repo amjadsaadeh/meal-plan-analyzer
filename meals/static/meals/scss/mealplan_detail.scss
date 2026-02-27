@@ -629,6 +629,10 @@ tfoot tr {
         position: relative;
         top: 0 !important;
     }
+
+    @media screen and (max-width: $bp-md) {
+        display: none;
+    }
 }
 
 @media screen and (max-width: $bp-lg) {
