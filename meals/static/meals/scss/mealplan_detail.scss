@@ -259,6 +259,10 @@ input.table-input {
     text-align: center;
 }
 
+input.table-input.amount-zero {
+    color: #e8880c;
+}
+
 // Nutrient value cells
 .kcal-cell,
 .protein-cell,
