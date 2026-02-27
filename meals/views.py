@@ -519,6 +519,10 @@ def meal_plan_preview_content(request, pk):
     site = SiteSettings.get()
     if site.logo:
         context['logo_path'] = site.logo.url
+    if site.minilogo:
+        context['minilogo_path'] = site.minilogo.url
+    else:
+        context['minilogo_path'] = None
     return render(request, 'meals/mealplan_pdf.html.j2', context)
 
 @login_required
@@ -532,6 +536,13 @@ def meal_plan_pdf(request, pk):
         logo_disk_path = finders.find('meals/img/logo.png')
         if logo_disk_path:
             context['logo_path'] = f"file://{logo_disk_path}"
+
+    if site.minilogo:
+        context['minilogo_path'] = f"file://{site.minilogo.path}"
+    else:
+        logo_disk_path = finders.find('meals/img/logo.png')
+        if logo_disk_path:
+            context['minilogo_path'] = f"file://{logo_disk_path}"
 
     html_string = render_to_string('meals/mealplan_pdf.html.j2', context)
 
