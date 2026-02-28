@@ -12,6 +12,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         'mealplan-list': 'frontend/src/mealplan-list/main.js',
+        'mealplan-detail': 'frontend/src/mealplan-detail/main.js',
       },
     },
   },
