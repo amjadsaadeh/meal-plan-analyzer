@@ -439,10 +439,11 @@ def test_multiple_days_render_independently(logged_in_page, live_server, test_us
     _wait_for_app(logged_in_page)
 
     expect(logged_in_page.locator(".day-section")).to_have_count(2, timeout=10000)
-    expect(logged_in_page.locator(f'[data-day-id="{day1.id}"]')).to_be_visible()
-    expect(logged_in_page.locator(f'[data-day-id="{day2.id}"]')).to_be_visible()
-    expect(logged_in_page.locator(f'[data-day-id="{day1.id}"]')).to_contain_text("Day One")
-    expect(logged_in_page.locator(f'[data-day-id="{day2.id}"]')).to_contain_text("Day Two")
+    # Use .day-section to avoid matching the tables that also carry data-day-id
+    expect(logged_in_page.locator(f'.day-section[data-day-id="{day1.id}"]')).to_be_visible()
+    expect(logged_in_page.locator(f'.day-section[data-day-id="{day2.id}"]')).to_be_visible()
+    expect(logged_in_page.locator(f'.day-section[data-day-id="{day1.id}"]')).to_contain_text("Day One")
+    expect(logged_in_page.locator(f'.day-section[data-day-id="{day2.id}"]')).to_contain_text("Day Two")
 
 
 # ---------------------------------------------------------------------------

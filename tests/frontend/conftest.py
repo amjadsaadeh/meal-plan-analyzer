@@ -26,6 +26,8 @@ def test_user(db, test_password):
 
 @pytest.fixture
 def logged_in_page(page: Page, live_server, test_user, test_password):
+    # Ensure viewport is wider than the 1280px breakpoint at which the side panel hides
+    page.set_viewport_size({"width": 1440, "height": 900})
     page.goto(live_server.url + "/login/")
     page.fill("#id_username", test_user.username)
     page.fill("#id_password", test_password)
