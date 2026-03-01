@@ -19,7 +19,7 @@
 
     <div class="table-card">
       <div class="table-responsive">
-        <table :data-meal-type="mealType" :data-day-id="dayId" :style="{ minWidth: tableMinWidth + 'px' }">
+        <table :data-meal-type="mealType" :style="{ minWidth: tableMinWidth + 'px' }">
           <thead>
             <tr>
               <th style="width: 200px;">{{ i18n.ingredient }}</th>
