@@ -13,8 +13,8 @@
           {{ i18n.columns }}
         </button>
         <div class="sync-status">
-          <span>{{ statusText }}</span>
-          <div class="status-icon" v-html="statusIcon"></div>
+          <span id="stickySyncText">{{ statusText }}</span>
+          <div class="status-icon" id="stickySyncIcon" v-html="statusIcon"></div>
         </div>
       </div>
     </div>

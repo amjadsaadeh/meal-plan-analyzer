@@ -1,8 +1,8 @@
 <template>
   <tr
     class="ingredient-row"
-    :data-id="row.id || ''"
-    :data-food-id="row.food?.id || ''"
+    :data-id="row._isDraft ? null : row.id"
+    :data-food-id="row._isDraft ? null : (localFood ? localFood.id : null)"
   >
     <!-- Ingredient / Search cell -->
     <td>
@@ -13,8 +13,8 @@
         @focus="onCellClick"
       >
         <template v-if="!isSearching">
-          <span>{{ row.food ? row.food.name : i18n.searchFood }}</span>
-          <span v-if="row.food" class="bls-code">{{ row.food.bls_code }}</span>
+          <span>{{ localFood ? localFood.name : i18n.searchFood }}</span>
+          <span v-if="localFood" class="bls-code">{{ localFood.bls_code }}</span>
         </template>
         <input
           v-else
@@ -62,7 +62,7 @@
 
     <!-- Delete -->
     <td class="actions-cell">
-      <button class="delete-btn" @click="$emit('delete')" v-if="!row._isDraft || row.food">
+      <button class="delete-btn" @click="$emit('delete')" v-if="!row._isDraft || localFood">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"></polyline>
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>

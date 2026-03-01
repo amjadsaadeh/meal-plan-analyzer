@@ -3,7 +3,8 @@
     <Transition name="modal">
       <div
         v-if="open"
-        class="modal-overlay"
+        id="deleteDayModal"
+        class="modal-overlay active"
         @click.self="$emit('cancel')"
       >
         <div
@@ -23,7 +24,7 @@
           </div>
           <div class="modal-footer">
             <button ref="cancelBtnRef" class="btn-secondary" style="margin-top: 0;" @click="$emit('cancel')">{{ i18n.cancel }}</button>
-            <button class="btn-danger" @click="$emit('confirm')">{{ i18n.delete }}</button>
+            <button id="confirmDeleteDayBtn" class="btn-danger" @click="$emit('confirm')">{{ i18n.delete }}</button>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@
     <div class="plan-title-wrapper">
       <div class="title-container">
         <h1
+          id="planName"
           ref="titleEl"
           class="editable-title"
           contenteditable="true"
@@ -21,9 +22,9 @@
     </div>
     <div class="header-info">
       <span class="plan-id">{{ i18n.planNo }} {{ plan.id }}</span>
-      <div class="sync-status">
-        <span>{{ statusText }}</span>
-        <div class="status-icon" v-html="statusIcon"></div>
+      <div class="sync-status" id="syncStatus">
+        <span id="syncText">{{ statusText }}</span>
+        <div class="status-icon" id="syncIcon" v-html="statusIcon"></div>
       </div>
       <div style="display: flex; gap: 8px;">
         <a :href="previewUrl" target="_blank" class="btn-pdf">

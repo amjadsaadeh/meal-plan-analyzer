@@ -40,6 +40,7 @@
   <Teleport to="body">
     <div
       v-if="colDropdown.open"
+      id="colDropdown"
       class="col-dropdown active"
       :style="{ top: colDropdown.top + 'px', left: colDropdown.left + 'px' }"
       @click.stop

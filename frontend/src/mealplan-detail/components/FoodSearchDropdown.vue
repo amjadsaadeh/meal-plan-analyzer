@@ -2,6 +2,7 @@
   <Teleport to="body">
     <div
       v-if="visible && results.length > 0"
+      id="globalSearchDropdown"
       class="search-dropdown active"
       :style="{ top: position.top + 'px', left: position.left + 'px', width: position.width + 'px' }"
       @mousedown.prevent
@@ -25,6 +26,7 @@
     </div>
     <div
       v-else-if="visible && results.length === 0 && query.length >= 2"
+      id="globalSearchDropdown"
       class="search-dropdown active"
       :style="{ top: position.top + 'px', left: position.left + 'px', width: position.width + 'px' }"
     >
