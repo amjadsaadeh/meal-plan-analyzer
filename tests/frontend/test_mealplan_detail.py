@@ -216,6 +216,8 @@ def test_food_search_no_results(logged_in_page, live_server, test_user):
 def test_threshold_min_max_persist(logged_in_page, live_server, test_user, meal_plan_with_day):
     plan, day = meal_plan_with_day
 
+    # Side panels are hidden below 1280px; use a desktop viewport to interact with them
+    logged_in_page.set_viewport_size({"width": 1440, "height": 900})
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
 
     # Use the first protein min threshold input (day summary panel)
@@ -236,6 +238,8 @@ def test_threshold_min_max_persist(logged_in_page, live_server, test_user, meal_
 def test_threshold_max_persist(logged_in_page, live_server, test_user, meal_plan_with_day):
     plan, day = meal_plan_with_day
 
+    # Side panels are hidden below 1280px; use a desktop viewport to interact with them
+    logged_in_page.set_viewport_size({"width": 1440, "height": 900})
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
 
     max_input = logged_in_page.locator('.threshold-max[data-nut="energy_in_kcal"]').first
