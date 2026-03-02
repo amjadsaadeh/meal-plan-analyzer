@@ -588,7 +588,8 @@ def meal_plan_preview_content(request, pk):
     if site.minilogo:
         context['minilogo_path'] = site.minilogo.url
     else:
-        context['minilogo_path'] = None
+        from django.templatetags.static import static
+        context['minilogo_path'] = static('meals/img/logo.png')
     return render(request, 'meals/mealplan_pdf.html.j2', context)
 
 @login_required
