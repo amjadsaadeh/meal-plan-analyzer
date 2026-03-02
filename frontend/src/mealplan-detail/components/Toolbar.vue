@@ -31,6 +31,7 @@
             v-model="presetQuery"
             @input="onPresetInput"
             @focus="onPresetInput"
+            @click="onPresetInput"
             @blur="scheduleHidePresets"
           >
           <div class="preset-dropdown" :class="{ active: presetDropdownVisible }">
@@ -67,17 +68,18 @@ let presetTimer = null
 
 function onPresetInput() {
   const q = presetQuery.value.trim()
-  if (q.length < 1) {
-    presetDropdownVisible.value = false
-    return
-  }
   clearTimeout(presetTimer)
-  presetTimer = setTimeout(() => fetchPresets(q), 300)
+  // Fetch immediately if empty, otherwise debounce
+  const delay = q.length === 0 ? 0 : 300
+  presetTimer = setTimeout(() => fetchPresets(q), delay)
 }
 
 async function fetchPresets(query) {
   try {
-    const res = await fetch(`/api/threshold-presets/?search=${encodeURIComponent(query)}`)
+    const url = query 
+      ? `/api/threshold-presets/?search=${encodeURIComponent(query)}` 
+      : '/api/threshold-presets/'
+    const res = await fetch(url)
     const data = await res.json()
     presetResults.value = data.results || data
     presetDropdownVisible.value = presetResults.value.length > 0

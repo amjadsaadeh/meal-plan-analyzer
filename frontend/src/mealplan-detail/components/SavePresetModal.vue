@@ -3,7 +3,7 @@
     <Transition name="modal">
       <div
         v-if="open"
-        class="modal-overlay"
+        class="modal-overlay active"
         @click.self="$emit('cancel')"
       >
         <div

@@ -432,6 +432,8 @@ class MealPlanFoodViewSet(viewsets.ModelViewSet):
 class ThresholdPresetViewSet(viewsets.ModelViewSet):
     queryset = ThresholdPreset.objects.all()
     serializer_class = ThresholdPresetSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
 
 from django.http import HttpResponse

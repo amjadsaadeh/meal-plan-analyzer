@@ -16,7 +16,7 @@
             :data-nut="nut.key"
             :placeholder="i18n.min"
             :value="thresholdVal(nut.key, 'min')"
-            @input="$emit('update-threshold', nut.key, 'min', $event.target.value)"
+            @input="emit('update-threshold', nut.key, 'min', $event.target.value)"
           >
           <span
             class="summary-val"
@@ -30,12 +30,12 @@
             :data-nut="nut.key"
             :placeholder="i18n.max"
             :value="thresholdVal(nut.key, 'max')"
-            @input="$emit('update-threshold', nut.key, 'max', $event.target.value)"
+            @input="emit('update-threshold', nut.key, 'max', $event.target.value)"
           >
         </div>
       </div>
     </div>
-    <button class="btn-secondary" @click="$emit('open-save-preset')">
+    <button class="btn-secondary" @click="emit('open-save-preset')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
         <polyline points="17 21 17 13 7 13 7 21"></polyline>
@@ -58,7 +58,7 @@ const props = defineProps({
   thresholds: { type: Object, default: () => ({}) },
 })
 
-defineEmits(['open-save-preset', 'update-threshold'])
+const emit = defineEmits(['open-save-preset', 'update-threshold'])
 
 function dayTotal(day, nutKey) {
   const nut = props.nutrients.find(n => n.key === nutKey)
