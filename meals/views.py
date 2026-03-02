@@ -168,6 +168,7 @@ def meal_plan_detail(request, pk=None):
         'unsavedChanges': _('Unsaved changes'),
         'dayPrefix': _('Day'),
         'errorCreatingDay': _('Error creating day'),
+        'deleteIngredient': _('Delete Ingredient'),
         'confirmDeleteIngredient': _('Are you sure you want to remove this ingredient?'),
         'errorDeletingRow': _('Error deleting row'),
         'searchFood': _('Search food...'),

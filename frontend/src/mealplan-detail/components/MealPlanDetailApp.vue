@@ -8,12 +8,12 @@
     @select="onFoodSelect"
   />
 
-  <!-- Delete day modal -->
-  <ConfirmDeleteDayModal
-    :open="deleteModal.open"
-    :day-name="deleteModal.dayName"
-    @confirm="confirmDeleteDay"
-    @cancel="deleteModal.open = false"
+  <!-- Delete ingredient modal -->
+  <ConfirmDeleteIngredientModal
+    :open="deleteFoodModal.open"
+    :ingredient-name="deleteFoodModal.row?.food_data?.name || deleteFoodModal.row?.food?.name || ''"
+    @confirm="confirmDeleteFood"
+    @cancel="deleteFoodModal.open = false"
   />
 
   <!-- Save preset modal -->
@@ -100,6 +100,7 @@
         :thresholds="plan.thresholds"
         @update:name="onDayNameChange(day.id, $event)"
         @delete="openDeleteDayModal(day)"
+        @request-delete="openDeleteFoodModal"
         @food-saved="onFoodSaved(day.id, $event)"
         @food-deleted="onFoodDeleted(day.id, $event)"
         @open-save-preset="presetModal.open = true"
@@ -128,12 +129,15 @@
 import { ref, reactive, computed, onMounted, onUnmounted, inject, provide, watch, nextTick } from 'vue'
 import FoodSearchDropdown from './FoodSearchDropdown.vue'
 import ConfirmDeleteDayModal from './ConfirmDeleteDayModal.vue'
+import ConfirmDeleteIngredientModal from './ConfirmDeleteIngredientModal.vue'
 import SavePresetModal from './SavePresetModal.vue'
 import StickyBar from './StickyBar.vue'
 import PageHeader from './PageHeader.vue'
 import Toolbar from './Toolbar.vue'
 import DaySection from './DaySection.vue'
 import PlanOverview from './PlanOverview.vue'
+
+
 
 const planId = inject('planId')
 const csrfToken = inject('csrfToken')
@@ -153,6 +157,7 @@ const sentinelRef = ref(null)
 
 const colDropdown = reactive({ open: false, top: 0, left: 0 })
 const deleteModal = reactive({ open: false, dayId: null, dayName: '' })
+const deleteFoodModal = reactive({ open: false, row: null })
 const presetModal = reactive({ open: false })
 
 const search = reactive({
@@ -308,6 +313,43 @@ async function confirmDeleteDay() {
       setSyncStatus('error', 'Delete Error')
     }
   } catch (e) {
+    setSyncStatus('error', i18n.networkError)
+  }
+}
+
+// ── Delete food ───────────────────────────────────────────────────────────
+function openDeleteFoodModal(row) {
+  deleteFoodModal.row = row
+  deleteFoodModal.open = true
+}
+
+async function confirmDeleteFood() {
+  const row = deleteFoodModal.row
+  if (!row) return
+  deleteFoodModal.open = false
+  setSyncStatus('pending', i18n.deleting)
+
+  try {
+    const res = await fetch(`/api/mealplan-foods/${row.id}/`, {
+      method: 'DELETE',
+      headers: { 'X-CSRFToken': csrfToken },
+    })
+    if (res.ok) {
+      // Find the day this food belongs to. 
+      // Row might not have dayId directly if it's from MealSection props.
+      // But we can search through our days state.
+      for (const day of days.value) {
+        if (day.foods.some(f => f.id === row.id)) {
+          onFoodDeleted(day.id, row.id)
+          break
+        }
+      }
+      setSyncStatus('saved')
+    } else {
+      setSyncStatus('error', i18n.errorDeletingRow)
+    }
+  } catch (e) {
+    console.error(e)
     setSyncStatus('error', i18n.networkError)
   }
 }

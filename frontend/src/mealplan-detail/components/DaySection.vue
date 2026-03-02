@@ -43,6 +43,7 @@
           :visible-nutrients="visibleNutrients"
           @food-saved="emit('food-saved', $event)"
           @food-deleted="emit('food-deleted', $event)"
+          @request-delete="emit('request-delete', $event)"
           @activate-search="emit('activate-search', $event.el, $event.cb)"
           @deactivate-search="emit('deactivate-search')"
         />
@@ -77,7 +78,7 @@ const props = defineProps({
   thresholds: { type: Object, default: () => ({}) },
 })
 
-const emit = defineEmits(['update:name', 'delete', 'food-saved', 'food-deleted', 'open-save-preset', 'update-threshold', 'activate-search', 'deactivate-search'])
+const emit = defineEmits(['update:name', 'delete', 'food-saved', 'food-deleted', 'open-save-preset', 'update-threshold', 'activate-search', 'deactivate-search', 'request-delete'])
 
 const dayTitleEl = ref(null)
 

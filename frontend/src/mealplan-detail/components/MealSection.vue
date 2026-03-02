@@ -87,7 +87,7 @@ const props = defineProps({
   visibleNutrients: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['food-saved', 'food-deleted', 'activate-search', 'deactivate-search'])
+const emit = defineEmits(['food-saved', 'food-deleted', 'activate-search', 'deactivate-search', 'request-delete'])
 
 let uidCounter = 0
 function makeUid() { return ++uidCounter }
@@ -169,20 +169,7 @@ async function onSaveRow(rowData) {
 
 async function onDeleteRow(row) {
   if (row._isDraft) return
-  if (!confirm(i18n.confirmDeleteIngredient)) return
-  try {
-    const res = await fetch(`/api/mealplan-foods/${row.id}/`, {
-      method: 'DELETE',
-      headers: { 'X-CSRFToken': csrfToken },
-    })
-    if (res.ok) {
-      emit('food-deleted', row.id)
-    } else {
-      alert(i18n.errorDeletingRow)
-    }
-  } catch (e) {
-    console.error(e)
-  }
+  emit('request-delete', row)
 }
 
 function onActivateSearch(payload) {
