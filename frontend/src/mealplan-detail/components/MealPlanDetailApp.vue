@@ -42,7 +42,15 @@
       v-if="colDropdown.open"
       id="colDropdown"
       class="col-dropdown active"
-      :style="{ top: colDropdown.top + 'px', left: colDropdown.left + 'px' }"
+      :style="{ 
+        top: colDropdown.top + 'px', 
+        left: colDropdown.left + 'px', 
+        maxHeight: 'calc(100vh - ' + (colDropdown.top + 20) + 'px)',
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box'
+      }"
       @click.stop
     >
       <label
@@ -391,7 +399,7 @@ function toggleCol(nutKey, show) {
 function openColDropdown(btnEl) {
   if (colDropdown.open) { colDropdown.open = false; return }
   const rect = btnEl.getBoundingClientRect()
-  colDropdown.top = rect.bottom + window.scrollY + 8
+  colDropdown.top = rect.bottom + 8
   colDropdown.left = rect.right - 200
   colDropdown.open = true
 }
