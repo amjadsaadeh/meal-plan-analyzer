@@ -624,7 +624,7 @@ tfoot tr {
     width: 330px;
     flex-shrink: 0;
 
-    @media screen and (max-width: $bp-lg) {
+    @media screen and (max-width: $bp-lg - 1px) {
         display: none;
     }
 }
@@ -909,6 +909,7 @@ tfoot tr {
     padding: 12px;
     display: none;
     width: 200px;
+    overflow-y: auto;
 
     &.active { display: block; }
 }

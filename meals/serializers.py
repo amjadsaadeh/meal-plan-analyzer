@@ -38,10 +38,11 @@ class ThresholdPresetSerializer(serializers.ModelSerializer):
 class MealPlanFoodSerializer(serializers.ModelSerializer):
     food_name = serializers.ReadOnlyField(source='food.name')
     food_bls_code = serializers.ReadOnlyField(source='food.bls_code')
+    food_data = FoodSerializer(source='food', read_only=True)
 
     class Meta:
         model = MealPlanFood
-        fields = ['id', 'meal_plan_day', 'food', 'food_name', 'food_bls_code', 'amount_in_g', 'meal_type', 'export_name']
+        fields = ['id', 'meal_plan_day', 'food', 'food_name', 'food_bls_code', 'food_data', 'amount_in_g', 'meal_type', 'export_name']
 
     def validate_amount_in_g(self, value):
         if value < 0:

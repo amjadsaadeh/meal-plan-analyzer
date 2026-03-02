@@ -146,20 +146,84 @@ def meal_plan_detail(request, pk=None):
         plan_day = MealPlanDay.objects.create(name=_("Day 1"), meal_plan=parent_plan)
         from django.shortcuts import redirect
         return redirect('meal-plan-detail', pk=parent_plan.pk)
-    
+
+    import json
+    from django.urls import reverse
+
     plan = get_object_or_404(MealPlan, pk=pk)
-    days = plan.days.filter(removed=False).order_by('creation_date').prefetch_related('mealplanfood_set__food')
-    
-    meal_types = [
-        ('breakfast', _('Breakfast')),
-        ('lunch', _('Lunch')),
-        ('dinner', _('Dinner')),
+
+    nutrients_list = [
+        {
+            'key': key,
+            'label': str(data['label']),
+            'unit': data['unit'],
+            'food_key': data['food_key'],
+            'precision': data.get('precision', 1),
+        }
+        for key, data in NUTRIENTS.items()
     ]
+
+    i18n = {
+        'saved': _('Saved'),
+        'unsavedChanges': _('Unsaved changes'),
+        'dayPrefix': _('Day'),
+        'errorCreatingDay': _('Error creating day'),
+        'deleteIngredient': _('Delete Ingredient'),
+        'confirmDeleteIngredient': _('Are you sure you want to remove this ingredient?'),
+        'errorDeletingRow': _('Error deleting row'),
+        'searchFood': _('Search food...'),
+        'noResults': _('No results'),
+        'codeLabel': _('Code'),
+        'aliasBadge': _('alias'),
+        'daySummaryOverview': _('Overview'),
+        'confirmApplyTemplate': _('Apply this template? The current reference values will be overwritten.'),
+        'templateSavedSuccess': _('Template saved successfully.'),
+        'nameTooShort': _('The name must be at least 3 characters long.'),
+        'checkingAvailability': _('Checking availability...'),
+        'nameAlreadyTaken': _('This name is already taken.'),
+        'validationError': _('Validation error.'),
+        'savingError': _('Error saving.'),
+        'networkError': _('Network error while saving.'),
+        'deleteDay': _('Delete Day'),
+        'confirmDeleteDay': _('Do you really want to delete this day?'),
+        'cannotBeUndone': _('This action cannot be undone.'),
+        'cancel': _('Cancel'),
+        'delete': _('Delete'),
+        'planOverview': _('Plan Overview (Total)'),
+        'saveTemplate': _('Save Template'),
+        'saveAsTemplate': _('Save as Reference Value Template'),
+        'templateName': _('Template name (min. 3 chars)...'),
+        'breakfast': _('Breakfast'),
+        'lunch': _('Lunch'),
+        'dinner': _('Dinner'),
+        'addDay': _('Add Day'),
+        'selectColumns': _('Select Columns'),
+        'referenceValueTemplate': _('Reference Value Template'),
+        'searchTemplate': _('Search template...'),
+        'ingredient': _('Ingredient'),
+        'amountG': _('Amount (g)'),
+        'subtotal': _('Subtotal:'),
+        'backToPlans': _('Back to Plans'),
+        'planNo': _('Plan No.'),
+        'exportPdf': _('Export PDF'),
+        'editName': _('Edit name'),
+        'editDayName': _('Edit day name'),
+        'deleteDay2': _('Delete day'),
+        'columns': _('Columns'),
+        'min': _('min'),
+        'max': _('max'),
+        'syncing': _('Syncing...'),
+        'deleting': _('Deleting...'),
+    }
+
     return render(request, 'meals/mealplan_detail.html.j2', {
         'plan': plan,
-        'days': days,
-        'meal_types': meal_types,
-        'nutrients': NUTRIENTS,
+        'plan_id': plan.pk,
+        'nutrients_json': json.dumps(nutrients_list),
+        'i18n_json': json.dumps({k: str(v) for k, v in i18n.items()}),
+        'pdf_url': reverse('meal-plan-pdf', args=[plan.pk]),
+        'preview_url': reverse('meal-plan-preview', args=[plan.pk]),
+        'plan_list_url': reverse('meal-plan-list'),
     })
 
 def parse_food_search(search_query):
@@ -368,6 +432,8 @@ class MealPlanFoodViewSet(viewsets.ModelViewSet):
 class ThresholdPresetViewSet(viewsets.ModelViewSet):
     queryset = ThresholdPreset.objects.all()
     serializer_class = ThresholdPresetSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
 
 from django.http import HttpResponse
