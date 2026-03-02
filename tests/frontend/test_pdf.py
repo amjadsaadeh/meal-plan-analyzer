@@ -253,8 +253,8 @@ def test_pdf_preview_iframe_content(logged_in_page, live_server, test_user):
     expect(iframe.locator("body")).to_contain_text("Average daily intake")
 
 
-def test_no_minilogo_in_preview_without_sitesettings(logged_in_page, live_server):
-    """Without a configured minilogo, .day-minilogo must not appear in the preview iframe."""
+def test_default_minilogo_in_preview_without_sitesettings(logged_in_page, live_server):
+    """Without a configured minilogo, the default logo is used and .day-minilogo appears in the preview iframe."""
     from playwright.sync_api import expect
     from meals.models import SiteSettings
 
@@ -262,11 +262,11 @@ def test_no_minilogo_in_preview_without_sitesettings(logged_in_page, live_server
     settings = SiteSettings.get()
     assert not settings.minilogo
 
-    plan = MealPlanFactory(name="No Minilogo Preview")
+    plan = MealPlanFactory(name="Default Minilogo Preview")
     MealPlanDayFactory(meal_plan=plan)
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/preview/")
     logged_in_page.wait_for_selector(".preview-frame")
     iframe = logged_in_page.frame_locator(".preview-frame")
 
-    expect(iframe.locator(".day-minilogo")).to_have_count(0)
+    expect(iframe.locator(".day-minilogo")).to_have_count(1)
