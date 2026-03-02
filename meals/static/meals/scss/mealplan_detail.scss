@@ -625,20 +625,10 @@ tfoot tr {
     flex-shrink: 0;
 
     @media screen and (max-width: $bp-lg) {
-        width: 100%;
-        position: relative;
-        top: 0 !important;
+        display: none;
     }
 }
 
-@media screen and (max-width: $bp-lg) {
-    .day-summary {
-        position: relative;
-        top: 0 !important;
-    }
-
-    .meal-sections-wrapper { margin-left: 0; }
-}
 
 // ── Toolbar ──────────────────────────────────────────────────
 .toolbar {
