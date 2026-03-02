@@ -88,30 +88,39 @@ msgstr "Ca"
 msgid "Vit. D"
 msgstr "Vit. D"
 
+#: meals/nutrients.py:95
 msgid "Vit. B1"
 msgstr "Vit. B1"
 
+#: meals/nutrients.py:101
 msgid "Vit. B2"
 msgstr "Vit. B2"
 
+#: meals/nutrients.py:107
 msgid "Vit. B3"
 msgstr "Vit. B3"
 
+#: meals/nutrients.py:113
 msgid "Vit. B5"
 msgstr "Vit. B5"
 
+#: meals/nutrients.py:119
 msgid "Vit. B6"
 msgstr "Vit. B6"
 
+#: meals/nutrients.py:125
 msgid "Biotin"
 msgstr "Biotin"
 
+#: meals/nutrients.py:131
 msgid "Iodine"
 msgstr "Jod"
 
+#: meals/nutrients.py:137
 msgid "Copper"
 msgstr "Kupfer"
 
+#: meals/nutrients.py:143
 msgid "Manganese"
 msgstr "Mangan"
 

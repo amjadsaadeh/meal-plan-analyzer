@@ -90,6 +90,42 @@ msgstr ""
 msgid "Vit. D"
 msgstr ""
 
+#: meals/nutrients.py:95
+msgid "Vit. B1"
+msgstr ""
+
+#: meals/nutrients.py:101
+msgid "Vit. B2"
+msgstr ""
+
+#: meals/nutrients.py:107
+msgid "Vit. B3"
+msgstr ""
+
+#: meals/nutrients.py:113
+msgid "Vit. B5"
+msgstr ""
+
+#: meals/nutrients.py:119
+msgid "Vit. B6"
+msgstr ""
+
+#: meals/nutrients.py:125
+msgid "Biotin"
+msgstr ""
+
+#: meals/nutrients.py:131
+msgid "Iodine"
+msgstr ""
+
+#: meals/nutrients.py:137
+msgid "Copper"
+msgstr ""
+
+#: meals/nutrients.py:143
+msgid "Manganese"
+msgstr ""
+
 #: meals/templates/meals/base.html.j2:122
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>"
