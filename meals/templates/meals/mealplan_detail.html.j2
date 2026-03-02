@@ -190,7 +190,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <input type="number" class="table-input amount-input" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)">
+                                                    <input type="number" class="table-input amount-input{% if item.amount_in_g == 0 %} amount-zero{% endif %}" value="{{ item.amount_in_g }}" oninput="updateNutrients(this)" onblur="saveRow(this)" onkeydown="handleAmountKey(event, this)">
                                                 </td>
                                                 <td><div class="cell-content energy_in_kcal-cell">{{ item.amount_in_g|divide_by_100_mult:item.food.energy_in_kcal_per_100g|floatformat:1 }}</div></td>
                                                 {% for nut_id, nut_data in nutrients.items %}{% if nut_id != 'energy_in_kcal' %}
@@ -616,7 +616,13 @@
             }
         }
 
+        function refreshAmountStyle(input) {
+            const val = parseFloat(input.value);
+            input.classList.toggle('amount-zero', !isNaN(val) && val === 0);
+        }
+
         function updateNutrients(input) {
+            refreshAmountStyle(input);
             const row = input.closest('tr');
             const amount = parseFloat(input.value) || 0;
             const factor = amount / 100;
@@ -753,7 +759,7 @@
             const dayId = tbody.dataset.dayId;
             const mealType = tbody.dataset.mealType;
 
-            if (!foodId || isNaN(amount)) {
+            if (!foodId || isNaN(amount) || amount < 0) {
                 console.log('Skipping row save: foodId or amount missing/invalid', {foodId, amount});
                 return;
             }
@@ -1157,6 +1163,9 @@
                 checkAndAddBlankRow(dayId, m);
             });
         });
+
+        // Apply orange styling to any amount inputs that start at 0
+        document.querySelectorAll('.amount-input').forEach(refreshAmountStyle);
 
         calculateTotals();
         setSyncStatus(true);

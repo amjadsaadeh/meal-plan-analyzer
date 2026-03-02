@@ -43,6 +43,11 @@ class MealPlanFoodSerializer(serializers.ModelSerializer):
         model = MealPlanFood
         fields = ['id', 'meal_plan_day', 'food', 'food_name', 'food_bls_code', 'amount_in_g', 'meal_type', 'export_name']
 
+    def validate_amount_in_g(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Amount must be 0 or greater.")
+        return value
+
 class MealPlanDaySerializer(serializers.ModelSerializer):
     foods = MealPlanFoodSerializer(source='mealplanfood_set', many=True, read_only=True)
     

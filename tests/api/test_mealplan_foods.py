@@ -133,6 +133,47 @@ class TestMealPlanFoodCRUD:
             response = authenticated_client.post('/api/mealplan-foods/', payload, format='json')
             assert response.status_code == status.HTTP_201_CREATED, f"Failed for meal_type={meal_type}"
 
+    def test_zero_amount_accepted(self, authenticated_client, day, food):
+        """amount_in_g of 0 is a valid value and must be saved successfully."""
+        payload = {
+            "meal_plan_day": day.id,
+            "food": food.id,
+            "amount_in_g": 0.0,
+            "meal_type": "breakfast",
+        }
+        response = authenticated_client.post('/api/mealplan-foods/', payload, format='json')
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['amount_in_g'] == 0.0
+
+    def test_negative_amount_rejected(self, authenticated_client, day, food):
+        """Negative amount_in_g must be rejected with a 400 error."""
+        payload = {
+            "meal_plan_day": day.id,
+            "food": food.id,
+            "amount_in_g": -1.0,
+            "meal_type": "lunch",
+        }
+        response = authenticated_client.post('/api/mealplan-foods/', payload, format='json')
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_update_to_zero_amount_accepted(self, authenticated_client, day, food):
+        """Updating amount_in_g to 0 via PATCH must succeed."""
+        mpf = MealPlanFood.objects.create(meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="dinner")
+        response = authenticated_client.patch(
+            f'/api/mealplan-foods/{mpf.id}/', {"amount_in_g": 0.0}, format='json'
+        )
+        assert response.status_code == status.HTTP_200_OK
+        mpf.refresh_from_db()
+        assert mpf.amount_in_g == 0.0
+
+    def test_update_to_negative_amount_rejected(self, authenticated_client, day, food):
+        """Updating amount_in_g to a negative value via PATCH must be rejected."""
+        mpf = MealPlanFood.objects.create(meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="dinner")
+        response = authenticated_client.patch(
+            f'/api/mealplan-foods/{mpf.id}/', {"amount_in_g": -5.0}, format='json'
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
 
 # ---------------------------------------------------------------------------
 # Constraint tests
