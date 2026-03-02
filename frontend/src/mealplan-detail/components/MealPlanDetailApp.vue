@@ -1,4 +1,12 @@
 <template>
+  <!-- Delete day modal -->
+  <ConfirmDeleteDayModal
+    :open="deleteModal.open"
+    :day-name="deleteModal.dayName"
+    @confirm="confirmDeleteDay"
+    @cancel="deleteModal.open = false"
+  />
+
   <!-- Global food search dropdown -->
   <FoodSearchDropdown
     :visible="search.visible"

@@ -92,13 +92,17 @@ def test_delete_day(logged_in_page, live_server, test_user):
     _wait_for_app(logged_in_page)
     expect(logged_in_page.locator(".day-section")).to_have_count(1)
 
+    # Capture console logs
+    logged_in_page.on("console", lambda msg: print(f"BROWSER CONSOLE: {msg.text}"))
+
     # The delete button has low opacity by default — hover reveals it
-    delete_btn = logged_in_page.locator(".day-section .delete-btn").first
+    delete_btn = logged_in_page.locator(".day-title-container .delete-btn").first
     delete_btn.hover()
-    delete_btn.click()
+    delete_btn.click(force=True)
 
     # Confirm modal is shown (overlay has class="modal-overlay active" when rendered)
     modal = logged_in_page.locator("#deleteDayModal")
+    modal.wait_for(state="visible", timeout=10000)
     expect(modal).to_have_class(re.compile(r"active"))
 
     # Confirm deletion
@@ -121,9 +125,13 @@ def test_delete_ingredient(logged_in_page, live_server, test_user, meal_plan_wit
     # Only rows with data-id are real (persisted) ingredients; draft rows omit the attribute
     expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(1, timeout=10000)
 
-    # Accept the confirmation dialog
-    logged_in_page.on("dialog", lambda dialog: dialog.accept())
+    # Trigger the deletion modal
     logged_in_page.locator(".ingredient-row[data-id] .delete-btn").first.click()
+
+    # Wait for the modal and confirm deletion
+    modal = logged_in_page.locator("#deleteIngredientModal")
+    expect(modal).to_have_class(re.compile(r"active"))
+    logged_in_page.locator("#confirmDeleteIngredientBtn").click()
 
     # Real row should be removed from the DOM
     expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(0, timeout=10000)
@@ -482,3 +490,64 @@ def test_mealplan_detail_pdf_export_preview(logged_in_page, live_server, test_us
 
     expect(iframe.locator("h1")).to_contain_text("Analysis: PDF Test Plan")
     expect(iframe.locator("body")).to_contain_text("Average daily intake")
+
+
+# ---------------------------------------------------------------------------
+# Threshold Presets
+# ---------------------------------------------------------------------------
+
+def test_save_threshold_preset(logged_in_page, live_server, test_user, meal_plan_with_day):
+    plan, day = meal_plan_with_day
+    logged_in_page.set_viewport_size({"width": 1440, "height": 900})
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    # Fill in some thresholds
+    min_input = logged_in_page.locator('.threshold-min[data-nut="protein_in_g"]').first
+    min_input.fill("60")
+    min_input.dispatch_event("input")
+    expect(logged_in_page.locator("#syncText")).to_have_text("Saved", timeout=10000)
+    
+    # Click "Save reference value template" in the day summary panel
+    # (Matches i18n.saveAsTemplate value: "Save as Reference Value Template")
+    logged_in_page.locator("text=Save as Reference Value Template").first.click()
+
+    # Wait for modal, fill name and save
+    name_input = logged_in_page.locator(".modal-input")
+    name_input.fill("My Custom Preset")
+    
+    # Wait for validation
+    logged_in_page.wait_for_timeout(1000) 
+    
+    save_btn = logged_in_page.locator(".btn-modal-save")
+    expect(save_btn).to_be_enabled()
+    save_btn.click()
+
+    # Verify success alert (Playwright handles window.alert automatically or we can check if modal closes)
+    expect(logged_in_page.locator(".modal-overlay.active")).to_have_count(0, timeout=5000)
+
+
+def test_apply_threshold_preset(logged_in_page, live_server, test_user, meal_plan_with_day):
+    plan, day = meal_plan_with_day
+    from tests.frontend.factories import ThresholdPresetFactory
+    ThresholdPresetFactory(name="Balanced Diet", protein_in_g_min=70.0)
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    # Search and apply preset in toolbar
+    preset_input = logged_in_page.locator("#presetSearch")
+    preset_input.fill("Balanced")
+    
+    dropdown_item = logged_in_page.locator(".preset-item:has-text('Balanced Diet')")
+    expect(dropdown_item).to_be_visible(timeout=5000)
+    
+    # Accept the confirmation dialog
+    logged_in_page.on("dialog", lambda dialog: dialog.accept())
+    dropdown_item.click()
+
+    # Check if threshold was updated
+    expect(logged_in_page.locator("#syncText")).to_have_text("Saved", timeout=10000)
+    
+    logged_in_page.set_viewport_size({"width": 1440, "height": 900})
+    expect(logged_in_page.locator('.threshold-min[data-nut="protein_in_g"]').first).to_have_value("70")

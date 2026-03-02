@@ -1,5 +1,5 @@
 import factory
-from meals.models import Food, MealPlan, MealPlanDay, MealPlanFood
+from meals.models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
 
 class FoodFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -47,3 +47,9 @@ class MealPlanFoodFactory(factory.django.DjangoModelFactory):
     food = factory.SubFactory(FoodFactory)
     amount_in_g = 100.0
     meal_type = "breakfast"
+
+class ThresholdPresetFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ThresholdPreset
+
+    name = factory.Sequence(lambda n: f"Preset {n}")
