@@ -9,4 +9,4 @@ resources:
 
 images:
   - name: image_name
-    newName: "index.docker.io/amjadsaadeh/rsos-meal-planner"
+    newName: "index.docker.io/amjadsaadeh/meal-plan-analyzer"

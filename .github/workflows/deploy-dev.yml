@@ -27,7 +27,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: amjadsaadeh/rsos-meal-planner:dev
+          tags: amjadsaadeh/meal-plan-analyzer:dev
 
       - name: Set up kubectl
         run: |

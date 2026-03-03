@@ -672,6 +672,67 @@ wheels = [
 ]
 
 [[package]]
+name = "meal-plan-analyzer"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "django" },
+    { name = "django-environ" },
+    { name = "django-sass-processor" },
+    { name = "django-vite" },
+    { name = "djangorestframework" },
+    { name = "gunicorn" },
+    { name = "jsonschema" },
+    { name = "libsass" },
+    { name = "openpyxl" },
+    { name = "playwright" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "tqdm" },
+    { name = "weasyprint" },
+    { name = "whitenoise" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ansible" },
+    { name = "factory-boy" },
+    { name = "kubernetes" },
+    { name = "nc-dnsapi" },
+    { name = "pytest" },
+    { name = "pytest-django" },
+    { name = "pytest-playwright" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "django", specifier = ">=6.0" },
+    { name = "django-environ", specifier = ">=0.11.2" },
+    { name = "django-sass-processor", specifier = ">=1.4.2" },
+    { name = "django-vite", specifier = ">=3.1.0" },
+    { name = "djangorestframework", specifier = ">=3.16.1" },
+    { name = "gunicorn", specifier = ">=23.0.0" },
+    { name = "jsonschema", specifier = ">=4.26.0" },
+    { name = "libsass", specifier = ">=0.23.0" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "playwright", specifier = "==1.56.0" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2.3" },
+    { name = "tqdm", specifier = ">=4.67.1" },
+    { name = "weasyprint", specifier = ">=68.0" },
+    { name = "whitenoise", specifier = ">=6.8.2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "ansible", specifier = ">=13.2.0" },
+    { name = "factory-boy", specifier = ">=3.3.3" },
+    { name = "kubernetes", specifier = ">=34.1.0" },
+    { name = "nc-dnsapi", specifier = ">=0.1.5" },
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-django", specifier = ">=4.11.1" },
+    { name = "pytest-playwright", specifier = ">=0.7.2" },
+]
+
+[[package]]
 name = "nc-dnsapi"
 version = "0.1.5"
 source = { registry = "https://pypi.org/simple" }
@@ -1205,67 +1266,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/da/8a/22b7beea3ee0d44b1916c0c1cb0ee3af23b700b6da9f04991899d0c555d4/rsa-4.9.1.tar.gz", hash = "sha256:e7bdbfdb5497da4c07dfd35530e1a902659db6ff241e39d9953cad06ebd0ae75", size = 29034, upload-time = "2025-04-16T09:51:18.218Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/64/8d/0133e4eb4beed9e425d9a98ed6e081a55d195481b7632472be1af08d2f6b/rsa-4.9.1-py3-none-any.whl", hash = "sha256:68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762", size = 34696, upload-time = "2025-04-16T09:51:17.142Z" },
-]
-
-[[package]]
-name = "rsos-meal-planning-app"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "django" },
-    { name = "django-environ" },
-    { name = "django-sass-processor" },
-    { name = "django-vite" },
-    { name = "djangorestframework" },
-    { name = "gunicorn" },
-    { name = "jsonschema" },
-    { name = "libsass" },
-    { name = "openpyxl" },
-    { name = "playwright" },
-    { name = "psycopg", extra = ["binary"] },
-    { name = "tqdm" },
-    { name = "weasyprint" },
-    { name = "whitenoise" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "ansible" },
-    { name = "factory-boy" },
-    { name = "kubernetes" },
-    { name = "nc-dnsapi" },
-    { name = "pytest" },
-    { name = "pytest-django" },
-    { name = "pytest-playwright" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "django", specifier = ">=6.0" },
-    { name = "django-environ", specifier = ">=0.11.2" },
-    { name = "django-sass-processor", specifier = ">=1.4.2" },
-    { name = "django-vite", specifier = ">=3.1.0" },
-    { name = "djangorestframework", specifier = ">=3.16.1" },
-    { name = "gunicorn", specifier = ">=23.0.0" },
-    { name = "jsonschema", specifier = ">=4.26.0" },
-    { name = "libsass", specifier = ">=0.23.0" },
-    { name = "openpyxl", specifier = ">=3.1.5" },
-    { name = "playwright", specifier = "==1.56.0" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2.3" },
-    { name = "tqdm", specifier = ">=4.67.1" },
-    { name = "weasyprint", specifier = ">=68.0" },
-    { name = "whitenoise", specifier = ">=6.8.2" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "ansible", specifier = ">=13.2.0" },
-    { name = "factory-boy", specifier = ">=3.3.3" },
-    { name = "kubernetes", specifier = ">=34.1.0" },
-    { name = "nc-dnsapi", specifier = ">=0.1.5" },
-    { name = "pytest", specifier = ">=9.0.2" },
-    { name = "pytest-django", specifier = ">=4.11.1" },
-    { name = "pytest-playwright", specifier = ">=0.7.2" },
 ]
 
 [[package]]

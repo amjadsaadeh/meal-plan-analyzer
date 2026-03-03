@@ -1,5 +1,5 @@
 [project]
-name = "rsos-meal-planning-app"
+name = "meal-plan-analyzer"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"

@@ -65,4 +65,4 @@ def generate_test_data(output_path, num_rows=100):
     print(f"Generated {num_rows} rows at {output_path}")
 
 if __name__ == "__main__":
-    generate_test_data("/home/orchid/projects/rsos-meal-planning-app/tests/data/test_foods.xlsx")
+    generate_test_data("/home/orchid/projects/meal-plan-analyzer-opencode/tests/data/test_foods.xlsx")
