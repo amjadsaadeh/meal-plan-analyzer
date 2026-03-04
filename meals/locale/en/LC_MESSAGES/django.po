@@ -163,7 +163,7 @@ msgid "Login"
 msgstr ""
 
 #: meals/templates/meals/login.html.j2:127
-msgid "Welcome back to Modern Nutrition"
+msgid "Welcome back to Meal Plan Analyzer"
 msgstr ""
 
 #: meals/templates/meals/login.html.j2:140

@@ -165,8 +165,8 @@ msgid "Login"
 msgstr "Anmelden"
 
 #: meals/templates/meals/login.html.j2:127
-msgid "Welcome back to Modern Nutrition"
-msgstr "Willkommen bei Modern Nutrition"
+msgid "Welcome back to Meal Plan Analyzer"
+msgstr "Willkommen beim Meal Plan Analyzer"
 
 #: meals/templates/meals/login.html.j2:140
 msgid "Username"
