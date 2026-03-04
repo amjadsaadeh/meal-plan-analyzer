@@ -124,7 +124,7 @@ class Command(BaseCommand):
                 IDX_IRON = col_to_idx('EO')
                 IDX_SUGAR = col_to_idx('HL')
                 IDX_OMEGA3 = col_to_idx('LA')
-                IDX_VITC = col_to_idx('DO')
+                IDX_VITC = col_to_idx('DN')
                 IDX_MAGNESIUM = col_to_idx('EF')
                 IDX_ZINC = col_to_idx('ER')
                 IDX_VITB12 = col_to_idx('DK')
