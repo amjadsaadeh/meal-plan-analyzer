@@ -140,6 +140,7 @@ class Command(BaseCommand):
                 IDX_IODINE = col_to_idx('EU')
                 IDX_COPPER = col_to_idx('EX')
                 IDX_MANGANESE = col_to_idx('FA')
+                IDX_MOLYBDENUM = col_to_idx('FJ')
 
                 count = 0
                 rows = list(sheet.iter_rows(min_row=2, values_only=True))
@@ -182,6 +183,7 @@ class Command(BaseCommand):
                     iodine = parse_float(row[IDX_IODINE])
                     copper = parse_float(row[IDX_COPPER])
                     manganese = parse_float(row[IDX_MANGANESE])
+                    molybdenum = parse_float(row[IDX_MOLYBDENUM])
 
                     Food.objects.update_or_create(
                         bls_code=bls_code,
@@ -212,6 +214,7 @@ class Command(BaseCommand):
                             'iodine_in_mug_per_100g': iodine,
                             'copper_in_mug_per_100g': copper,
                             'manganese_in_mug_per_100g': manganese,
+                            'molybdenum_in_mug_per_100g': molybdenum,
                         }
                     )
                     count += 1

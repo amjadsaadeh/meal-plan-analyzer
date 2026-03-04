@@ -124,6 +124,10 @@ msgstr "Kupfer"
 msgid "Manganese"
 msgstr "Mangan"
 
+#: meals/nutrients.py:149
+msgid "Molybdenum"
+msgstr "Molybdän"
+
 #: meals/templates/meals/base.html.j2:122
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>"

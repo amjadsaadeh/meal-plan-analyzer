@@ -40,6 +40,7 @@ EXPECTED_NUTRIENT_KEYS = [
     'iodine_in_mug',
     'copper_in_mug',
     'manganese_in_mug',
+    'molybdenum_in_mug',
 ]
 
 
@@ -51,8 +52,8 @@ class TestNutrientsDict:
     def test_no_unexpected_keys(self):
         assert set(NUTRIENTS.keys()) == set(EXPECTED_NUTRIENT_KEYS)
 
-    def test_count_is_24(self):
-        assert len(NUTRIENTS) == 24
+    def test_count_is_25(self):
+        assert len(NUTRIENTS) == 25
 
     def test_every_entry_has_required_fields(self):
         required = {'label', 'unit', 'food_key', 'precision'}
@@ -88,7 +89,7 @@ class TestNutrientIDs:
         assert NUTRIENT_IDS == list(NUTRIENTS.keys())
 
     def test_nutrient_ids_length(self):
-        assert len(NUTRIENT_IDS) == 24
+        assert len(NUTRIENT_IDS) == 25
 
     def test_nutrient_ids_contains_all_expected(self):
         for key in EXPECTED_NUTRIENT_KEYS:

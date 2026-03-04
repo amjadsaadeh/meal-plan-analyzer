@@ -55,6 +55,7 @@ class Food(models.Model):
     iodine_in_mug_per_100g = models.FloatField(default=0.0)
     copper_in_mug_per_100g = models.FloatField(default=0.0)
     manganese_in_mug_per_100g = models.FloatField(default=0.0)
+    molybdenum_in_mug_per_100g = models.FloatField(default=0.0)
 
     class Meta:
         ordering = ['name']
@@ -140,6 +141,9 @@ class ThresholdPreset(models.Model):
     manganese_in_mug_min = models.FloatField(null=True, blank=True)
     manganese_in_mug_max = models.FloatField(null=True, blank=True)
 
+    molybdenum_in_mug_min = models.FloatField(null=True, blank=True)
+    molybdenum_in_mug_max = models.FloatField(null=True, blank=True)
+
     def __str__(self):
         return self.name
 
@@ -191,6 +195,7 @@ class MealPlan(models.Model):
             'iodine': 'iodine_in_mug',
             'copper': 'copper_in_mug',
             'manganese': 'manganese_in_mug',
+            'molybdenum': 'molybdenum_in_mug',
             'kcal': 'energy_in_kcal'
         }
 

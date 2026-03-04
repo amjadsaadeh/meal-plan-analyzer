@@ -145,6 +145,12 @@ NUTRIENTS = {
         'food_key': 'manganese_in_mug_per_100g',
         'precision': 1
     },
+    'molybdenum_in_mug': {
+        'label': _('Molybdenum'),
+        'unit': 'µg',
+        'food_key': 'molybdenum_in_mug_per_100g',
+        'precision': 1
+    },
 }
 
 NUTRIENT_IDS = list(NUTRIENTS.keys())
