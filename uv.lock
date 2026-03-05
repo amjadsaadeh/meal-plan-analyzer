@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.13'",
@@ -673,8 +673,7 @@ wheels = [
 
 [[package]]
 name = "meal-plan-analyzer"
-version = "1.0.3"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "django" },
     { name = "django-environ" },

@@ -31,3 +31,5 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_REPO || 'amjadsaadeh/meal-plan-analyzer' }}:${{ github.ref_name }}
             ${{ secrets.DOCKERHUB_REPO || 'amjadsaadeh/meal-plan-analyzer' }}:latest
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
