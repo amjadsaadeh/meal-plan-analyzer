@@ -145,10 +145,9 @@ class TestPDFLogoSelection:
 @pytest.mark.django_db
 class TestPDFStylingIntegrity:
     def test_django_url_fetcher_resolves_static(self):
-        """Verify that static URLs are correctly mapped to local file paths."""
+        """Verify that relative static URLs are correctly mapped to local file paths via finder."""
         from meals.views import django_url_fetcher
         from django.conf import settings
-        from django.contrib.staticfiles import finders
 
         # Mock finders.find to return a specific path
         with patch('django.contrib.staticfiles.finders.find', return_value='/tmp/test.css'):
@@ -156,6 +155,36 @@ class TestPDFStylingIntegrity:
             with patch('weasyprint.default_url_fetcher') as mock_fetcher:
                 django_url_fetcher(static_url)
                 mock_fetcher.assert_called_with('file:///tmp/test.css')
+
+    def test_django_url_fetcher_resolves_absolute_static_url(self):
+        """Verify that absolute static URLs are correctly mapped to local file paths."""
+        from meals.views import django_url_fetcher
+        from django.conf import settings
+
+        # Simulate absolute URL from production
+        absolute_url = 'https://example.com' + settings.STATIC_URL + 'test.css'
+        
+        with patch('django.contrib.staticfiles.finders.find', return_value='/tmp/test.css'):
+            with patch('weasyprint.default_url_fetcher') as mock_fetcher:
+                django_url_fetcher(absolute_url)
+                mock_fetcher.assert_called_with('file:///tmp/test.css')
+
+    def test_django_url_fetcher_resolves_hashed_static_url(self):
+        """Verify that hashed assets are correctly resolved from STATIC_ROOT."""
+        from meals.views import django_url_fetcher
+        from django.conf import settings
+        import os
+
+        # Mock STATIC_ROOT
+        with patch('django.conf.settings.STATIC_ROOT', '/tmp/static'):
+            hashed_filename = 'pdf.9bca20cc370d.css'
+            url = settings.STATIC_URL + 'meals/scss/' + hashed_filename
+            expected_path = os.path.join('/tmp/static', 'meals/scss/', hashed_filename)
+            
+            with patch('os.path.exists', return_value=True):
+                with patch('weasyprint.default_url_fetcher') as mock_fetcher:
+                    django_url_fetcher(url)
+                    mock_fetcher.assert_called_with(f'file://{expected_path}')
 
     def test_django_url_fetcher_resolves_media(self):
         """Verify that media URLs are correctly mapped to local file paths."""
@@ -175,7 +204,7 @@ class TestPDFStylingIntegrity:
         """Verify that non-static/media URLs use the default fetcher."""
         from meals.views import django_url_fetcher
         
-        external_url = 'https://example.com/other.css'
+        external_url = 'https://fonts.googleapis.com/css?family=Outfit'
         with patch('weasyprint.default_url_fetcher') as mock_fetcher:
             django_url_fetcher(external_url)
             mock_fetcher.assert_called_with(external_url)
@@ -183,6 +212,7 @@ class TestPDFStylingIntegrity:
     def test_meal_plan_pdf_uses_custom_fetcher(self, authenticated_client):
         """Verify that meal_plan_pdf view passes the custom fetcher to WeasyPrint."""
         from meals.views import django_url_fetcher
+        from meals.models import MealPlan
         plan = MealPlan.objects.create(name="Fetcher Test")
         url = reverse('meal-plan-pdf', kwargs={'pk': plan.pk})
         

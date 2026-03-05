@@ -593,26 +593,41 @@ def meal_plan_preview_content(request, pk):
         context['minilogo_path'] = static('meals/img/logo.png')
     return render(request, 'meals/mealplan_pdf.html.j2', context)
 
+from urllib.parse import urlparse
+
 def django_url_fetcher(url, **kwargs):
     """
     Custom URL fetcher for WeasyPrint that resolves static and media URLs 
     to local file paths for reliability in production environments.
+    Handles absolute URLs and hashed assets.
     """
+    parsed_url = urlparse(url)
+    url_path = parsed_url.path
+
     # 1. Resolve static file URLs
-    if settings.STATIC_URL and url.startswith(settings.STATIC_URL):
-        path = url.replace(settings.STATIC_URL, '', 1)
-        normalized_path = finders.find(path)
+    if settings.STATIC_URL and url_path.startswith(settings.STATIC_URL):
+        # Extract the relative path within static directory
+        relative_path = url_path.replace(settings.STATIC_URL, '', 1)
+        
+        # In production with hashed assets, first check STATIC_ROOT
+        if settings.STATIC_ROOT:
+            full_path = os.path.join(settings.STATIC_ROOT, relative_path)
+            if os.path.exists(full_path):
+                return weasyprint.default_url_fetcher(f'file://{full_path}', **kwargs)
+        
+        # Fallback to staticfiles finders (useful for development or if not in STATIC_ROOT)
+        normalized_path = finders.find(relative_path)
         if normalized_path:
             return weasyprint.default_url_fetcher(f'file://{normalized_path}', **kwargs)
 
     # 2. Resolve media file URLs
-    if settings.MEDIA_URL and url.startswith(settings.MEDIA_URL):
-        path = url.replace(settings.MEDIA_URL, '', 1)
-        normalized_path = os.path.join(settings.MEDIA_ROOT, path)
-        if os.path.exists(normalized_path):
-            return weasyprint.default_url_fetcher(f'file://{normalized_path}', **kwargs)
+    if settings.MEDIA_URL and url_path.startswith(settings.MEDIA_URL):
+        relative_path = url_path.replace(settings.MEDIA_URL, '', 1)
+        full_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+        if os.path.exists(full_path):
+            return weasyprint.default_url_fetcher(f'file://{full_path}', **kwargs)
 
-    # 3. Fallback to default
+    # 3. Fallback to default fetcher for other URLs (e.g. external fonts)
     return weasyprint.default_url_fetcher(url, **kwargs)
 
 @login_required
