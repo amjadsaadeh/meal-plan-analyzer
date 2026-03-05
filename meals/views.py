@@ -1,9 +1,13 @@
 import re
 import os
+import json
+import secrets
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, filters
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from .models import (
     Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset, 
@@ -278,10 +282,16 @@ def get_food_ids_by_alias(clean_search):
     return matched_ids
 
 
+class _FoodBrowsePagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 500
+
+
 class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
-    pagination_class = None
+    pagination_class = _FoodBrowsePagination
 
     def get_queryset(self):
         queryset = Food.objects.all()
@@ -325,9 +335,30 @@ class FoodViewSet(viewsets.ModelViewSet):
         Foods that only appear due to an alias match carry a non-null
         ``matched_alias`` attribute which the serializer exposes so the
         frontend can render an "alias" badge.
+
+        When no search query is provided the response is paginated (100/page)
+        using standard DRF page-number pagination.  When a search query is
+        given all matching results are returned without pagination (existing
+        behaviour, used by the meal-plan food-search dropdown).
         """
         search_query = request.query_params.get('search', '').strip()
 
+        if not search_query:
+            # ── Paginated browse (no search) ──────────────────────────────
+            queryset = Food.objects.all().order_by('name')
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                for food in page:
+                    food.matched_alias = None
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            # Fallback (pagination disabled) — return everything
+            for food in queryset:
+                food.matched_alias = None
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+
+        # ── Search path (original behaviour) ──────────────────────────────
         # Get name-based results via the regular queryset
         name_queryset = self.get_queryset()
         name_foods = list(name_queryset)
@@ -371,6 +402,54 @@ class FoodViewSet(viewsets.ModelViewSet):
         all_foods = name_foods + alias_only_foods
         serializer = self.get_serializer(all_foods, many=True)
         return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        food = self.get_object()
+        food.matched_alias = None
+        serializer = self.get_serializer(food)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        name = request.data.get('name', '').strip()
+        if not name:
+            return Response({'name': 'This field is required.'}, status=400)
+        for _ in range(10):
+            code = f'custom_{secrets.token_hex(4)}'
+            if not Food.objects.filter(bls_code=code).exists():
+                break
+        food = Food.objects.create(
+            name=name,
+            bls_code=code,
+            data_source='custom',
+            energy_in_kj_per_100g=0.0,
+            energy_in_kcal_per_100g=0.0,
+        )
+        food.matched_alias = None
+        serializer = self.get_serializer(food)
+        return Response(serializer.data, status=201)
+
+    def update(self, request, *args, **kwargs):
+        food = self.get_object()
+        if food.data_source != 'custom':
+            return Response(
+                {'detail': 'Only custom foods can be edited.'},
+                status=403,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        food = self.get_object()
+        if food.data_source != 'custom':
+            return Response(
+                {'detail': 'Only custom foods can be deleted.'},
+                status=403,
+            )
+        return super().destroy(request, *args, **kwargs)
+
 
 from django.db.models import Prefetch
 
@@ -666,3 +745,44 @@ def meal_plan_pdf(request, pk):
     
     response['Content-Disposition'] = f'attachment; filename="{filename_base}.pdf"'
     return response
+
+
+@login_required
+def food_database(request):
+    return render(request, 'meals/food_database.html.j2', {})
+
+
+@login_required
+def food_editor(request, pk):
+    nutrients_list = [
+        {
+            'key': key,
+            'label': str(meta['label']),
+            'unit': meta['unit'],
+            'food_key': meta['food_key'],
+            'precision': meta['precision'],
+        }
+        for key, meta in NUTRIENTS.items()
+    ]
+    i18n = {
+        'saved': _('Saved'),
+        'saving': _('Saving…'),
+        'error': _('Error saving'),
+        'backToList': _('Food Database'),
+        'readonlyHint': _('BLS data is read-only. Click the copy button to copy a value.'),
+        'copiedToClipboard': _('Copied!'),
+        'customBadge': _('Custom'),
+        'blsBadge': _('BLS'),
+        'networkError': _('Network error'),
+        'notFound': _('Food not found.'),
+        'energyKj': _('Energy (kJ)'),
+        'energyKcal': _('Energy (kcal)'),
+        'name': _('Name'),
+        'nameLabel': _('Name'),
+    }
+    return render(request, 'meals/food_editor.html.j2', {
+        'food_id': pk,
+        'nutrients_json': json.dumps(nutrients_list),
+        'i18n_json': json.dumps({k: str(v) for k, v in i18n.items()}),
+        'food_list_url': reverse('food-database'),
+    })

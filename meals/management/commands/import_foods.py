@@ -215,6 +215,7 @@ class Command(BaseCommand):
                             'copper_in_mug_per_100g': copper,
                             'manganese_in_mug_per_100g': manganese,
                             'molybdenum_in_mug_per_100g': molybdenum,
+                            'data_source': 'bls',
                         }
                     )
                     count += 1

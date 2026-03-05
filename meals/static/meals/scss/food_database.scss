@@ -1,0 +1,221 @@
+// ============================================================
+// food_database.scss – Food Database list page
+// ============================================================
+
+@import 'variables';
+
+body {
+    align-items: center;
+    padding-top: 0;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-top: 2rem;
+}
+
+h1 {
+    font-size: 3rem;
+    font-weight: 400;
+    background: linear-gradient(135deg, #4180A6 0%, $text-dim 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.top-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: center;
+
+    @media (max-width: $bp-sm) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.btn-create {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px var(--primary-glow);
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 1rem;
+
+    &:hover:not(:disabled) {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px var(--primary-glow);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.search-wrapper {
+    position: relative;
+    flex-grow: 1;
+}
+
+.search-bar {
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    background: #ffffff;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-main);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow);
+
+    &:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 15px var(--primary-glow);
+    }
+}
+
+.table-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.food-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+
+    th {
+        padding: 1.2rem 1.5rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--glass-border);
+        font-size: 0.95rem;
+        transition: background 0.2s;
+    }
+
+    tr:last-child td { border-bottom: none; }
+}
+
+.food-row {
+    cursor: pointer;
+
+    &:hover td { background: var(--row-hover); }
+}
+
+.col-name { font-weight: 400; color: var(--text-main); }
+.col-code { color: var(--text-dim); font-size: 0.85rem; font-family: monospace; }
+.col-kcal { color: var(--text-dim); text-align: right; }
+.col-source { text-align: center; width: 90px; }
+
+.source-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.source-bls {
+    background: rgba(102, 110, 115, 0.12);
+    color: $text-dim;
+}
+
+.source-custom {
+    background: var(--primary-glow);
+    color: var(--primary-hover);
+}
+
+.alias-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: rgba($primary, 0.1);
+    color: $primary-hover;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+.empty-row {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-dim);
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--glass-border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    align-items: center;
+}
+
+.page-link {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-dim);
+    transition: all 0.2s;
+    border: 1px solid transparent;
+
+    &:hover {
+        background: var(--glass-border);
+        color: var(--text-main);
+    }
+
+    &.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    &.disabled {
+        opacity: 0.3;
+        pointer-events: none;
+    }
+}
+
+.error-msg {
+    color: var(--danger);
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}

@@ -2,10 +2,11 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
 from .views import (
-    FoodViewSet, MealPlanViewSet, MealPlanDayViewSet, 
-    MealPlanFoodViewSet, ThresholdPresetViewSet, index, 
+    FoodViewSet, MealPlanViewSet, MealPlanDayViewSet,
+    MealPlanFoodViewSet, ThresholdPresetViewSet, index,
     meal_plan_list, meal_plan_detail, meal_plan_pdf,
-    meal_plan_preview, meal_plan_preview_content
+    meal_plan_preview, meal_plan_preview_content,
+    food_database, food_editor,
 )
 
 router = DefaultRouter()
@@ -25,5 +26,7 @@ urlpatterns = [
     path('meal-plan/<int:pk>/preview/', meal_plan_preview, name='meal-plan-preview'),
     path('meal-plan/<int:pk>/preview/content/', meal_plan_preview_content, name='meal-plan-preview-content'),
     path('search/', index, name='food-search'),
+    path('foods/', food_database, name='food-database'),
+    path('foods/<int:pk>/', food_editor, name='food-editor'),
     path('api/', include(router.urls)),
 ]

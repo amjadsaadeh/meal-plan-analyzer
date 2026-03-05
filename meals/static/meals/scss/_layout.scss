@@ -70,6 +70,32 @@
     }
 }
 
+.nav-links {
+    display: flex;
+    gap: 4px;
+}
+
+.nav-link {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-weight: 400;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+        background: var(--row-hover);
+        color: var(--text-main);
+    }
+
+    &.active {
+        background: var(--primary-glow);
+        color: var(--primary-hover);
+        font-weight: 600;
+    }
+}
+
 .container {
     width: 100%;
     max-width: 1200px;
