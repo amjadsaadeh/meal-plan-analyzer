@@ -1,6 +1,18 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = "v(?P<version>.*)"
+fallback-version = "0.0.0.dev"
+
+[tool.hatch.build.targets.wheel]
+packages = ["config", "meals"]
+
 [project]
 name = "meal-plan-analyzer"
-version = "1.0.3"
+dynamic = ["version"]
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"

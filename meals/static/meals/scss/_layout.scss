@@ -10,12 +10,24 @@
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--glass-border);
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     z-index: 1000;
     position: sticky;
     top: 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.app-brand {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.app-version {
+    font-size: 0.8rem;
+    font-weight: 400;
+    opacity: 0.7;
 }
 
 .user-nav-container {

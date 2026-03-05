@@ -47,6 +47,9 @@ COPY --from=builder /app/.venv /app/.venv
 
 ENV PATH="/app/.venv/bin:$PATH"
 
+ARG APP_VERSION=unknown
+ENV APP_VERSION=${APP_VERSION}
+
 # Copy the application code
 COPY . .
 

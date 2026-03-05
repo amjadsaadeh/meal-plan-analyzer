@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from importlib.metadata import version as pkg_version, PackageNotFoundError
 import environ
 
 # Initialize environment variables
@@ -87,6 +88,7 @@ TEMPLATES = [
                 'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'meals.context_processors.app_version',
             ],
         },
     },
@@ -199,6 +201,11 @@ DJANGO_VITE = {
         "manifest_path": BASE_DIR / "frontend/dist/.vite/manifest.json",
     }
 }
+
+try:
+    APP_VERSION = pkg_version("meal-plan-analyzer")
+except PackageNotFoundError:
+    APP_VERSION = os.environ.get("APP_VERSION", "dev")
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'meal-plan-list'
