@@ -1,4 +1,5 @@
 import re
+import os
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from django.utils.translation import gettext as _
@@ -592,6 +593,28 @@ def meal_plan_preview_content(request, pk):
         context['minilogo_path'] = static('meals/img/logo.png')
     return render(request, 'meals/mealplan_pdf.html.j2', context)
 
+def django_url_fetcher(url, **kwargs):
+    """
+    Custom URL fetcher for WeasyPrint that resolves static and media URLs 
+    to local file paths for reliability in production environments.
+    """
+    # 1. Resolve static file URLs
+    if settings.STATIC_URL and url.startswith(settings.STATIC_URL):
+        path = url.replace(settings.STATIC_URL, '', 1)
+        normalized_path = finders.find(path)
+        if normalized_path:
+            return weasyprint.default_url_fetcher(f'file://{normalized_path}', **kwargs)
+
+    # 2. Resolve media file URLs
+    if settings.MEDIA_URL and url.startswith(settings.MEDIA_URL):
+        path = url.replace(settings.MEDIA_URL, '', 1)
+        normalized_path = os.path.join(settings.MEDIA_ROOT, path)
+        if os.path.exists(normalized_path):
+            return weasyprint.default_url_fetcher(f'file://{normalized_path}', **kwargs)
+
+    # 3. Fallback to default
+    return weasyprint.default_url_fetcher(url, **kwargs)
+
 @login_required
 def meal_plan_pdf(request, pk):
     context = get_meal_plan_context(pk)
@@ -613,7 +636,11 @@ def meal_plan_pdf(request, pk):
 
     html_string = render_to_string('meals/mealplan_pdf.html.j2', context)
 
-    html = weasyprint.HTML(string=html_string, base_url=request.build_absolute_uri())
+    html = weasyprint.HTML(
+        string=html_string, 
+        base_url=request.build_absolute_uri(),
+        url_fetcher=django_url_fetcher
+    )
     pdf = html.write_pdf()
 
     response = HttpResponse(pdf, content_type='application/pdf')

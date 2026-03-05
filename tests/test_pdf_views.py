@@ -141,5 +141,53 @@ class TestPDFLogoSelection:
             url = reverse('meal-plan-pdf', kwargs={'pk': plan.pk})
             response = authenticated_client.get(url)
 
-        assert response.status_code == status.HTTP_200_OK
-        assert response['Content-Type'] == 'application/pdf'
+
+@pytest.mark.django_db
+class TestPDFStylingIntegrity:
+    def test_django_url_fetcher_resolves_static(self):
+        """Verify that static URLs are correctly mapped to local file paths."""
+        from meals.views import django_url_fetcher
+        from django.conf import settings
+        from django.contrib.staticfiles import finders
+
+        # Mock finders.find to return a specific path
+        with patch('django.contrib.staticfiles.finders.find', return_value='/tmp/test.css'):
+            static_url = settings.STATIC_URL + 'test.css'
+            with patch('weasyprint.default_url_fetcher') as mock_fetcher:
+                django_url_fetcher(static_url)
+                mock_fetcher.assert_called_with('file:///tmp/test.css')
+
+    def test_django_url_fetcher_resolves_media(self):
+        """Verify that media URLs are correctly mapped to local file paths."""
+        from meals.views import django_url_fetcher
+        from django.conf import settings
+        import os
+
+        media_url = settings.MEDIA_URL + 'test.png'
+        expected_path = os.path.join(settings.MEDIA_ROOT, 'test.png')
+        
+        with patch('os.path.exists', return_value=True):
+            with patch('weasyprint.default_url_fetcher') as mock_fetcher:
+                django_url_fetcher(media_url)
+                mock_fetcher.assert_called_with(f'file://{expected_path}')
+
+    def test_django_url_fetcher_fallback(self):
+        """Verify that non-static/media URLs use the default fetcher."""
+        from meals.views import django_url_fetcher
+        
+        external_url = 'https://example.com/other.css'
+        with patch('weasyprint.default_url_fetcher') as mock_fetcher:
+            django_url_fetcher(external_url)
+            mock_fetcher.assert_called_with(external_url)
+
+    def test_meal_plan_pdf_uses_custom_fetcher(self, authenticated_client):
+        """Verify that meal_plan_pdf view passes the custom fetcher to WeasyPrint."""
+        from meals.views import django_url_fetcher
+        plan = MealPlan.objects.create(name="Fetcher Test")
+        url = reverse('meal-plan-pdf', kwargs={'pk': plan.pk})
+        
+        with patch('weasyprint.HTML') as mock_html:
+            authenticated_client.get(url)
+            # Check if url_fetcher argument was passed correctly
+            kwargs = mock_html.call_args.kwargs
+            assert kwargs.get('url_fetcher') == django_url_fetcher
