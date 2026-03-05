@@ -20,7 +20,7 @@ NUTRIENTS = {
         'precision': 1
     },
     'omega3_in_g': {
-        'label': _('Omega-3'),
+        'label': _('n-3'),
         'unit': 'g',
         'food_key': 'omega3_in_g_per_100g',
         'precision': 2

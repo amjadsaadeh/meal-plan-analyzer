@@ -43,8 +43,8 @@ msgid "Fat"
 msgstr ""
 
 #: meals/nutrients.py:23
-msgid "Omega-3"
-msgstr ""
+msgid "n-3"
+msgstr "n-3"
 
 #: meals/nutrients.py:29
 msgid "Carbs"

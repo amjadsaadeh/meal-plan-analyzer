@@ -253,7 +253,7 @@ All nutrient logic flows through the `NUTRIENTS` ordered dict. Each entry maps a
 | `energy_in_kcal` | Energy | kcal | 1 |
 | `protein_in_g` | Protein | g | 1 |
 | `fat_in_g` | Fat | g | 1 |
-| `omega3_in_g` | Omega-3 | g | 2 |
+| `omega3_in_g` | n-3 | g | 2 |
 | `carbohydrate_in_g` | Carbs | g | 1 |
 | `sugar_in_g` | Sugar | g | 1 |
 | `fibre_in_g` | Fiber | g | 1 |

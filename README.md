@@ -6,7 +6,7 @@ A web application for meal planning and nutritional analysis based on the
 ## Features
 
 - **Food Database**: Nutritional values per 100g including energy (kcal/kJ), macronutrients
-  (protein, fat, carbs, fiber, sugar, omega-3), vitamins (A, B12, C, D), and minerals
+  (protein, fat, carbs, fiber, sugar, n-3), vitamins (A, B12, C, D), and minerals
   (calcium, iron, magnesium, zinc)
 - **Meal Planning**: Create multi-day meal plans with breakfast, lunch, and dinner
 - **Nutritional Analysis**: Track total nutrient intake per day and per meal plan
