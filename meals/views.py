@@ -617,5 +617,10 @@ def meal_plan_pdf(request, pk):
     pdf = html.write_pdf()
 
     response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="mealplan_{context["plan"].id}.pdf"'
+    
+    # Sanitize filename: replace non-ASCII with '_' and spaces with '-'
+    filename_base = "".join(c if ord(c) < 128 else "_" for c in context["plan"].name)
+    filename_base = filename_base.replace(" ", "-")
+    
+    response['Content-Disposition'] = f'attachment; filename="{filename_base}.pdf"'
     return response

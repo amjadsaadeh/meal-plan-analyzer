@@ -56,6 +56,15 @@ class TestPDFViews:
         assert "Active Day" in content_response.content.decode()
         assert "Removed Day" not in content_response.content.decode()
 
+    def test_meal_plan_pdf_filename_sanitization(self, authenticated_client):
+        """Test that the PDF filename is correctly sanitized."""
+        plan = MealPlan.objects.create(name="Müsli Frühstück")
+        url = reverse('meal-plan-pdf', kwargs={'pk': plan.pk})
+        response = authenticated_client.get(url)
+        
+        assert response.status_code == status.HTTP_200_OK
+        assert response['Content-Disposition'] == 'attachment; filename="M_sli-Fr_hst_ck.pdf"'
+
 
 def _mock_site_with_logo(url='/media/logos/custom.png', path='/srv/media/logos/custom.png'):
     """Return a mock SiteSettings object with a logo set."""
