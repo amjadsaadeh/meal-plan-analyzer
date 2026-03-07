@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meal Plan Analyzer — Plan your meals. Know your nutrients.</title>
+  <meta name="description" content="A web app for creating meal plans and tracking nutritional intake. Built on the German BLS food database with over 10,000 foods." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #2d7a4f;
+      --green-light:#e8f5ee;
+      --green-mid:  #4caf7d;
+      --text:       #1a1a2e;
+      --muted:      #5a6272;
+      --border:     #e2e8f0;
+      --bg:         #ffffff;
+      --bg-soft:    #f8faf9;
+      --radius:     12px;
+      --shadow:     0 4px 24px rgba(0,0,0,.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-brand {
+      font-weight: 700; font-size: 1.1rem; color: var(--green); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--green); }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 100px 5% 80px;
+      background: linear-gradient(160deg, var(--bg) 0%, var(--green-light) 100%);
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--green-light);
+      color: var(--green);
+      border: 1px solid #b2dbc8;
+      border-radius: 20px;
+      padding: .3rem .9rem;
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+      color: var(--text);
+    }
+    .hero h1 span { color: var(--green); }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: .85rem 2rem;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(45,122,79,.3); }
+    .btn-primary { background: var(--green); color: #fff; }
+    .btn-ghost { color: var(--green); border: 2px solid var(--green); margin-left: 1rem; }
+    .btn-ghost:hover { background: var(--green-light); }
+
+    /* ── MOCK SCREENSHOT ── */
+    .hero-visual {
+      margin: 4rem auto 0;
+      max-width: 860px;
+      background: var(--bg);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12), 0 0 0 1px var(--border);
+      overflow: hidden;
+    }
+    .mock-browser-bar {
+      background: #f1f5f9;
+      padding: .6rem 1rem;
+      display: flex; align-items: center; gap: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .mock-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .mock-dot:nth-child(1) { background: #ff5f57; }
+    .mock-dot:nth-child(2) { background: #febc2e; }
+    .mock-dot:nth-child(3) { background: #28c840; }
+    .mock-url {
+      flex: 1; background: #e2e8f0; border-radius: 6px;
+      padding: .25rem .75rem; font-size: .75rem; color: #94a3b8;
+      margin: 0 1rem;
+    }
+    .mock-screen {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+    .mock-card {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .mock-card-title {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .05em; color: var(--muted); margin-bottom: .75rem;
+    }
+    .mock-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .8rem; padding: .3rem 0; border-bottom: 1px solid var(--border);
+    }
+    .mock-row:last-child { border-bottom: none; }
+    .mock-row span:last-child { font-weight: 600; color: var(--green); }
+    .mock-progress-wrap { margin-top: .4rem; }
+    .mock-progress-label {
+      display: flex; justify-content: space-between;
+      font-size: .75rem; color: var(--muted); margin-bottom: .3rem;
+    }
+    .mock-progress-bar { height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .mock-fill { height: 100%; background: var(--green); border-radius: 4px; }
+    .mock-badge {
+      display: inline-block;
+      font-size: .65rem; font-weight: 700;
+      padding: .15rem .5rem; border-radius: 10px;
+      background: var(--green-light); color: var(--green);
+    }
+    .mock-badge.warn { background: #fff7e6; color: #d97706; }
+    .mock-day-list { list-style: none; }
+    .mock-day-list li {
+      font-size: .8rem; padding: .35rem 0;
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between;
+    }
+    .mock-day-list li:last-child { border-bottom: none; }
+
+    /* ── FEATURES ── */
+    .section { padding: 80px 5%; }
+    .section-label {
+      text-align: center;
+      font-size: .8rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--green); margin-bottom: .75rem;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800; margin-bottom: 1rem;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--muted); font-size: 1rem;
+      max-width: 520px; margin: 0 auto 3.5rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .feature-card {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .feature-card:hover { box-shadow: var(--shadow); transform: translateY(-3px); }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: var(--green-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 1rem;
+    }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
+    .feature-card p  { font-size: .875rem; color: var(--muted); line-height: 1.55; }
+
+    /* ── HOW IT WORKS ── */
+    .steps { background: var(--bg-soft); }
+    .steps-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      max-width: 900px; margin: 0 auto;
+      counter-reset: step;
+    }
+    .step { text-align: center; position: relative; }
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      display: block;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--green); color: #fff;
+      font-size: 1.2rem; font-weight: 800; line-height: 48px;
+      margin: 0 auto 1rem;
+    }
+    .step h3 { font-size: .95rem; font-weight: 700; margin-bottom: .3rem; }
+    .step p  { font-size: .85rem; color: var(--muted); }
+
+    /* ── NUTRIENTS ── */
+    .nutrients-section { background: var(--bg); }
+    .nutrients-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: .75rem;
+      max-width: 900px; margin: 0 auto;
+    }
+    .nutrient-chip {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .6rem 1rem;
+      font-size: .8rem; font-weight: 500;
+      text-align: center; color: var(--text);
+    }
+    .nutrient-chip strong { display: block; font-weight: 700; margin-bottom: .15rem; }
+    .nutrient-chip span   { font-size: .7rem; color: var(--muted); }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: linear-gradient(135deg, var(--green) 0%, #1a5c38 100%);
+      color: #fff; text-align: center;
+      padding: 80px 5%;
+    }
+    .cta-section h2 { font-size: clamp(1.8rem, 3.5vw, 2.6rem); font-weight: 800; margin-bottom: 1rem; }
+    .cta-section p  { font-size: 1rem; opacity: .85; max-width: 480px; margin: 0 auto 2rem; }
+    .btn-white { background: #fff; color: var(--green); }
+    .btn-white:hover { box-shadow: 0 6px 20px rgba(255,255,255,.3); }
+    .btn-outline-white { border: 2px solid rgba(255,255,255,.5); color: #fff; margin-left: 1rem; }
+    .btn-outline-white:hover { background: rgba(255,255,255,.1); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--text);
+      color: rgba(255,255,255,.55);
+      text-align: center;
+      padding: 2rem 5%;
+      font-size: .85rem;
+    }
+    footer a { color: rgba(255,255,255,.7); text-decoration: none; }
+    footer a:hover { color: #fff; }
+
+    @media (max-width: 640px) {
+      .btn-ghost, .btn-outline-white { margin-left: 0; margin-top: .75rem; display: block; }
+      .mock-screen { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">Meal Plan Analyzer</a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#nutrients">Nutrients</a></li>
+    <li><a href="https://github.com/amjadsaadeh/meal-plan-analyzer">GitHub</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Free &amp; Open Source</div>
+  <h1>Plan your meals.<br /><span>Know your nutrients.</span></h1>
+  <p>
+    Create personalised meal plans and instantly see the full nutritional picture —
+    powered by the official German food database with over 10,000 food items.
+  </p>
+  <a href="https://github.com/amjadsaadeh/meal-plan-analyzer" class="btn btn-primary">Get started on GitHub</a>
+  <a href="#features" class="btn btn-ghost">See features</a>
+
+  <!-- Browser mockup -->
+  <div class="hero-visual">
+    <div class="mock-browser-bar">
+      <div class="mock-dot"></div>
+      <div class="mock-dot"></div>
+      <div class="mock-dot"></div>
+      <div class="mock-url">meal-plan-analyzer.example.com / plan / 1</div>
+    </div>
+    <div class="mock-screen">
+      <!-- Day column -->
+      <div class="mock-card">
+        <div class="mock-card-title">Day 1 — Meals</div>
+        <ul class="mock-day-list">
+          <li><span>🌅 Oats with banana</span><span class="mock-badge">Breakfast</span></li>
+          <li><span>🥗 Chicken salad</span><span class="mock-badge">Lunch</span></li>
+          <li><span>🍝 Pasta bolognese</span><span class="mock-badge">Dinner</span></li>
+          <li><span>🍎 Apple</span><span class="mock-badge">Snack</span></li>
+        </ul>
+      </div>
+      <!-- Nutrients column -->
+      <div class="mock-card">
+        <div class="mock-card-title">Today's Totals</div>
+        <div class="mock-row"><span>Energy</span><span>1 840 kcal</span></div>
+        <div class="mock-row"><span>Protein</span><span>92 g</span></div>
+        <div class="mock-row"><span>Fat</span><span>61 g</span></div>
+        <div class="mock-row"><span>Carbs</span><span>228 g</span></div>
+        <div class="mock-row"><span>Fiber</span><span>24 g</span></div>
+        <div class="mock-row"><span>Vit. C</span><span>78 mg</span></div>
+      </div>
+      <!-- Progress column -->
+      <div class="mock-card">
+        <div class="mock-card-title">Daily Targets</div>
+        <div class="mock-progress-wrap">
+          <div class="mock-progress-label"><span>Protein</span><span>92 / 100 g</span></div>
+          <div class="mock-progress-bar"><div class="mock-fill" style="width:92%"></div></div>
+        </div>
+        <div class="mock-progress-wrap" style="margin-top:.75rem">
+          <div class="mock-progress-label"><span>Iron</span><span>10 / 15 mg</span></div>
+          <div class="mock-progress-bar"><div class="mock-fill" style="width:67%"></div></div>
+        </div>
+        <div class="mock-progress-wrap" style="margin-top:.75rem">
+          <div class="mock-progress-label"><span>Calcium</span><span>310 / 800 mg <span class="mock-badge warn">Low</span></span></div>
+          <div class="mock-progress-bar"><div class="mock-fill" style="width:39%; background:#f59e0b"></div></div>
+        </div>
+        <div class="mock-progress-wrap" style="margin-top:.75rem">
+          <div class="mock-progress-label"><span>Vit. D</span><span>8 / 20 µg <span class="mock-badge warn">Low</span></span></div>
+          <div class="mock-progress-bar"><div class="mock-fill" style="width:40%; background:#f59e0b"></div></div>
+        </div>
+        <div class="mock-progress-wrap" style="margin-top:.75rem">
+          <div class="mock-progress-label"><span>Energy</span><span>1840 / 2000 kcal</span></div>
+          <div class="mock-progress-bar"><div class="mock-fill" style="width:92%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <p class="section-label">Features</p>
+  <h2 class="section-title">Everything you need to eat well</h2>
+  <p class="section-sub">From building a shopping list to exporting a week-long plan as a printable PDF.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <h3>Multi-day Meal Plans</h3>
+      <p>Organise breakfast, lunch, and dinner across as many days as you need. Reorder and copy days with ease.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔬</div>
+      <h3>Deep Nutritional Analysis</h3>
+      <p>Track 24 nutrients per day — energy, macros, 9 vitamins, and 7 minerals — all calculated automatically per gram.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Personalised Thresholds</h3>
+      <p>Set minimum and maximum targets for any nutrient. Visual indicators flag days where you're falling short or going over.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <h3>Smart Food Search</h3>
+      <p>Search over 10,000 foods from the official German BLS database. Handles German umlauts and custom food aliases.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <h3>PDF Export</h3>
+      <p>Generate clean, printable meal plan PDFs complete with nutrient totals, your logo, and custom export names.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚙️</div>
+      <h3>Preset Threshold Library</h3>
+      <p>Save named threshold presets (e.g. "Athlete", "Senior") and apply them to any plan in one click.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section steps" id="how-it-works">
+  <p class="section-label">How it works</p>
+  <h2 class="section-title">Up and running in minutes</h2>
+  <p class="section-sub">No spreadsheets, no manual calculations — just plan, analyse, and export.</p>
+
+  <div class="steps-list">
+    <div class="step">
+      <h3>Create a plan</h3>
+      <p>Name your meal plan and add as many days as you like.</p>
+    </div>
+    <div class="step">
+      <h3>Search &amp; add foods</h3>
+      <p>Find any food by name and set the exact gram amount for each meal.</p>
+    </div>
+    <div class="step">
+      <h3>Set your targets</h3>
+      <p>Define nutrient thresholds so you instantly see what's on track.</p>
+    </div>
+    <div class="step">
+      <h3>Export as PDF</h3>
+      <p>Download a polished PDF to share with clients or keep for yourself.</p>
+    </div>
+  </div>
+</section>
+
+<!-- NUTRIENTS -->
+<section class="section nutrients-section" id="nutrients">
+  <p class="section-label">Coverage</p>
+  <h2 class="section-title">24 nutrients tracked</h2>
+  <p class="section-sub">Every entry from the German Bundeslebensmittelschlüssel (BLS) database — the gold standard for food composition data.</p>
+
+  <div class="nutrients-grid">
+    <div class="nutrient-chip"><strong>Energy</strong><span>kcal / kJ</span></div>
+    <div class="nutrient-chip"><strong>Protein</strong><span>g</span></div>
+    <div class="nutrient-chip"><strong>Fat</strong><span>g</span></div>
+    <div class="nutrient-chip"><strong>Omega-3</strong><span>g</span></div>
+    <div class="nutrient-chip"><strong>Carbohydrates</strong><span>g</span></div>
+    <div class="nutrient-chip"><strong>Sugar</strong><span>g</span></div>
+    <div class="nutrient-chip"><strong>Fiber</strong><span>g</span></div>
+    <div class="nutrient-chip"><strong>Iron</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin C</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Magnesium</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Zinc</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin B12</strong><span>µg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin A</strong><span>µg</span></div>
+    <div class="nutrient-chip"><strong>Calcium</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin D</strong><span>µg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin B1</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin B2</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin B3</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin B5</strong><span>mg</span></div>
+    <div class="nutrient-chip"><strong>Vitamin B6</strong><span>µg</span></div>
+    <div class="nutrient-chip"><strong>Biotin</strong><span>µg</span></div>
+    <div class="nutrient-chip"><strong>Iodine</strong><span>µg</span></div>
+    <div class="nutrient-chip"><strong>Copper</strong><span>µg</span></div>
+    <div class="nutrient-chip"><strong>Manganese</strong><span>µg</span></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Start planning smarter today</h2>
+  <p>Open source, self-hostable, and free forever. Take full control of your nutritional data.</p>
+  <a href="https://github.com/amjadsaadeh/meal-plan-analyzer" class="btn btn-white">View on GitHub</a>
+  <a href="https://github.com/amjadsaadeh/meal-plan-analyzer#setup" class="btn btn-outline-white">Setup guide</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    Built on the <a href="https://www.blsdb.de/" target="_blank" rel="noopener">Bundeslebensmittelschlüssel (BLS)</a> &nbsp;·&nbsp;
+    <a href="https://github.com/amjadsaadeh/meal-plan-analyzer/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a> &nbsp;·&nbsp;
+    <a href="https://github.com/amjadsaadeh/meal-plan-analyzer" target="_blank" rel="noopener">GitHub</a>
+  </p>
+</footer>
+
+</body>
+</html>
