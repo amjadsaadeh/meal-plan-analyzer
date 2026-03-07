@@ -1,9 +1,3 @@
----
-title: Dev Deployments Design
-parent: Plans
-nav_order: 1
----
-
 # Dev Deployments Design
 
 ## Overview
