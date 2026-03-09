@@ -435,6 +435,13 @@ class FoodViewSet(viewsets.ModelViewSet):
                 {'detail': 'Only custom foods can be edited.'},
                 status=403,
             )
+        
+        if 'energy_in_kj_per_100g' in request.data and 'energy_in_kcal_per_100g' in request.data:
+            return Response(
+                {'detail': 'Cannot set both energy_in_kj_per_100g and energy_in_kcal_per_100g at the same time.'},
+                status=400,
+            )
+
         return super().update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):

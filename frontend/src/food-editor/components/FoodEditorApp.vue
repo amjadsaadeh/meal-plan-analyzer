@@ -214,7 +214,19 @@ function onFieldChange(foodKey, rawValue) {
   const value = parseFloat(rawValue)
   if (isNaN(value)) return
   food.value[foodKey] = value
-  scheduleSave({ [foodKey]: value })
+
+  const patch = { [foodKey]: value }
+
+  // Sync energy fields locally
+  if (foodKey === 'energy_in_kcal_per_100g') {
+    const kj = value * 4.184
+    food.value.energy_in_kj_per_100g = Math.round(kj * 10) / 10
+  } else if (foodKey === 'energy_in_kj_per_100g') {
+    const kcal = value / 4.184
+    food.value.energy_in_kcal_per_100g = Math.round(kcal * 10) / 10
+  }
+
+  scheduleSave(patch)
 }
 
 function onNameInput(e) {

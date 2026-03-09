@@ -30,6 +30,29 @@ class FoodSerializer(serializers.ModelSerializer):
     def get_matched_alias(self, obj):
         return getattr(obj, 'matched_alias', None)
 
+    def validate(self, data):
+        """
+        Ensure that only one of kcal or kj is provided in a single request.
+        """
+        kcal = data.get('energy_in_kcal_per_100g')
+        kj = data.get('energy_in_kj_per_100g')
+        
+        if kcal is not None and kj is not None:
+            raise serializers.ValidationError(
+                "Cannot set both energy_in_kj_per_100g and energy_in_kcal_per_100g at the same time."
+            )
+            
+        if kcal is not None:
+            if kcal < 0:
+                raise serializers.ValidationError({"energy_in_kcal_per_100g": "Must be 0 or greater."})
+            data['energy_in_kj_per_100g'] = round(kcal * 4.184, 1)
+        elif kj is not None:
+            if kj < 0:
+                raise serializers.ValidationError({"energy_in_kj_per_100g": "Must be 0 or greater."})
+            data['energy_in_kcal_per_100g'] = round(kj / 4.184, 1)
+            
+        return data
+
 class ThresholdPresetSerializer(serializers.ModelSerializer):
     class Meta:
         model = ThresholdPreset
