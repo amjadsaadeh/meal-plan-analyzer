@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: meal-plan-analyzer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-18 12:16+0000\n"
+"POT-Creation-Date: 2026-03-10 10:21+0000\n"
 "PO-Revision-Date: 2026-02-18 12:00+0000\n"
 "Last-Translator: RSOS Team\n"
 "Language-Team: German\n"
@@ -16,19 +16,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: meals/models.py:166 meals/views.py:73 meals/views.py:193
+#: meals/models.py:240 meals/views.py:201 meals/views.py:551
+#: tests/test_extended_backend.py:97
 msgid "Breakfast"
 msgstr "Frühstück"
 
-#: meals/models.py:167 meals/views.py:74 meals/views.py:194
+#: meals/models.py:241 meals/views.py:202 meals/views.py:552
 msgid "Lunch"
 msgstr "Mittagessen"
 
-#: meals/models.py:168 meals/views.py:75 meals/views.py:195
+#: meals/models.py:242 meals/views.py:203 meals/views.py:553
 msgid "Dinner"
 msgstr "Abendessen"
 
-#: meals/nutrients.py:5
+#: meals/nutrients.py:5 meals/views.py:789
 msgid "Energy"
 msgstr "Energie"
 
@@ -128,358 +129,486 @@ msgstr "Mangan"
 msgid "Molybdenum"
 msgstr "Molybdän"
 
-#: meals/templates/meals/base.html.j2:122
+#: meals/templates/meals/base.html.j2:24
+#: meals/templates/meals/mealplan_list.html.j2:4
+#: meals/templates/meals/mealplan_list.html.j2:13
+msgid "Meal Plans"
+msgstr "Mahlzeitenpläne"
+
+#: meals/templates/meals/base.html.j2:28
+#: meals/templates/meals/food_database.html.j2:4
+#: meals/templates/meals/food_database.html.j2:16 meals/views.py:778
+msgid "Food Database"
+msgstr "Lebensmittel-Datenbank"
+
+#: meals/templates/meals/base.html.j2:37
 #, python-format
 msgid "Logged in as <strong>%(username)s</strong>"
 msgstr "Angemeldet als <strong>%(username)s</strong>"
 
-#: meals/templates/meals/base.html.j2:144
+#: meals/templates/meals/base.html.j2:59
 msgid "Logout"
 msgstr "Abmelden"
 
-#: meals/templates/meals/index.html.j2:8
-#: meals/templates/meals/index.html.j2:215
-msgid "Food Finder"
-msgstr "Lebensmittel-Suche"
-
-#: meals/templates/meals/index.html.j2:216
-msgid "Search through 7,000+ nutrition facts"
-msgstr "Durchsuche über 7.000 Nährwerte"
-
-#: meals/templates/meals/index.html.j2:220
-msgid "Type at least 2 characters..."
-msgstr "Mindestens 2 Zeichen eingeben..."
-
-#: meals/templates/meals/index.html.j2:229
-msgid "No foods found"
-msgstr "Keine Lebensmittel gefunden"
-
-#: meals/templates/meals/index.html.j2:230
-#: meals/templates/meals/mealplan_detail.html.j2:1438
-msgid "Code"
-msgstr "Code"
-
-#: meals/templates/meals/login.html.j2:4
-#: meals/templates/meals/login.html.j2:126
-msgid "Login"
-msgstr "Anmelden"
-
-#: meals/templates/meals/login.html.j2:127
-msgid "Welcome back to Meal Plan Analyzer"
-msgstr "Willkommen beim Meal Plan Analyzer"
-
-#: meals/templates/meals/login.html.j2:140
-msgid "Username"
-msgstr "Benutzername"
-
-#: meals/templates/meals/login.html.j2:148
-msgid "Password"
-msgstr "Passwort"
-
-#: meals/templates/meals/login.html.j2:155
-msgid "Sign In"
-msgstr "Einloggen"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1098
-msgid "Delete Day"
-msgstr "Tag löschen"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1101
-msgid "Do you really want to delete \"<span id=\"deleteDayName\"></span>\"?"
-msgstr "Möchtest du \"<span id=\"deleteDayName\"></span>\" wirklich löschen?"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1102
-msgid "This action cannot be undone."
-msgstr "Diese Aktion kann nicht rückgängig gemacht werden."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1105
-#: meals/templates/meals/mealplan_detail.html.j2:1411
-msgid "Cancel"
-msgstr "Abbrechen"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1106
-msgid "Delete"
-msgstr "Löschen"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1122
-msgid "Columns"
-msgstr "Spalten"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1125
-#: meals/templates/meals/mealplan_detail.html.j2:1156
-#: meals/templates/meals/mealplan_detail.html.j2:1430
-msgid "Saved"
-msgstr "Gespeichert"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1137
-msgid "Back to Plans"
-msgstr "Zurück zur Übersicht"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1145
-msgid "Edit name"
-msgstr "Name bearbeiten"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1154
-msgid "Plan No."
-msgstr "Plan Nr."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1170
-msgid "Preview"
-msgstr "Vorschau"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1180
-msgid "Export PDF"
-msgstr "PDF exportieren"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1193
-msgid "Add Day"
-msgstr "Tag hinzufügen"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1202
-msgid "Select Columns"
-msgstr "Spalten auswählen"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1207
-msgid "Reference Value Template"
-msgstr "Vorlage für Referenzwerte"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1209
-msgid "Search template..."
-msgstr "Nach Vorlage suchen..."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1224
-msgid "Edit day name"
-msgstr "Tagesname bearbeiten"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1230
-msgid "Delete day"
-msgstr "Tag löschen"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1259
-msgid "Ingredient"
-msgstr "Zutat"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1260
-#: meals/templates/meals/mealplan_pdf.html.j2:466
-msgid "Amount (g)"
-msgstr "Menge (g)"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1315
-msgid "Subtotal:"
-msgstr "Subeinheit:"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1343
-#, python-format
-msgid "%(name)s - Overview"
-msgstr "%(name)s - Übersicht"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1350
-#: meals/templates/meals/mealplan_detail.html.j2:1381
-msgid "min"
-msgstr "min"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1352
-#: meals/templates/meals/mealplan_detail.html.j2:1383
-msgid "max"
-msgstr "max"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1364
-#: meals/templates/meals/mealplan_detail.html.j2:1395
-msgid "Save as Reference Value Template"
-msgstr "Als Vorlage für Referenzwerte speichern"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1374
-msgid "Plan Overview (Total)"
-msgstr "Plan-Übersicht (Gesamt)"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1405
-msgid "Save Template"
-msgstr "Vorlage speichern"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1407
-msgid "Template name (min. 3 chars)..."
-msgstr "Name der Vorlage (mind. 3 Zeichen)..."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1412
-msgid "Save"
-msgstr "Speichern"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1431
-msgid "Unsaved changes"
-msgstr "Ungespeicherte Änderungen"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1432
-msgid "Day"
-msgstr "Tag"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1433
-msgid "Error creating day"
-msgstr "Fehler beim Erstellen des Tages"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1434
-msgid "Are you sure you want to remove this ingredient?"
-msgstr "Möchtest du diese Zutat wirklich entfernen?"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1435
-msgid "Error deleting row"
-msgstr "Fehler beim Löschen der Zeile"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1436
-msgid "Search food..."
+#: meals/templates/meals/food_database.html.j2:16
+msgid "Search foods…"
 msgstr "Lebensmittel suchen..."
 
-#: meals/templates/meals/mealplan_detail.html.j2:1437
-msgid "No results"
-msgstr "Keine Ergebnisse"
+#: meals/templates/meals/food_database.html.j2:16
+msgid "Create Custom Food"
+msgstr "Eigenes Lebensmittel erstellen"
 
-#: meals/templates/meals/mealplan_detail.html.j2:1439
-msgid "Overview"
-msgstr "Übersicht"
-
-#: meals/templates/meals/mealplan_detail.html.j2:1440
-msgid "Apply this template? The current reference values will be overwritten."
-msgstr "Diese Vorlage anwenden? Die aktuellen Referenzwerte werden überschrieben."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1441
-msgid "Template saved successfully."
-msgstr "Vorlage erfolgreich gespeichert."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1442
-msgid "The name must be at least 3 characters long."
-msgstr "Der Name muss mindestens 3 Zeichen lang sein."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1443
-msgid "Checking availability..."
-msgstr "Verfügbarkeit wird geprüft..."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1444
-msgid "This name is already taken."
-msgstr "Dieser Name ist bereits vergeben."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1445
-msgid "Validation error."
-msgstr "Validierungsfehler."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1446
-msgid "Error saving."
-msgstr "Fehler beim Speichern."
-
-#: meals/templates/meals/mealplan_detail.html.j2:1447
-msgid "Network error while saving."
-msgstr "Netzwerkfehler beim Speichern."
-
-#: meals/templates/meals/mealplan_list.html.j2:4
-#: meals/templates/meals/mealplan_list.html.j2:229
-msgid "Meal Plans"
-msgstr "Mahlzeitenpläne"
-
-#: meals/templates/meals/mealplan_list.html.j2:238
-msgid "Create New Plan"
-msgstr "Neuen Plan erstellen"
-
-#: meals/templates/meals/mealplan_list.html.j2:241
-msgid "Search plans..."
-msgstr "Pläne suchen..."
-
-#: meals/templates/meals/mealplan_list.html.j2:250
+#: meals/templates/meals/food_database.html.j2:16
+#: meals/templates/meals/mealplan_list.html.j2:19 meals/views.py:787
+#: meals/views.py:788
 msgid "Name"
 msgstr "Name"
 
-#: meals/templates/meals/mealplan_list.html.j2:251
-msgid "Days"
-msgstr "Tage"
+#: meals/templates/meals/food_database.html.j2:16
+msgid "BLS Code"
+msgstr "BLS-Code"
 
-#: meals/templates/meals/mealplan_list.html.j2:252
-msgid "Created"
-msgstr "Erstellt"
+#: meals/templates/meals/food_database.html.j2:16
+msgid "kcal / 100 g"
+msgstr "kcal / 100 g"
 
-#: meals/templates/meals/mealplan_list.html.j2:253
-msgid "Last Changed"
-msgstr "Zuletzt geändert"
+#: meals/templates/meals/food_database.html.j2:16
+msgid "Source"
+msgstr "Quelle"
 
-#: meals/templates/meals/mealplan_list.html.j2:273
-msgid "No days"
-msgstr "Keine Tage"
+#: meals/templates/meals/food_database.html.j2:16
+msgid "No foods found."
+msgstr "Keine Lebensmittel gefunden."
 
-#: meals/templates/meals/mealplan_list.html.j2:293
-msgid "No meal plans found."
-msgstr "Keine Mahlzeitenpläne gefunden."
+#: meals/templates/meals/food_database.html.j2:16
+msgid "Type at least 2 characters to search, or browse below."
+msgstr "Gib mindestens 2 Zeichen ein, um zu suchen, oder stöbere unten."
 
-#: meals/templates/meals/mealplan_list.html.j2:329
+#: meals/templates/meals/food_database.html.j2:16 meals/views.py:781
+msgid "Custom"
+msgstr "Eigene"
+
+#: meals/templates/meals/food_database.html.j2:16 meals/views.py:782
+msgid "BLS"
+msgstr "BLS"
+
+#: meals/templates/meals/food_database.html.j2:16
+msgid "Error creating food"
+msgstr "Fehler beim Erstellen des Lebensmittels"
+
+#: meals/templates/meals/food_database.html.j2:16
+msgid "New Custom Food"
+msgstr "Neues eigenes Lebensmittel"
+
+#: meals/templates/meals/food_database.html.j2:16
+#, python-brace-format
+msgid "Page {page} of {total}"
+msgstr "Seite {page} von {total}"
+
+#: meals/templates/meals/food_database.html.j2:16
+msgid "Previous"
+msgstr "Zurück"
+
+#: meals/templates/meals/food_database.html.j2:16
+msgid "Next"
+msgstr "Weiter"
+
+#: meals/templates/meals/food_editor.html.j2:4
+msgid "Food Editor"
+msgstr "Lebensmittel-Editor"
+
+#: meals/templates/meals/index.html.j2:8 meals/templates/meals/index.html.j2:18
+msgid "Food Finder"
+msgstr "Lebensmittel-Suche"
+
+#: meals/templates/meals/index.html.j2:19
+msgid "Search through 7,000+ nutrition facts"
+msgstr "Durchsuche über 7.000 Nährwerte"
+
+#: meals/templates/meals/index.html.j2:23
+msgid "Type at least 2 characters..."
+msgstr "Mindestens 2 Zeichen eingeben..."
+
+#: meals/templates/meals/index.html.j2:32
+msgid "No foods found"
+msgstr "Keine Lebensmittel gefunden"
+
+#: meals/templates/meals/index.html.j2:33 meals/views.py:181
+msgid "Code"
+msgstr "Code"
+
+#: meals/templates/meals/login.html.j2:4 meals/templates/meals/login.html.j2:13
+msgid "Login"
+msgstr "Anmelden"
+
+#: meals/templates/meals/login.html.j2:14
+msgid "Welcome back to Meal Plan Analyzer"
+msgstr "Willkommen beim Meal Plan Analyzer"
+
+#: meals/templates/meals/login.html.j2:27
+msgid "Username"
+msgstr "Benutzername"
+
+#: meals/templates/meals/login.html.j2:35
+msgid "Password"
+msgstr "Passwort"
+
+#: meals/templates/meals/login.html.j2:42
+msgid "Sign In"
+msgstr "Einloggen"
+
+#: meals/templates/meals/mealplan_list.html.j2:19
 msgid "Are you sure you want to delete this meal plan?"
 msgstr "Möchtest du diesen Mahlzeitenplan wirklich löschen?"
 
-#: meals/templates/meals/mealplan_list.html.j2
-msgid "Delete Meal Plan"
-msgstr "Mahlzeitenplan löschen"
-
-#: meals/templates/meals/mealplan_list.html.j2:330
+#: meals/templates/meals/mealplan_list.html.j2:19
 msgid "Error deleting plan"
 msgstr "Fehler beim Löschen des Plans"
 
+#: meals/templates/meals/mealplan_list.html.j2:19
+msgid "No meal plans found."
+msgstr "Keine Mahlzeitenpläne gefunden."
+
+#: meals/templates/meals/mealplan_list.html.j2:19
+msgid "No days"
+msgstr "Keine Tage"
+
+#: meals/templates/meals/mealplan_list.html.j2:19
+msgid "Search plans..."
+msgstr "Pläne suchen..."
+
+#: meals/templates/meals/mealplan_list.html.j2:19
+msgid "Create New Plan"
+msgstr "Neuen Plan erstellen"
+
+#: meals/templates/meals/mealplan_list.html.j2:19
+msgid "Days"
+msgstr "Tage"
+
+#: meals/templates/meals/mealplan_list.html.j2:19
+msgid "Created"
+msgstr "Erstellt"
+
+#: meals/templates/meals/mealplan_list.html.j2:19
+msgid "Last Changed"
+msgstr "Zuletzt geändert"
+
+#: meals/templates/meals/mealplan_list.html.j2:19
+msgid "Delete Meal Plan"
+msgstr "Mahlzeitenplan löschen"
+
+#: meals/templates/meals/mealplan_list.html.j2:19 meals/views.py:194
+msgid "This action cannot be undone."
+msgstr "Diese Aktion kann nicht rückgängig gemacht werden."
+
+#: meals/templates/meals/mealplan_list.html.j2:19 meals/views.py:195
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: meals/templates/meals/mealplan_list.html.j2:19 meals/views.py:196
+msgid "Delete"
+msgstr "Löschen"
+
 #: meals/templates/meals/mealplan_pdf.html.j2:14
-#: meals/templates/meals/mealplan_pdf.html.j2:324
-#: meals/templates/meals/mealplan_pdf.html.j2:341
+#: meals/templates/meals/mealplan_pdf.html.j2:22
+#: meals/templates/meals/mealplan_pdf.html.j2:32
 msgid "Page"
 msgstr "Seite"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:373
+#: meals/templates/meals/mealplan_pdf.html.j2:52
 msgid "Back to Plan"
 msgstr "Zurück zum Plan"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:384
+#: meals/templates/meals/mealplan_pdf.html.j2:63
 msgid "Select Nutrients"
 msgstr "Nährwerte auswählen"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:404
+#: meals/templates/meals/mealplan_pdf.html.j2:83
 msgid "PDF Export"
 msgstr "PDF Export"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:413
+#: meals/templates/meals/mealplan_pdf.html.j2:92
 msgid "Analysis"
 msgstr "Auswertung"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:414
+#: meals/templates/meals/mealplan_pdf.html.j2:100
+msgid "Add a subtitle..."
+msgstr ""
+
+#: meals/templates/meals/mealplan_pdf.html.j2:103
 msgid "Average daily intake"
 msgstr "Durchschnittliche Aufnahme pro Tag"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:414
+#: meals/templates/meals/mealplan_pdf.html.j2:103
 #, python-format
 msgid "over %(count)s days"
 msgstr "über %(count)s Tage"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:419
+#: meals/templates/meals/mealplan_pdf.html.j2:108
 msgid "Nutrient"
 msgstr "Nährstoff"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:420
+#: meals/templates/meals/mealplan_pdf.html.j2:109
 msgid "Average"
 msgstr "Durchschnitt"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:421
+#: meals/templates/meals/mealplan_pdf.html.j2:110
 msgid "Unit"
 msgstr "Einheit"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:422
+#: meals/templates/meals/mealplan_pdf.html.j2:111
 msgid "Reference"
 msgstr "Referenz"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:423
+#: meals/templates/meals/mealplan_pdf.html.j2:112
 msgid "Status"
 msgstr "Status"
 
-#: meals/templates/meals/mealplan_pdf.html.j2:465
+#: meals/templates/meals/mealplan_pdf.html.j2:159
 msgid "Food"
 msgstr "Lebensmittel"
+
+#: meals/templates/meals/mealplan_pdf.html.j2:160 meals/views.py:209
+msgid "Amount (g)"
+msgstr "Menge (g)"
+
+#: meals/templates/meals/mealplan_pdf.html.j2:174
+#: meals/templates/meals/mealplan_pdf.html.j2:231
+msgid "renamed"
+msgstr "umbenannt"
 
 #: meals/templates/meals/mealplan_preview.html.j2:4
 msgid "PDF Preview"
 msgstr "PDF-Vorschau"
 
-#: meals/views.py:64
+#: meals/views.py:150
 msgid "New Plan"
 msgstr "Neuer Plan"
 
-#: meals/views.py:65
+#: meals/views.py:151
 msgid "Day 1"
 msgstr "Tag 1"
+
+#: meals/views.py:172 meals/views.py:775
+msgid "Saved"
+msgstr "Gespeichert"
+
+#: meals/views.py:173
+msgid "Unsaved changes"
+msgstr "Ungespeicherte Änderungen"
+
+#: meals/views.py:174
+msgid "Day"
+msgstr "Tag"
+
+#: meals/views.py:175
+msgid "Error creating day"
+msgstr "Fehler beim Erstellen des Tages"
+
+#: meals/views.py:176
+msgid "Delete Ingredient"
+msgstr "Zutat löschen"
+
+#: meals/views.py:177
+msgid "Are you sure you want to remove this ingredient?"
+msgstr "Möchtest du diese Zutat wirklich entfernen?"
+
+#: meals/views.py:178
+msgid "Error deleting row"
+msgstr "Fehler beim Löschen der Zeile"
+
+#: meals/views.py:179
+msgid "Search food..."
+msgstr "Lebensmittel suchen..."
+
+#: meals/views.py:180
+msgid "No results"
+msgstr "Keine Ergebnisse"
+
+#: meals/views.py:182
+msgid "alias"
+msgstr "Alias"
+
+#: meals/views.py:183
+msgid "Overview"
+msgstr "Übersicht"
+
+#: meals/views.py:184
+msgid "Apply this template? The current reference values will be overwritten."
+msgstr ""
+"Diese Vorlage anwenden? Die aktuellen Referenzwerte werden überschrieben."
+
+#: meals/views.py:185
+msgid "Template saved successfully."
+msgstr "Vorlage erfolgreich gespeichert."
+
+#: meals/views.py:186
+msgid "The name must be at least 3 characters long."
+msgstr "Der Name muss mindestens 3 Zeichen lang sein."
+
+#: meals/views.py:187
+msgid "Checking availability..."
+msgstr "Verfügbarkeit wird geprüft..."
+
+#: meals/views.py:188
+msgid "This name is already taken."
+msgstr "Dieser Name ist bereits vergeben."
+
+#: meals/views.py:189
+msgid "Validation error."
+msgstr "Validierungsfehler."
+
+#: meals/views.py:190
+msgid "Error saving."
+msgstr "Fehler beim Speichern."
+
+#: meals/views.py:191
+msgid "Network error while saving."
+msgstr "Netzwerkfehler beim Speichern."
+
+#: meals/views.py:192
+msgid "Delete Day"
+msgstr "Tag löschen"
+
+#: meals/views.py:193
+msgid "Do you really want to delete this day?"
+msgstr "Möchtest du diesen Tag wirklich löschen?"
+
+#: meals/views.py:197
+msgid "Plan Overview (Total)"
+msgstr "Plan-Übersicht (Gesamt)"
+
+#: meals/views.py:198
+msgid "Save Template"
+msgstr "Vorlage speichern"
+
+#: meals/views.py:199
+msgid "Save as Reference Value Template"
+msgstr "Als Vorlage für Referenzwerte speichern"
+
+#: meals/views.py:200
+msgid "Template name (min. 3 chars)..."
+msgstr "Name der Vorlage (mind. 3 Zeichen)..."
+
+#: meals/views.py:204
+msgid "Add Day"
+msgstr "Tag hinzufügen"
+
+#: meals/views.py:205
+msgid "Select Columns"
+msgstr "Spalten auswählen"
+
+#: meals/views.py:206
+msgid "Reference Value Template"
+msgstr "Vorlage für Referenzwerte"
+
+#: meals/views.py:207
+msgid "Search template..."
+msgstr "Nach Vorlage suchen..."
+
+#: meals/views.py:208
+msgid "Ingredient"
+msgstr "Zutat"
+
+#: meals/views.py:210
+msgid "Subtotal:"
+msgstr "Subeinheit:"
+
+#: meals/views.py:211
+msgid "Back to Plans"
+msgstr "Zurück zur Übersicht"
+
+#: meals/views.py:212
+msgid "Plan No."
+msgstr "Plan Nr."
+
+#: meals/views.py:213
+msgid "Export PDF"
+msgstr "PDF exportieren"
+
+#: meals/views.py:214
+msgid "Edit name"
+msgstr "Name bearbeiten"
+
+#: meals/views.py:215
+msgid "Edit day name"
+msgstr "Tagesname bearbeiten"
+
+#: meals/views.py:216
+msgid "Delete day"
+msgstr "Tag löschen"
+
+#: meals/views.py:217
+msgid "Columns"
+msgstr "Spalten"
+
+#: meals/views.py:218
+msgid "min"
+msgstr "min"
+
+#: meals/views.py:219
+msgid "max"
+msgstr "max"
+
+#: meals/views.py:220
+msgid "Syncing..."
+msgstr "Synchronisiere..."
+
+#: meals/views.py:221
+msgid "Deleting..."
+msgstr "Lösche..."
+
+#: meals/views.py:776
+msgid "Saving…"
+msgstr "Speichern..."
+
+#: meals/views.py:777
+msgid "Error saving"
+msgstr "Fehler beim Speichern"
+
+#: meals/views.py:779
+msgid "BLS data is read-only. Click the copy button to copy a value."
+msgstr "BLS-Daten sind schreibgeschützt. Klicke auf den Kopieren-Button, um einen Wert zu kopieren."
+
+#: meals/views.py:780
+msgid "Copied!"
+msgstr "Kopiert!"
+
+#: meals/views.py:783
+msgid "Network error"
+msgstr "Netzwerkfehler"
+
+#: meals/views.py:784
+msgid "Food not found."
+msgstr "Lebensmittel nicht gefunden."
+
+#: meals/views.py:785
+msgid "Energy (kJ)"
+msgstr "Energie (kJ)"
+
+#: meals/views.py:786
+msgid "Energy (kcal)"
+msgstr "Energie (kcal)"
+
+#: meals/views.py:790
+msgid "Macronutrients"
+msgstr "Makronährstoffe"
+
+#: meals/views.py:791
+msgid "Vitamins"
+msgstr "Vitamine"
+
+#: meals/views.py:792
+msgid "Minerals"
+msgstr "Mineralstoffe"
+
+#~ msgid "Do you really want to delete \"<span id=\"deleteDayName\"></span>\"?"
+#~ msgstr ""
+#~ "Möchtest du \"<span id=\"deleteDayName\"></span>\" wirklich löschen?"
+
+#, python-format
+#~ msgid "%(name)s - Overview"
+#~ msgstr "%(name)s - Übersicht"
+
+#~ msgid "Save"
+#~ msgstr "Speichern"

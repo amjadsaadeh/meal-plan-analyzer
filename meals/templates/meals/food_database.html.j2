@@ -1,0 +1,24 @@
+{% extends 'meals/base.html.j2' %}
+{% load static i18n sass_tags %}
+
+{% block title %}{% trans "Food Database" %} | Meal Plan Analyzer{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% sass_src 'meals/scss/food_database.scss' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 960px;">
+    <div
+        id="food-database-app"
+        data-csrf-token="{{ csrf_token }}"
+        data-food-editor-base-url="/foods/"
+        data-i18n='{"searchPlaceholder": "{% trans "Search foods…" %}", "createFood": "{% trans "Create Custom Food" %}", "colName": "{% trans "Name" %}", "colCode": "{% trans "BLS Code" %}", "colKcal": "{% trans "kcal / 100 g" %}", "colSource": "{% trans "Source" %}", "noData": "{% trans "No foods found." %}", "typeToSearch": "{% trans "Type at least 2 characters to search, or browse below." %}", "customBadge": "{% trans "Custom" %}", "blsBadge": "{% trans "BLS" %}", "errorCreate": "{% trans "Error creating food" %}", "newFoodName": "{% trans "New Custom Food" %}", "pageInfo": "{% trans "Page {page} of {total}" %}", "prev": "{% trans "Previous" %}", "next": "{% trans "Next" %}", "title": "{% trans "Food Database" %}"}'
+    ></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load django_vite %}
+{% vite_asset 'frontend/src/food-database/main.js' %}
+{% endblock %}

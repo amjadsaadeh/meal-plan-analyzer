@@ -67,11 +67,12 @@ class TestFoodSearchQueryLength:
     """Short or empty queries have well-defined behaviour."""
 
     def test_empty_search_returns_all_foods(self, authenticated_client):
-        """No search parameter returns all foods (no pagination on FoodViewSet)."""
+        """No search parameter returns all foods (paginated)."""
         response = authenticated_client.get('/api/foods/')
         assert response.status_code == status.HTTP_200_OK
-        assert isinstance(response.data, list)
-        assert len(response.data) > 0
+        # Without a search query the endpoint returns paginated results
+        results = response.data.get('results', response.data)
+        assert len(results) > 0
 
     def test_single_char_query_returns_empty(self, authenticated_client):
         """A 1-character query is below the 2-char threshold → empty result."""

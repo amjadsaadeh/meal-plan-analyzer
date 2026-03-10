@@ -13,6 +13,8 @@ export default defineConfig({
       input: {
         'mealplan-list': 'frontend/src/mealplan-list/main.js',
         'mealplan-detail': 'frontend/src/mealplan-detail/main.js',
+        'food-database': 'frontend/src/food-database/main.js',
+        'food-editor': 'frontend/src/food-editor/main.js',
       },
     },
   },

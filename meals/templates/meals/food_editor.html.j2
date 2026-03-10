@@ -1,0 +1,24 @@
+{% extends 'meals/base.html.j2' %}
+{% load static i18n sass_tags %}
+
+{% block title %}{% trans "Food Editor" %} | Meal Plan Analyzer{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% sass_src 'meals/scss/food_editor.scss' %}">
+{% endblock %}
+
+{% block content %}
+    <div
+        id="food-editor-app"
+        data-food-id="{{ food_id }}"
+        data-csrf-token="{{ csrf_token }}"
+        data-nutrients='{{ nutrients_json }}'
+        data-i18n='{{ i18n_json }}'
+        data-food-list-url="{{ food_list_url }}"
+    ></div>
+{% endblock %}
+
+{% block extra_js %}
+{% load django_vite %}
+{% vite_asset 'frontend/src/food-editor/main.js' %}
+{% endblock %}

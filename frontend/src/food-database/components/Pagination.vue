@@ -1,0 +1,56 @@
+<template>
+  <div class="pagination">
+    <span v-if="currentPage <= 1" class="page-link disabled">&laquo; {{ i18n.prev || '' }}</span>
+    <a
+      v-else
+      class="page-link"
+      href="#"
+      @click.prevent="emit('update:currentPage', currentPage - 1)"
+    >&laquo; {{ i18n.prev || '' }}</a>
+
+    <template v-for="page in visiblePages" :key="page">
+      <span v-if="page === currentPage" class="page-link active">{{ page }}</span>
+      <a
+        v-else
+        class="page-link"
+        href="#"
+        @click.prevent="emit('update:currentPage', page)"
+      >{{ page }}</a>
+    </template>
+
+    <span v-if="currentPage >= totalPages" class="page-link disabled">{{ i18n.next || '' }} &raquo;</span>
+    <a
+      v-else
+      class="page-link"
+      href="#"
+      @click.prevent="emit('update:currentPage', currentPage + 1)"
+    >{{ i18n.next || '' }} &raquo;</a>
+
+    <div class="page-info" v-if="totalPages > 0">
+      {{ i18n.pageInfo?.replace('{page}', currentPage).replace('{total}', totalPages) || `Page ${currentPage} of ${totalPages}` }}
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed, inject } from 'vue'
+
+const i18n = inject('i18n', {})
+
+const props = defineProps({
+  currentPage: { type: Number, required: true },
+  totalPages: { type: Number, required: true },
+})
+
+const emit = defineEmits(['update:currentPage'])
+
+const visiblePages = computed(() => {
+  const pages = []
+  for (let i = 1; i <= props.totalPages; i++) {
+    if (Math.abs(i - props.currentPage) <= 2) {
+      pages.push(i)
+    }
+  }
+  return pages
+})
+</script>

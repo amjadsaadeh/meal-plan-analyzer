@@ -56,6 +56,7 @@ class Food(models.Model):
     copper_in_mug_per_100g = models.FloatField(default=0.0)
     manganese_in_mug_per_100g = models.FloatField(default=0.0)
     molybdenum_in_mug_per_100g = models.FloatField(default=0.0)
+    data_source = models.CharField(max_length=100, default='', blank=True)
 
     class Meta:
         ordering = ['name']

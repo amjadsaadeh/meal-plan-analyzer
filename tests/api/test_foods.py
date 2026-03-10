@@ -47,11 +47,13 @@ class TestFoodAPI:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_list_foods_authenticated(self, authenticated_client):
-        """Test getting all foods with authentication."""
+        """Test getting all foods with authentication (paginated)."""
         response = authenticated_client.get('/api/foods/')
         assert response.status_code == status.HTTP_200_OK
-        assert isinstance(response.data, list)
-        assert len(response.data) == 100
+        # Without a search query the endpoint returns paginated results
+        assert 'results' in response.data
+        assert isinstance(response.data['results'], list)
+        assert response.data['count'] == 100
 
     def test_get_single_food_unauthenticated(self, api_client):
         """Test getting a single food item without authentication."""
@@ -74,30 +76,15 @@ class TestFoodAPI:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_create_food_authenticated(self, authenticated_client):
-        """Test creating a new food item with authentication."""
-        payload = {
-            "bls_code": "NEWFOOD123",
-            "name": "Test Apple",
-            "energy_in_kj_per_100g": 200,
-            "energy_in_kcal_per_100g": 48,
-            "protein_in_g_per_100g": 0.3,
-            "fat_in_g_per_100g": 0.2,
-            "carbohydrate_in_g_per_100g": 10.0,
-            "fibre_in_g_per_100g": 2.4,
-            "iron_in_mg_per_100g": 0.1,
-            "sugar_in_g_per_100g": 10.0,
-            "omega3_in_g_per_100g": 0.01,
-            "vitc_in_mg_per_100g": 4.6,
-            "magnesium_in_mg_per_100g": 5.0,
-            "zinc_in_mg_per_100g": 0.04,
-            "vitb12_in_mug_per_100g": 0.0,
-            "vita_in_mug_per_100g": 3.0,
-            "calcium_in_mg_per_100g": 6.0,
-            "vitd_in_mug_per_100g": 0.0
-        }
+        """Test creating a new custom food item with authentication."""
+        payload = {"name": "My Custom Apple"}
         response = authenticated_client.post('/api/foods/', payload, format='json')
         assert response.status_code == status.HTTP_201_CREATED
-        assert Food.objects.filter(bls_code="NEWFOOD123").exists()
+        data = response.data
+        assert data['name'] == 'My Custom Apple'
+        assert data['data_source'] == 'custom'
+        assert data['bls_code'].startswith('custom_')
+        assert Food.objects.filter(bls_code=data['bls_code']).exists()
 
     def test_search_foods_name_unauthenticated(self, api_client):
         """Test searching for foods without authentication."""
@@ -127,7 +114,8 @@ class TestFoodAPI:
         """Every food in the list response exposes matched_alias."""
         response = authenticated_client.get('/api/foods/')
         assert response.status_code == status.HTTP_200_OK
-        for item in response.data:
+        items = response.data.get('results', response.data)
+        for item in items:
             assert 'matched_alias' in item
 
     def test_food_detail_has_matched_alias_field(self, authenticated_client):
