@@ -16,7 +16,7 @@
     {% if user.is_authenticated %}
     <nav class="top-bar">
         <div class="app-brand">
-            Meal Plan Analyzer <span class="app-version">v{{ APP_VERSION }}</span>
+            Meal Plan Analyzer <span class="app-version">{{ APP_VERSION }}</span>
         </div>
         <div class="nav-links">
             <a href="{% url 'meal-plan-list' %}"
