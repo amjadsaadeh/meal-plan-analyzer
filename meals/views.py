@@ -786,6 +786,10 @@ def food_editor(request, pk):
         'energyKcal': _('Energy (kcal)'),
         'name': _('Name'),
         'nameLabel': _('Name'),
+        'energy': _('Energy'),
+        'macronutrients': _('Macronutrients'),
+        'vitamins': _('Vitamins'),
+        'minerals': _('Minerals'),
     }
     return render(request, 'meals/food_editor.html.j2', {
         'food_id': pk,

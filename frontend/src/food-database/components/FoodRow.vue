@@ -2,7 +2,10 @@
   <tr class="food-row" @click="navigate">
     <td class="col-name">
       <span v-html="highlightMatch(food.name, searchQuery)"></span>
-      <span v-if="food.matched_alias" class="alias-badge" v-html="highlightMatch(food.matched_alias, searchQuery)"></span>
+      <span v-if="food.matched_alias" class="alias-badge">
+        {{ i18n.aliasBadge || 'alias' }}:
+        <span v-html="highlightMatch(food.matched_alias, searchQuery)"></span>
+      </span>
     </td>
     <td class="col-code">{{ food.bls_code }}</td>
     <td class="col-kcal">{{ formatKcal(food.energy_in_kcal_per_100g) }}</td>

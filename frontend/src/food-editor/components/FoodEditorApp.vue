@@ -162,10 +162,10 @@ const nutrientGroups = computed(() => {
   }
 
   return [
-    { label: 'Energy', fields: energy },
-    { label: 'Macronutrients', fields: macros },
-    { label: 'Vitamins', fields: vitamins },
-    { label: 'Minerals', fields: minerals },
+    { label: i18n.energy || 'Energy', fields: energy },
+    { label: i18n.macronutrients || 'Macronutrients', fields: macros },
+    { label: i18n.vitamins || 'Vitamins', fields: vitamins },
+    { label: i18n.minerals || 'Minerals', fields: minerals },
   ].filter(g => g.fields.length > 0)
 })
 

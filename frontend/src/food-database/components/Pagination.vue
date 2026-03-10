@@ -1,12 +1,12 @@
 <template>
   <div class="pagination">
-    <span v-if="currentPage <= 1" class="page-link disabled">&laquo;</span>
+    <span v-if="currentPage <= 1" class="page-link disabled">&laquo; {{ i18n.prev || '' }}</span>
     <a
       v-else
       class="page-link"
       href="#"
       @click.prevent="emit('update:currentPage', currentPage - 1)"
-    >&laquo;</a>
+    >&laquo; {{ i18n.prev || '' }}</a>
 
     <template v-for="page in visiblePages" :key="page">
       <span v-if="page === currentPage" class="page-link active">{{ page }}</span>
@@ -18,18 +18,24 @@
       >{{ page }}</a>
     </template>
 
-    <span v-if="currentPage >= totalPages" class="page-link disabled">&raquo;</span>
+    <span v-if="currentPage >= totalPages" class="page-link disabled">{{ i18n.next || '' }} &raquo;</span>
     <a
       v-else
       class="page-link"
       href="#"
       @click.prevent="emit('update:currentPage', currentPage + 1)"
-    >&raquo;</a>
+    >{{ i18n.next || '' }} &raquo;</a>
+
+    <div class="page-info" v-if="totalPages > 0">
+      {{ i18n.pageInfo?.replace('{page}', currentPage).replace('{total}', totalPages) || `Page ${currentPage} of ${totalPages}` }}
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
+
+const i18n = inject('i18n', {})
 
 const props = defineProps({
   currentPage: { type: Number, required: true },
