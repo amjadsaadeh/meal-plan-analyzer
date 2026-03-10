@@ -97,7 +97,7 @@ meal-plan-analyzer/
 │   ├── static/meals/
 │   │   ├── img/             # Static assets (logo, etc.)
 │   │   └── scss/            # SCSS source files
-│   ├── migrations/          # Django migrations (0001–0022)
+│   ├── migrations/          # Django migrations (0001–0024)
 │   └── management/commands/
 │       ├── import_foods.py  # BLS Excel import command
 │       └── build_scss.py    # SCSS compilation command
@@ -116,7 +116,8 @@ meal-plan-analyzer/
 │   │   ├── test_mealplan_foods.py
 │   │   ├── test_threshold_presets.py
 │   │   ├── test_food_search_semantics.py
-│   │   └── test_export_name_auto_alias.py
+│   │   ├── test_export_name_auto_alias.py
+│   │   └── test_food_energy_sync.py
 │   ├── frontend/
 │   │   ├── conftest.py      # Playwright fixtures (logged_in_page)
 │   │   ├── factories.py     # factory-boy factories
@@ -191,6 +192,8 @@ Represents a food item from the BLS database.
 | `iodine_in_mug_per_100g` | FloatField | Iodine (µg); default 0.0 |
 | `copper_in_mug_per_100g` | FloatField | Copper (µg); default 0.0 |
 | `manganese_in_mug_per_100g` | FloatField | Manganese (µg); default 0.0 |
+| `molybdenum_in_mug_per_100g` | FloatField | Molybdenum (µg); default 0.0 |
+| `data_source` | CharField(blank) | Origin of the record; `''` for BLS-imported foods, `'custom'` for user-created foods |
 
 ### `FoodAlias`
 Alternative name/synonym for a `Food` item, used during search.
@@ -274,6 +277,7 @@ All nutrient logic flows through the `NUTRIENTS` ordered dict. Each entry maps a
 | `iodine_in_mug` | Iodine | µg | 1 |
 | `copper_in_mug` | Copper | µg | 1 |
 | `manganese_in_mug` | Manganese | µg | 1 |
+| `molybdenum_in_mug` | Molybdenum | µg | 1 |
 
 `NUTRIENT_IDS` is the list of all keys. `THRESHOLD_SCHEMA` is a jsonschema used to validate `MealPlan.thresholds`.
 
@@ -287,13 +291,23 @@ All endpoints require authentication (`IsAuthenticated`). The API uses DRF's `De
 
 | Endpoint | ViewSet | Notes |
 |---|---|---|
-| `/api/foods/` | `FoodViewSet` | Search via `?search=` with semantic intent parsing, umlaut tolerance, and alias matching |
+| `/api/foods/` | `FoodViewSet` | Search via `?search=`; full CRUD for custom foods; `data_source` field in responses |
 | `/api/mealplans/` | `MealPlanViewSet` | Nested days filtered to `removed=False` |
 | `/api/mealplan-days/` | `MealPlanDayViewSet` | Queryset pre-filtered to `removed=False` |
 | `/api/mealplan-foods/` | `MealPlanFoodViewSet` | Full CRUD; auto-creates aliases from `export_name` |
 | `/api/threshold-presets/` | `ThresholdPresetViewSet` | Full CRUD |
 
 Default page size is 100. `FoodViewSet` disables pagination (`pagination_class = None`).
+
+### Custom food management
+`FoodViewSet` supports full CRUD for user-created foods:
+
+- **Create** (`POST /api/foods/`) — generates a unique BLS code prefixed `custom_<hex>` and sets `data_source='custom'`.
+- **Update** (`PUT`/`PATCH /api/foods/<id>/`) — only allowed when `data_source == 'custom'`; returns 403 for BLS-imported foods.
+- **Delete** (`DELETE /api/foods/<id>/`) — only allowed for `data_source == 'custom'`; returns 403 for BLS-imported foods.
+
+### Energy field auto-sync
+`FoodSerializer` enforces that only one of `energy_in_kcal_per_100g` or `energy_in_kj_per_100g` can be set in a single request. Providing one automatically computes the other using the factor **4.184 kJ/kcal**. Supplying both fields simultaneously returns 400 Bad Request.
 
 ### Food search semantics
 The food search (`?search=`) supports intent detection and multi-source matching:
@@ -324,6 +338,8 @@ When a `MealPlanFood` is created or updated with a non-empty `export_name`, the 
 | `/meal-plan/<pk>/preview/` | `meal_plan_preview` | `meal-plan-preview` |
 | `/meal-plan/<pk>/preview/content/` | `meal_plan_preview_content` | `meal-plan-preview-content` |
 | `/search/` | `index` | `food-search` |
+| `/foods/` | `food_database` | `food-database` |
+| `/foods/<pk>/` | `food_editor` | `food-editor` |
 | `/login/` | Django auth | `login` |
 | `/logout/` | Django auth | `logout` |
 
@@ -346,6 +362,8 @@ Templates use the `.html.j2` extension and are processed by Django's standard te
 | `mealplan_pdf.html.j2` | PDF content (also used for preview) |
 | `mealplan_preview.html.j2` | Preview wrapper (iframe) |
 | `index.html.j2` | Food search page |
+| `food_database.html.j2` | Food database browser (list + search) |
+| `food_editor.html.j2` | Food editor for creating/editing custom foods |
 
 Custom template filters (`meals/templatetags/meal_extras.py`):
 - `divide_by_100_mult(value, arg)` — `(value / 100) * arg` (nutrient calculation per amount)
@@ -381,6 +399,20 @@ pnpm build            # build to frontend/dist/
 - `Pagination.vue` — page navigation
 - `ConfirmDeleteModal.vue` — confirmation dialog for plan deletion
 
+### Vue Component Tree (`frontend/src/food-database/`)
+
+- `main.js` — mounts `FoodDatabaseApp` on its mount element; provides csrfToken and API URL
+- `FoodDatabaseApp.vue` — lists all foods with search and pagination; delegates to child components
+- `FoodSearchBar.vue` — debounced search input
+- `FoodTable.vue` — tabular food listing
+- `FoodRow.vue` — individual food row (links to food editor)
+- `Pagination.vue` — page navigation
+
+### Vue Component Tree (`frontend/src/food-editor/`)
+
+- `main.js` — mounts `FoodEditorApp` for creating and editing a single custom food
+- `FoodEditorApp.vue` — form with all nutrient fields; calls `POST`/`PUT` on `/api/foods/`; enforces `data_source == 'custom'` edit rules
+
 i18n strings are passed via the `data-i18n` attribute on the mount element (Django renders translations server-side).
 
 ---
@@ -397,6 +429,8 @@ SCSS source files live in `meals/static/meals/scss/`. There are entry-point file
 | `mealplan_preview.scss` | Preview page styles |
 | `pdf.scss` | PDF/print styles |
 | `food_search.scss` | Food search page styles |
+| `food_database.scss` | Food database browser styles |
+| `food_editor.scss` | Food editor page styles |
 | `login.scss` | Login page styles |
 | `_layout.scss` | Shared layout partials |
 | `_reset.scss` | CSS reset partial |
@@ -467,6 +501,8 @@ The command uses `openpyxl` with hard-coded BLS column mappings (e.g. column A =
 - **Alias cache**: Do not call `FoodAlias.objects.filter(...)` in hot paths; use `get_alias_index()` instead. The cache is a `dict[food_id → list[alias_string]]` stored under the key `food_aliases_index`. It is invalidated automatically by signals on save/delete of `FoodAlias` rows.
 - **SiteSettings singleton**: Always access via `SiteSettings.get()`, never `SiteSettings.objects.get(pk=1)` directly.
 - **`export_name` on `MealPlanFood`**: Setting this field triggers automatic alias creation if the name is not already findable by search. This side-effect happens in `MealPlanFoodViewSet.perform_create/perform_update`.
+- **Custom foods**: Foods with `data_source='custom'` are user-created. BLS-imported foods have `data_source=''`. Only custom foods can be edited or deleted via the API. Custom BLS codes are auto-generated as `custom_<hex>`.
+- **Energy sync**: When creating or updating a food via the API, supply either `energy_in_kcal_per_100g` or `energy_in_kj_per_100g` — not both. The serializer automatically computes the missing value using 4.184 kJ/kcal.
 
 ---
 
