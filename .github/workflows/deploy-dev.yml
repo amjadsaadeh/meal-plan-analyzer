@@ -28,8 +28,8 @@ jobs:
           context: .
           push: true
           tags: amjadsaadeh/meal-plan-analyzer:dev
-        build-args: |
-          APP_VERSION=dev-${{ github.ref_name }}-${{ github.sha | truncate(5) }}
+          build-args: |
+            APP_VERSION=dev-${{ github.ref_name }}-${{ github.sha | truncate(5) }}
 
       - name: Set up kubectl
         run: |
