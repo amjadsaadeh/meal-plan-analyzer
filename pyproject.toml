@@ -36,6 +36,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ansible>=13.2.0",
+    "black>=26.3.0",
     "factory-boy>=3.3.3",
     "kubernetes>=34.1.0",
     "nc-dnsapi>=0.1.5",
@@ -43,3 +44,7 @@ dev = [
     "pytest-django>=4.11.1",
     "pytest-playwright>=0.7.2",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
