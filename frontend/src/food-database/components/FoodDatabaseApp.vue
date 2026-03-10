@@ -13,8 +13,8 @@
       </div>
     </div>
 
-    <div class="table-card">
-      <FoodTable :foods="foods" :loading="loading" />
+    <div class="table-card" :class="{ 'is-loading': loading }">
+      <FoodTable :foods="foods" :loading="loading" :search-query="searchQuery" />
       <Pagination
         v-if="!isSearchMode && totalPages > 1"
         :current-page="currentPage"

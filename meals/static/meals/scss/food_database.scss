@@ -95,6 +95,12 @@ h1 {
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: opacity 0.3s ease;
+
+    &.is-loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
 }
 
 .food-table {
@@ -131,6 +137,10 @@ h1 {
 .col-name { font-weight: 400; color: var(--text-main); }
 .col-code { color: var(--text-dim); font-size: 0.85rem; font-family: monospace; }
 .col-kcal { color: var(--text-dim); text-align: right; }
+.col-name strong, .alias-badge strong {
+    color: var(--primary);
+    font-weight: 600;
+}
 .col-source { text-align: center; width: 90px; }
 
 .source-badge {

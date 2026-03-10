@@ -9,15 +9,15 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-if="loading">
-        <td colspan="4" class="empty-row">
-          <span class="loading-spinner"></span>
-        </td>
-      </tr>
-      <tr v-else-if="foods.length === 0">
+      <tr v-if="foods.length === 0 && !loading">
         <td colspan="4" class="empty-row">{{ i18n.noData }}</td>
       </tr>
-      <FoodRow v-else v-for="food in foods" :key="food.id" :food="food" />
+      <FoodRow
+        v-for="food in foods"
+        :key="food.id"
+        :food="food"
+        :search-query="searchQuery"
+      />
     </tbody>
   </table>
 </template>
@@ -29,6 +29,7 @@ import FoodRow from './FoodRow.vue'
 defineProps({
   foods: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
+  searchQuery: { type: String, default: '' },
 })
 
 const i18n = inject('i18n')
