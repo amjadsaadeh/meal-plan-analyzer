@@ -5,7 +5,64 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
+  unit-tests:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+
+    env:
+      SECRET_KEY: ci-secret-key-not-used-in-production
+      DATABASE_URL: sqlite:///test-db.sqlite3
+      DEBUG: "False"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies for WeasyPrint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libglib2.0-0 \
+            libpango-1.0-0 \
+            libharfbuzz0b \
+            libpangoft2-1.0-0 \
+            libpangocairo-1.0-0 \
+            libcairo2 \
+            libgdk-pixbuf2.0-0
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Install pnpm and build JS
+        run: |
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Compile SCSS
+        run: uv run python manage.py build_scss
+
+      - name: Run unit & integration tests
+        run: uv run pytest tests/test_*.py --create-db --junit-xml=reports/unit-tests.xml -v --tb=short
+
+      - name: Publish unit test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit & Integration Test Results
+          path: reports/unit-tests.xml
+          reporter: java-junit
+          fail-on-error: false
+
   api-tests:
     name: API Tests
     runs-on: ubuntu-latest
@@ -35,7 +92,7 @@ jobs:
             libcairo2 \
             libgdk-pixbuf2.0-0
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: uv sync --frozen
 
       - name: Install pnpm and build JS
@@ -45,7 +102,16 @@ jobs:
           pnpm build
 
       - name: Run API tests
-        run: uv run pytest tests/api/ --create-db
+        run: uv run pytest tests/api/ --create-db --junit-xml=reports/api-tests.xml -v --tb=short
+
+      - name: Publish API test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: API Test Results
+          path: reports/api-tests.xml
+          reporter: java-junit
+          fail-on-error: false
 
   frontend-tests:
     name: Frontend Tests (Playwright)
@@ -76,7 +142,7 @@ jobs:
             libcairo2 \
             libgdk-pixbuf2.0-0
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: uv sync --frozen
 
       - name: Install pnpm and build JS
@@ -92,4 +158,46 @@ jobs:
         run: uv run playwright install --with-deps chromium
 
       - name: Run frontend tests
-        run: uv run pytest tests/frontend/ --create-db
+        run: >
+          uv run pytest tests/frontend/ --create-db
+          --junit-xml=reports/frontend-tests.xml
+          -v --tb=short
+          --screenshot=only-on-failure
+          --tracing=retain-on-failure
+          --output=playwright-artifacts
+
+      - name: Upload Playwright failure artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-artifacts
+          path: playwright-artifacts/
+          retention-days: 7
+
+      - name: Publish frontend test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Frontend Test Results
+          path: reports/frontend-tests.xml
+          reporter: java-junit
+          fail-on-error: false
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, api-tests, frontend-tests]
+    if: always()
+
+    steps:
+      - name: Write job summary
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit & Integration Tests | ${{ needs.unit-tests.result == 'success' && '✅ passed' || needs.unit-tests.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| API Tests | ${{ needs.api-tests.result == 'success' && '✅ passed' || needs.api-tests.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Tests (Playwright) | ${{ needs.frontend-tests.result == 'success' && '✅ passed' || needs.frontend-tests.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Detailed per-test results are available in the **Checks** tab above." >> $GITHUB_STEP_SUMMARY
