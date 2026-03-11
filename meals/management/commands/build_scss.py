@@ -52,6 +52,7 @@ def _collect_static_dirs() -> list[Path]:
 
     # Add each installed app's static/ folder
     from django.apps import apps
+
     for app_config in apps.get_app_configs():
         candidate = Path(app_config.path) / "static"
         if candidate.is_dir():
@@ -111,5 +112,7 @@ class Command(BaseCommand):
             )
         else:
             self.stdout.write(
-                self.style.SUCCESS(f"\nSuccessfully compiled {len(pairs)} SCSS file(s).")
+                self.style.SUCCESS(
+                    f"\nSuccessfully compiled {len(pairs)} SCSS file(s)."
+                )
             )

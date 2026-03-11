@@ -14,33 +14,32 @@ import pytest
 from meals.nutrients import NUTRIENTS, NUTRIENT_IDS, THRESHOLD_SCHEMA
 from meals.models import Food
 
-
 EXPECTED_NUTRIENT_KEYS = [
-    'energy_in_kcal',
-    'protein_in_g',
-    'fat_in_g',
-    'omega3_in_g',
-    'carbohydrate_in_g',
-    'sugar_in_g',
-    'fibre_in_g',
-    'iron_in_mg',
-    'vitc_in_mg',
-    'magnesium_in_mg',
-    'zinc_in_mg',
-    'vitb12_in_mug',
-    'vita_in_mug',
-    'calcium_in_mg',
-    'vitd_in_mug',
-    'vitb1_in_mg',
-    'vitb2_in_mg',
-    'vitb3_in_mg',
-    'vitb5_in_mg',
-    'vitb6_in_mug',
-    'biotin_in_mug',
-    'iodine_in_mug',
-    'copper_in_mug',
-    'manganese_in_mug',
-    'molybdenum_in_mug',
+    "energy_in_kcal",
+    "protein_in_g",
+    "fat_in_g",
+    "omega3_in_g",
+    "carbohydrate_in_g",
+    "sugar_in_g",
+    "fibre_in_g",
+    "iron_in_mg",
+    "vitc_in_mg",
+    "magnesium_in_mg",
+    "zinc_in_mg",
+    "vitb12_in_mug",
+    "vita_in_mug",
+    "calcium_in_mg",
+    "vitd_in_mug",
+    "vitb1_in_mg",
+    "vitb2_in_mg",
+    "vitb3_in_mg",
+    "vitb5_in_mg",
+    "vitb6_in_mug",
+    "biotin_in_mug",
+    "iodine_in_mug",
+    "copper_in_mug",
+    "manganese_in_mug",
+    "molybdenum_in_mug",
 ]
 
 
@@ -56,32 +55,35 @@ class TestNutrientsDict:
         assert len(NUTRIENTS) == 25
 
     def test_every_entry_has_required_fields(self):
-        required = {'label', 'unit', 'food_key', 'precision'}
+        required = {"label", "unit", "food_key", "precision"}
         for key, data in NUTRIENTS.items():
             missing = required - set(data.keys())
             assert not missing, f"Nutrient '{key}' missing fields: {missing}"
 
     def test_labels_are_non_empty_strings(self):
         for key, data in NUTRIENTS.items():
-            label_str = str(data['label'])
+            label_str = str(data["label"])
             assert label_str, f"Nutrient '{key}' has empty label"
 
     def test_units_are_non_empty_strings(self):
         for key, data in NUTRIENTS.items():
-            assert isinstance(data['unit'], str) and data['unit'], \
-                f"Nutrient '{key}' has empty unit"
+            assert (
+                isinstance(data["unit"], str) and data["unit"]
+            ), f"Nutrient '{key}' has empty unit"
 
     def test_precision_is_positive_int_or_zero(self):
         for key, data in NUTRIENTS.items():
-            assert isinstance(data['precision'], int) and data['precision'] >= 0, \
-                f"Nutrient '{key}' has invalid precision: {data['precision']}"
+            assert (
+                isinstance(data["precision"], int) and data["precision"] >= 0
+            ), f"Nutrient '{key}' has invalid precision: {data['precision']}"
 
     def test_food_keys_map_to_food_model_fields(self):
         """Every food_key in NUTRIENTS must be a real field on the Food model."""
         food_field_names = {f.name for f in Food._meta.get_fields()}
         for key, data in NUTRIENTS.items():
-            assert data['food_key'] in food_field_names, \
-                f"Nutrient '{key}' has food_key '{data['food_key']}' not found on Food model"
+            assert (
+                data["food_key"] in food_field_names
+            ), f"Nutrient '{key}' has food_key '{data['food_key']}' not found on Food model"
 
 
 class TestNutrientIDs:
@@ -104,32 +106,34 @@ class TestThresholdSchema:
         assert isinstance(THRESHOLD_SCHEMA, dict)
 
     def test_schema_type_is_object(self):
-        assert THRESHOLD_SCHEMA.get('type') == 'object'
+        assert THRESHOLD_SCHEMA.get("type") == "object"
 
     def test_schema_disallows_additional_properties(self):
-        assert THRESHOLD_SCHEMA.get('additionalProperties') is False
+        assert THRESHOLD_SCHEMA.get("additionalProperties") is False
 
     def test_pattern_properties_covers_all_nutrient_ids(self):
         """The patternProperties regex must match every key in NUTRIENT_IDS."""
         import re
-        pattern_keys = list(THRESHOLD_SCHEMA.get('patternProperties', {}).keys())
+
+        pattern_keys = list(THRESHOLD_SCHEMA.get("patternProperties", {}).keys())
         assert len(pattern_keys) == 1, "Expected exactly one patternProperty regex"
         pattern = pattern_keys[0]
         for nutrient_id in NUTRIENT_IDS:
-            assert re.match(pattern, nutrient_id), \
-                f"Schema pattern '{pattern}' does not match nutrient ID '{nutrient_id}'"
+            assert re.match(
+                pattern, nutrient_id
+            ), f"Schema pattern '{pattern}' does not match nutrient ID '{nutrient_id}'"
 
     def test_each_threshold_entry_allows_min_and_max(self):
         """The schema for each threshold entry must declare min and max properties."""
-        for _, entry_schema in THRESHOLD_SCHEMA['patternProperties'].items():
-            props = entry_schema.get('properties', {})
-            assert 'min' in props, "Threshold schema entry is missing 'min'"
-            assert 'max' in props, "Threshold schema entry is missing 'max'"
+        for _, entry_schema in THRESHOLD_SCHEMA["patternProperties"].items():
+            props = entry_schema.get("properties", {})
+            assert "min" in props, "Threshold schema entry is missing 'min'"
+            assert "max" in props, "Threshold schema entry is missing 'max'"
 
     def test_min_max_accept_number_or_null(self):
         """min and max should each accept number or null types."""
-        for _, entry_schema in THRESHOLD_SCHEMA['patternProperties'].items():
-            for field in ('min', 'max'):
-                allowed_types = entry_schema['properties'][field].get('type', [])
-                assert 'number' in allowed_types, f"'{field}' does not allow 'number'"
-                assert 'null' in allowed_types, f"'{field}' does not allow 'null'"
+        for _, entry_schema in THRESHOLD_SCHEMA["patternProperties"].items():
+            for field in ("min", "max"):
+                allowed_types = entry_schema["properties"][field].get("type", [])
+                assert "number" in allowed_types, f"'{field}' does not allow 'number'"
+                assert "null" in allowed_types, f"'{field}' does not allow 'null'"

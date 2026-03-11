@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0014_thresholdpreset'),
+        ("meals", "0014_thresholdpreset"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='thresholdpreset',
-            name='name',
+            model_name="thresholdpreset",
+            name="name",
             field=models.CharField(max_length=255, unique=True),
         ),
     ]

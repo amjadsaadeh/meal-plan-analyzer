@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0022_sitesettings_minilogo'),
+        ("meals", "0022_sitesettings_minilogo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='food',
-            name='molybdenum_in_mug_per_100g',
+            model_name="food",
+            name="molybdenum_in_mug_per_100g",
             field=models.FloatField(default=0.0),
         ),
         migrations.AddField(
-            model_name='thresholdpreset',
-            name='molybdenum_in_mug_max',
+            model_name="thresholdpreset",
+            name="molybdenum_in_mug_max",
             field=models.FloatField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='thresholdpreset',
-            name='molybdenum_in_mug_min',
+            model_name="thresholdpreset",
+            name="molybdenum_in_mug_min",
             field=models.FloatField(blank=True, null=True),
         ),
     ]

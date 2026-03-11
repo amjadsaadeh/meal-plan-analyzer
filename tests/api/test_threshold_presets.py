@@ -19,11 +19,13 @@ class TestThresholdPresetAuth:
     """Unauthenticated requests are rejected."""
 
     def test_list_unauthenticated(self, api_client):
-        response = api_client.get('/api/threshold-presets/')
+        response = api_client.get("/api/threshold-presets/")
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_create_unauthenticated(self, api_client):
-        response = api_client.post('/api/threshold-presets/', {"name": "Adult"}, format='json')
+        response = api_client.post(
+            "/api/threshold-presets/", {"name": "Adult"}, format="json"
+        )
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -34,7 +36,7 @@ class TestThresholdPresetCRUD:
     def test_create_minimal(self, authenticated_client):
         """Creating a preset with just a name (all nutrients null) succeeds."""
         response = authenticated_client.post(
-            '/api/threshold-presets/', {"name": "Adult"}, format='json'
+            "/api/threshold-presets/", {"name": "Adult"}, format="json"
         )
         assert response.status_code == status.HTTP_201_CREATED
         assert ThresholdPreset.objects.filter(name="Adult").exists()
@@ -48,7 +50,9 @@ class TestThresholdPresetCRUD:
             "protein_in_g_min": 80.0,
             "protein_in_g_max": 150.0,
         }
-        response = authenticated_client.post('/api/threshold-presets/', payload, format='json')
+        response = authenticated_client.post(
+            "/api/threshold-presets/", payload, format="json"
+        )
         assert response.status_code == status.HTTP_201_CREATED
         preset = ThresholdPreset.objects.get(name="Sporty")
         assert preset.energy_in_kcal_min == 2500.0
@@ -58,9 +62,9 @@ class TestThresholdPresetCRUD:
         """Listing returns all created presets."""
         ThresholdPreset.objects.create(name="A")
         ThresholdPreset.objects.create(name="B")
-        response = authenticated_client.get('/api/threshold-presets/')
+        response = authenticated_client.get("/api/threshold-presets/")
         assert response.status_code == status.HTTP_200_OK
-        names = [p['name'] for p in response.data['results']]
+        names = [p["name"] for p in response.data["results"]]
         assert "A" in names
         assert "B" in names
 
@@ -69,18 +73,18 @@ class TestThresholdPresetCRUD:
         preset = ThresholdPreset.objects.create(
             name="Child", energy_in_kcal_min=1200.0, energy_in_kcal_max=1800.0
         )
-        response = authenticated_client.get(f'/api/threshold-presets/{preset.id}/')
+        response = authenticated_client.get(f"/api/threshold-presets/{preset.id}/")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data['name'] == "Child"
-        assert response.data['energy_in_kcal_min'] == 1200.0
-        assert response.data['energy_in_kcal_max'] == 1800.0
+        assert response.data["name"] == "Child"
+        assert response.data["energy_in_kcal_min"] == 1200.0
+        assert response.data["energy_in_kcal_max"] == 1800.0
 
     def test_update_preset_put(self, authenticated_client):
         """PUT update replaces the preset's name and fields."""
         preset = ThresholdPreset.objects.create(name="Old Name")
         payload = {"name": "New Name", "protein_in_g_min": 60.0}
         response = authenticated_client.put(
-            f'/api/threshold-presets/{preset.id}/', payload, format='json'
+            f"/api/threshold-presets/{preset.id}/", payload, format="json"
         )
         assert response.status_code == status.HTTP_200_OK
         preset.refresh_from_db()
@@ -93,9 +97,9 @@ class TestThresholdPresetCRUD:
             name="Base", energy_in_kcal_min=1800.0, energy_in_kcal_max=2400.0
         )
         response = authenticated_client.patch(
-            f'/api/threshold-presets/{preset.id}/',
+            f"/api/threshold-presets/{preset.id}/",
             {"energy_in_kcal_max": 2800.0},
-            format='json',
+            format="json",
         )
         assert response.status_code == status.HTTP_200_OK
         preset.refresh_from_db()
@@ -105,18 +109,18 @@ class TestThresholdPresetCRUD:
     def test_delete_preset(self, authenticated_client):
         """DELETE removes the preset from the database."""
         preset = ThresholdPreset.objects.create(name="ToDelete")
-        response = authenticated_client.delete(f'/api/threshold-presets/{preset.id}/')
+        response = authenticated_client.delete(f"/api/threshold-presets/{preset.id}/")
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not ThresholdPreset.objects.filter(pk=preset.id).exists()
 
     def test_null_nutrient_fields_stored_correctly(self, authenticated_client):
         """Fields not supplied default to null and are returned as null."""
         response = authenticated_client.post(
-            '/api/threshold-presets/', {"name": "Sparse"}, format='json'
+            "/api/threshold-presets/", {"name": "Sparse"}, format="json"
         )
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['energy_in_kcal_min'] is None
-        assert response.data['vitd_in_mug_max'] is None
+        assert response.data["energy_in_kcal_min"] is None
+        assert response.data["vitd_in_mug_max"] is None
 
 
 @pytest.mark.django_db
@@ -127,7 +131,7 @@ class TestThresholdPresetConstraints:
         """Creating two presets with the same name returns 400."""
         ThresholdPreset.objects.create(name="Unique")
         response = authenticated_client.post(
-            '/api/threshold-presets/', {"name": "Unique"}, format='json'
+            "/api/threshold-presets/", {"name": "Unique"}, format="json"
         )
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 

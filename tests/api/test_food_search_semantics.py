@@ -15,10 +15,10 @@ import pytest
 from rest_framework import status
 from meals.models import Food
 
-
 # ---------------------------------------------------------------------------
 # Helpers — create isolated Food objects so tests don't depend on fixtures
 # ---------------------------------------------------------------------------
+
 
 def _food(bls, name, kcal):
     return Food.objects.create(
@@ -38,27 +38,27 @@ class TestFoodSearchHighEnergyIntent:
         _food("HE2", "Mid cal item", 300)
         _food("HE3", "High cal item", 800)
 
-        response = authenticated_client.get('/api/foods/?search=high energy')
+        response = authenticated_client.get("/api/foods/?search=high energy")
         assert response.status_code == status.HTTP_200_OK
-        energies = [item['energy_in_kcal_per_100g'] for item in response.data]
+        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
         assert energies == sorted(energies, reverse=True)
 
     def test_high_cal_intent_descending_order(self, authenticated_client):
         _food("HC1", "Salad", 20)
         _food("HC2", "Burger", 600)
 
-        response = authenticated_client.get('/api/foods/?search=high cal')
+        response = authenticated_client.get("/api/foods/?search=high cal")
         assert response.status_code == status.HTTP_200_OK
-        energies = [item['energy_in_kcal_per_100g'] for item in response.data]
+        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
         assert energies == sorted(energies, reverse=True)
 
     def test_high_kcal_intent_descending_order(self, authenticated_client):
         _food("HK1", "Light soup", 30)
         _food("HK2", "Chocolate cake", 450)
 
-        response = authenticated_client.get('/api/foods/?search=high kcal')
+        response = authenticated_client.get("/api/foods/?search=high kcal")
         assert response.status_code == status.HTTP_200_OK
-        energies = [item['energy_in_kcal_per_100g'] for item in response.data]
+        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
         assert energies == sorted(energies, reverse=True)
 
 
@@ -68,25 +68,25 @@ class TestFoodSearchQueryLength:
 
     def test_empty_search_returns_all_foods(self, authenticated_client):
         """No search parameter returns all foods (paginated)."""
-        response = authenticated_client.get('/api/foods/')
+        response = authenticated_client.get("/api/foods/")
         assert response.status_code == status.HTTP_200_OK
         # Without a search query the endpoint returns paginated results
-        results = response.data.get('results', response.data)
+        results = response.data.get("results", response.data)
         assert len(results) > 0
 
     def test_single_char_query_returns_empty(self, authenticated_client):
         """A 1-character query is below the 2-char threshold → empty result."""
-        response = authenticated_client.get('/api/foods/?search=a')
+        response = authenticated_client.get("/api/foods/?search=a")
         assert response.status_code == status.HTTP_200_OK
         assert response.data == []
 
     def test_two_char_query_is_accepted(self, authenticated_client):
         """Exactly 2 characters is above the threshold and triggers a real search."""
         _food("TC1", "Apple juice", 46)
-        response = authenticated_client.get('/api/foods/?search=Ap')
+        response = authenticated_client.get("/api/foods/?search=Ap")
         assert response.status_code == status.HTTP_200_OK
         # Should return at least the food we just created
-        assert any("Apple" in item['name'] for item in response.data)
+        assert any("Apple" in item["name"] for item in response.data)
 
 
 @pytest.mark.django_db
@@ -95,15 +95,15 @@ class TestFoodSearchBLSCode:
 
     def test_search_by_bls_code(self, authenticated_client):
         _food("BLS_UNIQUE_XYZ", "Generic grain", 350)
-        response = authenticated_client.get('/api/foods/?search=BLS_UNIQUE_XYZ')
+        response = authenticated_client.get("/api/foods/?search=BLS_UNIQUE_XYZ")
         assert response.status_code == status.HTTP_200_OK
-        assert any(item['bls_code'] == "BLS_UNIQUE_XYZ" for item in response.data)
+        assert any(item["bls_code"] == "BLS_UNIQUE_XYZ" for item in response.data)
 
     def test_partial_bls_code_search(self, authenticated_client):
         _food("BLS_PARTIAL_999", "Mixed grain", 320)
-        response = authenticated_client.get('/api/foods/?search=PARTIAL_999')
+        response = authenticated_client.get("/api/foods/?search=PARTIAL_999")
         assert response.status_code == status.HTTP_200_OK
-        assert any(item['bls_code'] == "BLS_PARTIAL_999" for item in response.data)
+        assert any(item["bls_code"] == "BLS_PARTIAL_999" for item in response.data)
 
 
 @pytest.mark.django_db
@@ -116,23 +116,23 @@ class TestFoodSearchRelevanceRanking:
         _food("RL2", "Milk chocolate", 530)
         _food("RL3", "Skimmed milk powder", 362)
 
-        response = authenticated_client.get('/api/foods/?search=Milk')
+        response = authenticated_client.get("/api/foods/?search=Milk")
         assert response.status_code == status.HTTP_200_OK
         # The exact match "Milk" should appear before partial matches
-        names = [item['name'] for item in response.data]
+        names = [item["name"] for item in response.data]
         milk_index = names.index("Milk")
         milk_choc_index = names.index("Milk chocolate")
         assert milk_index < milk_choc_index
 
     def test_startswith_ranks_above_contains(self, authenticated_client):
         """Foods whose name starts with the query rank above those that merely contain it."""
-        _food("RL4", "Apple juice", 46)       # contains "Apple"
-        _food("RL5", "Apple", 52)             # exact
-        _food("RL6", "Pineapple", 50)         # contains embedded "apple"
+        _food("RL4", "Apple juice", 46)  # contains "Apple"
+        _food("RL5", "Apple", 52)  # exact
+        _food("RL6", "Pineapple", 50)  # contains embedded "apple"
 
-        response = authenticated_client.get('/api/foods/?search=Apple')
+        response = authenticated_client.get("/api/foods/?search=Apple")
         assert response.status_code == status.HTTP_200_OK
-        names = [item['name'] for item in response.data]
+        names = [item["name"] for item in response.data]
         apple_idx = names.index("Apple")
         pineapple_idx = names.index("Pineapple")
         assert apple_idx < pineapple_idx
@@ -148,12 +148,12 @@ class TestFoodSearchCombinedIntentAndName:
         _food("CI2", "Chicken skin", 450)
         _food("CI3", "Beef steak", 250)  # should not appear
 
-        response = authenticated_client.get('/api/foods/?search=low energy chicken')
+        response = authenticated_client.get("/api/foods/?search=low energy chicken")
         assert response.status_code == status.HTTP_200_OK
 
-        names = [item['name'] for item in response.data]
+        names = [item["name"] for item in response.data]
         # Beef steak should not appear
         assert "Beef steak" not in names
         # The two chicken items should appear, sorted ascending by kcal
-        energies = [item['energy_in_kcal_per_100g'] for item in response.data]
+        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
         assert energies == sorted(energies)

@@ -8,43 +8,78 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Food',
+            name="Food",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('bls_code', models.CharField(max_length=50, unique=True)),
-                ('name', models.CharField(max_length=255)),
-                ('energy_in_kj_per_100g', models.FloatField()),
-                ('energy_in_kcal_per_100g', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("bls_code", models.CharField(max_length=50, unique=True)),
+                ("name", models.CharField(max_length=255)),
+                ("energy_in_kj_per_100g", models.FloatField()),
+                ("energy_in_kcal_per_100g", models.FloatField()),
             ],
         ),
         migrations.CreateModel(
-            name='MealPlan',
+            name="MealPlan",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('creation_date', models.DateTimeField(auto_now_add=True)),
-                ('change_date', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("creation_date", models.DateTimeField(auto_now_add=True)),
+                ("change_date", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='MealPlanFood',
+            name="MealPlanFood",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('food', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='meals.food')),
-                ('meal_plan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='meals.mealplan')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "food",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="meals.food"
+                    ),
+                ),
+                (
+                    "meal_plan",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="meals.mealplan"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('meal_plan', 'food')},
+                "unique_together": {("meal_plan", "food")},
             },
         ),
         migrations.AddField(
-            model_name='mealplan',
-            name='foods',
-            field=models.ManyToManyField(related_name='meal_plans', through='meals.MealPlanFood', to='meals.food'),
+            model_name="mealplan",
+            name="foods",
+            field=models.ManyToManyField(
+                related_name="meal_plans", through="meals.MealPlanFood", to="meals.food"
+            ),
         ),
     ]

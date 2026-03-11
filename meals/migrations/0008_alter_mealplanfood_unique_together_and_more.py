@@ -6,21 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0007_mealplan_visible_nutrients'),
+        ("meals", "0007_mealplan_visible_nutrients"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='mealplanfood',
+            name="mealplanfood",
             unique_together=set(),
         ),
         migrations.AddField(
-            model_name='mealplanfood',
-            name='meal_type',
-            field=models.CharField(choices=[('breakfast', 'Breakfast'), ('lunch', 'Lunch'), ('dinner', 'Dinner')], default='breakfast', max_length=20),
+            model_name="mealplanfood",
+            name="meal_type",
+            field=models.CharField(
+                choices=[
+                    ("breakfast", "Breakfast"),
+                    ("lunch", "Lunch"),
+                    ("dinner", "Dinner"),
+                ],
+                default="breakfast",
+                max_length=20,
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='mealplanfood',
-            unique_together={('meal_plan', 'food', 'meal_type')},
+            name="mealplanfood",
+            unique_together={("meal_plan", "food", "meal_type")},
         ),
     ]

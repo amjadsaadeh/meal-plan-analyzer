@@ -1,6 +1,7 @@
 import factory
 from meals.models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
 
+
 class FoodFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Food
@@ -23,6 +24,7 @@ class FoodFactory(factory.django.DjangoModelFactory):
     vita_in_mug_per_100g = 10.0
     calcium_in_mg_per_100g = 30.0
     vitd_in_mug_per_100g = 0.5
+
 
 class MealPlanFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -47,6 +49,7 @@ class MealPlanFoodFactory(factory.django.DjangoModelFactory):
     food = factory.SubFactory(FoodFactory)
     amount_in_g = 100.0
     meal_type = "breakfast"
+
 
 class ThresholdPresetFactory(factory.django.DjangoModelFactory):
     class Meta:

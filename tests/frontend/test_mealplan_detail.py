@@ -20,6 +20,7 @@ def _wait_for_app(page):
 # Plan name editing
 # ---------------------------------------------------------------------------
 
+
 def test_mealplan_detail_edit_name(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="Original Name")
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
@@ -31,7 +32,9 @@ def test_mealplan_detail_edit_name(logged_in_page, live_server, test_user):
 
     # Wait for "Unsaved changes" to confirm Vue detected the edit, then
     # wait for "Saved" to confirm the debounced API call succeeded.
-    expect(logged_in_page.locator("#syncText")).to_have_text("Unsaved changes", timeout=5000)
+    expect(logged_in_page.locator("#syncText")).to_have_text(
+        "Unsaved changes", timeout=5000
+    )
     expect(logged_in_page.locator("#syncText")).to_have_text("Saved", timeout=10000)
 
     logged_in_page.reload()
@@ -42,6 +45,7 @@ def test_mealplan_detail_edit_name(logged_in_page, live_server, test_user):
 # ---------------------------------------------------------------------------
 # Day name editing
 # ---------------------------------------------------------------------------
+
 
 def test_mealplan_detail_edit_day_name(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="Day Name Test")
@@ -59,12 +63,15 @@ def test_mealplan_detail_edit_day_name(logged_in_page, live_server, test_user):
 
     logged_in_page.reload()
     _wait_for_app(logged_in_page)
-    expect(logged_in_page.locator(".editable-day-title").first).to_have_text("Renamed Day")
+    expect(logged_in_page.locator(".editable-day-title").first).to_have_text(
+        "Renamed Day"
+    )
 
 
 # ---------------------------------------------------------------------------
 # Adding a day
 # ---------------------------------------------------------------------------
+
 
 def test_mealplan_detail_add_day(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="Add Day Test")
@@ -83,6 +90,7 @@ def test_mealplan_detail_add_day(logged_in_page, live_server, test_user):
 # ---------------------------------------------------------------------------
 # Day deletion
 # ---------------------------------------------------------------------------
+
 
 def test_delete_day(logged_in_page, live_server, test_user):
     plan = MealPlanFactory()
@@ -116,6 +124,7 @@ def test_delete_day(logged_in_page, live_server, test_user):
 # Ingredient (MealPlanFood) deletion
 # ---------------------------------------------------------------------------
 
+
 def test_delete_ingredient(logged_in_page, live_server, test_user, meal_plan_with_food):
     plan, day, food, mpf = meal_plan_with_food
 
@@ -123,7 +132,9 @@ def test_delete_ingredient(logged_in_page, live_server, test_user, meal_plan_wit
     _wait_for_app(logged_in_page)
 
     # Only rows with data-id are real (persisted) ingredients; draft rows omit the attribute
-    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(1, timeout=10000)
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(
+        1, timeout=10000
+    )
 
     # Trigger the deletion modal
     logged_in_page.locator(".ingredient-row[data-id] .delete-btn").first.click()
@@ -134,12 +145,15 @@ def test_delete_ingredient(logged_in_page, live_server, test_user, meal_plan_wit
     logged_in_page.locator("#confirmDeleteIngredientBtn").click()
 
     # Real row should be removed from the DOM
-    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(0, timeout=10000)
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(
+        0, timeout=10000
+    )
 
 
 # ---------------------------------------------------------------------------
 # Nutrient calculation — initial render and JS recalculation
 # ---------------------------------------------------------------------------
+
 
 def test_nutrient_calculation_initial_render(logged_in_page, live_server, test_user):
     """Vue-computed nutrient values must match food * amount / 100."""
@@ -150,7 +164,9 @@ def test_nutrient_calculation_initial_render(logged_in_page, live_server, test_u
         energy_in_kcal_per_100g=200.0,
         protein_in_g_per_100g=20.0,
     )
-    MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=150.0, meal_type="breakfast")
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=150.0, meal_type="breakfast"
+    )
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
     _wait_for_app(logged_in_page)
@@ -173,7 +189,9 @@ def test_nutrient_calculation_js_recalc(logged_in_page, live_server, test_user):
         energy_in_kcal_per_100g=100.0,
         protein_in_g_per_100g=10.0,
     )
-    MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="breakfast")
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="breakfast"
+    )
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
     _wait_for_app(logged_in_page)
@@ -199,17 +217,22 @@ def test_nutrient_calculation_js_recalc(logged_in_page, live_server, test_user):
 # Meal subtotals (tfoot)
 # ---------------------------------------------------------------------------
 
+
 def test_meal_subtotals_update(logged_in_page, live_server, test_user):
     """The tfoot subtotal row must reflect the computed sum of saved ingredients."""
     plan = MealPlanFactory()
     day = MealPlanDayFactory(meal_plan=plan)
     food = FoodFactory(name="Subtotal Food", energy_in_kcal_per_100g=400.0)
-    MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=50.0, meal_type="breakfast")
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=50.0, meal_type="breakfast"
+    )
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
     _wait_for_app(logged_in_page)
 
-    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_be_visible(timeout=10000)
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_be_visible(
+        timeout=10000
+    )
 
     # 50g × 400 kcal/100 g = 200.0
     breakfast_table = logged_in_page.locator("table[data-meal-type='breakfast']").first
@@ -220,6 +243,7 @@ def test_meal_subtotals_update(logged_in_page, live_server, test_user):
 # ---------------------------------------------------------------------------
 # Food search & add
 # ---------------------------------------------------------------------------
+
 
 def test_mealplan_detail_food_search_and_add(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="Food Search Test")
@@ -281,17 +305,22 @@ def test_food_search_no_results(logged_in_page, live_server, test_user):
 # Food appears in the correct meal section
 # ---------------------------------------------------------------------------
 
+
 def test_food_in_correct_meal_section(logged_in_page, live_server, test_user):
     """A food added to 'lunch' must only appear in the lunch meal table."""
     plan = MealPlanFactory()
     day = MealPlanDayFactory(meal_plan=plan)
     food = FoodFactory(name="Lunch Item", energy_in_kcal_per_100g=300.0)
-    MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="lunch")
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="lunch"
+    )
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
     _wait_for_app(logged_in_page)
 
-    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_be_visible(timeout=10000)
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_be_visible(
+        timeout=10000
+    )
 
     # The food must appear in the lunch table
     lunch_table = logged_in_page.locator("table[data-meal-type='lunch']").first
@@ -306,7 +335,10 @@ def test_food_in_correct_meal_section(logged_in_page, live_server, test_user):
 # Threshold min/max — persist across reload
 # ---------------------------------------------------------------------------
 
-def test_threshold_min_max_persist(logged_in_page, live_server, test_user, meal_plan_with_day):
+
+def test_threshold_min_max_persist(
+    logged_in_page, live_server, test_user, meal_plan_with_day
+):
     plan, day = meal_plan_with_day
 
     # Side panels are hidden below 1280px; use a desktop viewport to interact with them
@@ -330,7 +362,9 @@ def test_threshold_min_max_persist(logged_in_page, live_server, test_user, meal_
     ).to_have_value("55")
 
 
-def test_threshold_max_persist(logged_in_page, live_server, test_user, meal_plan_with_day):
+def test_threshold_max_persist(
+    logged_in_page, live_server, test_user, meal_plan_with_day
+):
     plan, day = meal_plan_with_day
 
     # Side panels are hidden below 1280px; use a desktop viewport to interact with them
@@ -338,7 +372,9 @@ def test_threshold_max_persist(logged_in_page, live_server, test_user, meal_plan
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
     _wait_for_app(logged_in_page)
 
-    max_input = logged_in_page.locator('.threshold-max[data-nut="energy_in_kcal"]').first
+    max_input = logged_in_page.locator(
+        '.threshold-max[data-nut="energy_in_kcal"]'
+    ).first
     max_input.fill("2500")
     max_input.dispatch_event("input")
 
@@ -356,20 +392,27 @@ def test_threshold_max_persist(logged_in_page, live_server, test_user, meal_plan
 # Day summary totals
 # ---------------------------------------------------------------------------
 
+
 def test_day_summary_total(logged_in_page, live_server, test_user):
     """The day summary panel must show the correct reactive total for a nutrient."""
     plan = MealPlanFactory()
     day = MealPlanDayFactory(meal_plan=plan)
     food = FoodFactory(name="Summary Food", energy_in_kcal_per_100g=500.0)
-    MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=200.0, meal_type="breakfast")
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=200.0, meal_type="breakfast"
+    )
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
     _wait_for_app(logged_in_page)
 
-    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_be_visible(timeout=10000)
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_be_visible(
+        timeout=10000
+    )
 
     # 200g × 500 kcal/100 g = 1000.0
-    energy_val = logged_in_page.locator(".day-summary .col-energy_in_kcal .summary-val").first
+    energy_val = logged_in_page.locator(
+        ".day-summary .col-energy_in_kcal .summary-val"
+    ).first
     expect(energy_val).to_have_text("1000.0", timeout=5000)
 
 
@@ -377,7 +420,10 @@ def test_day_summary_total(logged_in_page, live_server, test_user):
 # Column visibility toggle — persists after reload
 # ---------------------------------------------------------------------------
 
-def test_column_visibility_toggle(logged_in_page, live_server, test_user, meal_plan_with_day):
+
+def test_column_visibility_toggle(
+    logged_in_page, live_server, test_user, meal_plan_with_day
+):
     plan, day = meal_plan_with_day
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
@@ -406,6 +452,7 @@ def test_column_visibility_toggle(logged_in_page, live_server, test_user, meal_p
 # Three meal-type sections are present on the page
 # ---------------------------------------------------------------------------
 
+
 def test_all_three_meal_sections_present(logged_in_page, live_server, test_user):
     plan = MealPlanFactory()
     MealPlanDayFactory(meal_plan=plan)
@@ -415,12 +462,15 @@ def test_all_three_meal_sections_present(logged_in_page, live_server, test_user)
 
     # Each day renders Breakfast, Lunch, Dinner sections
     expect(logged_in_page.locator(".meal-section")).to_have_count(3, timeout=10000)
-    expect(logged_in_page.locator(".meal-section")).to_contain_text(["Breakfast", "Lunch", "Dinner"])
+    expect(logged_in_page.locator(".meal-section")).to_contain_text(
+        ["Breakfast", "Lunch", "Dinner"]
+    )
 
 
 # ---------------------------------------------------------------------------
 # Plan overview section is present
 # ---------------------------------------------------------------------------
+
 
 def test_plan_overview_section_present(logged_in_page, live_server, test_user):
     """The plan overview (daily average) section must be visible below the day sections."""
@@ -437,6 +487,7 @@ def test_plan_overview_section_present(logged_in_page, live_server, test_user):
 # Multiple days render independently
 # ---------------------------------------------------------------------------
 
+
 def test_multiple_days_render_independently(logged_in_page, live_server, test_user):
     """Two days must each have their own day-section with the correct data-day-id."""
     plan = MealPlanFactory()
@@ -448,15 +499,24 @@ def test_multiple_days_render_independently(logged_in_page, live_server, test_us
 
     expect(logged_in_page.locator(".day-section")).to_have_count(2, timeout=10000)
     # Use .day-section to avoid matching the tables that also carry data-day-id
-    expect(logged_in_page.locator(f'.day-section[data-day-id="{day1.id}"]')).to_be_visible()
-    expect(logged_in_page.locator(f'.day-section[data-day-id="{day2.id}"]')).to_be_visible()
-    expect(logged_in_page.locator(f'.day-section[data-day-id="{day1.id}"]')).to_contain_text("Day One")
-    expect(logged_in_page.locator(f'.day-section[data-day-id="{day2.id}"]')).to_contain_text("Day Two")
+    expect(
+        logged_in_page.locator(f'.day-section[data-day-id="{day1.id}"]')
+    ).to_be_visible()
+    expect(
+        logged_in_page.locator(f'.day-section[data-day-id="{day2.id}"]')
+    ).to_be_visible()
+    expect(
+        logged_in_page.locator(f'.day-section[data-day-id="{day1.id}"]')
+    ).to_contain_text("Day One")
+    expect(
+        logged_in_page.locator(f'.day-section[data-day-id="{day2.id}"]')
+    ).to_contain_text("Day Two")
 
 
 # ---------------------------------------------------------------------------
 # Sticky bar is present in the DOM
 # ---------------------------------------------------------------------------
+
 
 def test_sticky_bar_in_dom(logged_in_page, live_server, test_user):
     """The sticky bar must be rendered in the DOM and contain the sync status element."""
@@ -473,6 +533,7 @@ def test_sticky_bar_in_dom(logged_in_page, live_server, test_user):
 # ---------------------------------------------------------------------------
 # PDF preview opens in a popup and renders content
 # ---------------------------------------------------------------------------
+
 
 def test_mealplan_detail_pdf_export_preview(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="PDF Test Plan")
@@ -496,7 +557,10 @@ def test_mealplan_detail_pdf_export_preview(logged_in_page, live_server, test_us
 # Threshold Presets
 # ---------------------------------------------------------------------------
 
-def test_save_threshold_preset(logged_in_page, live_server, test_user, meal_plan_with_day):
+
+def test_save_threshold_preset(
+    logged_in_page, live_server, test_user, meal_plan_with_day
+):
     plan, day = meal_plan_with_day
     logged_in_page.set_viewport_size({"width": 1440, "height": 900})
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
@@ -507,7 +571,7 @@ def test_save_threshold_preset(logged_in_page, live_server, test_user, meal_plan
     min_input.fill("60")
     min_input.dispatch_event("input")
     expect(logged_in_page.locator("#syncText")).to_have_text("Saved", timeout=10000)
-    
+
     # Click "Save reference value template" in the day summary panel
     # (Matches i18n.saveAsTemplate value: "Save as Reference Value Template")
     logged_in_page.locator("text=Save as Reference Value Template").first.click()
@@ -515,21 +579,26 @@ def test_save_threshold_preset(logged_in_page, live_server, test_user, meal_plan
     # Wait for modal, fill name and save
     name_input = logged_in_page.locator(".modal-input")
     name_input.fill("My Custom Preset")
-    
+
     # Wait for validation
-    logged_in_page.wait_for_timeout(1000) 
-    
+    logged_in_page.wait_for_timeout(1000)
+
     save_btn = logged_in_page.locator(".btn-modal-save")
     expect(save_btn).to_be_enabled()
     save_btn.click()
 
     # Verify success alert (Playwright handles window.alert automatically or we can check if modal closes)
-    expect(logged_in_page.locator(".modal-overlay.active")).to_have_count(0, timeout=5000)
+    expect(logged_in_page.locator(".modal-overlay.active")).to_have_count(
+        0, timeout=5000
+    )
 
 
-def test_apply_threshold_preset(logged_in_page, live_server, test_user, meal_plan_with_day):
+def test_apply_threshold_preset(
+    logged_in_page, live_server, test_user, meal_plan_with_day
+):
     plan, day = meal_plan_with_day
     from tests.frontend.factories import ThresholdPresetFactory
+
     ThresholdPresetFactory(name="Balanced Diet", protein_in_g_min=70.0)
 
     logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
@@ -538,16 +607,18 @@ def test_apply_threshold_preset(logged_in_page, live_server, test_user, meal_pla
     # Search and apply preset in toolbar
     preset_input = logged_in_page.locator("#presetSearch")
     preset_input.fill("Balanced")
-    
+
     dropdown_item = logged_in_page.locator(".preset-item:has-text('Balanced Diet')")
     expect(dropdown_item).to_be_visible(timeout=5000)
-    
+
     # Accept the confirmation dialog
     logged_in_page.on("dialog", lambda dialog: dialog.accept())
     dropdown_item.click()
 
     # Check if threshold was updated
     expect(logged_in_page.locator("#syncText")).to_have_text("Saved", timeout=10000)
-    
+
     logged_in_page.set_viewport_size({"width": 1440, "height": 900})
-    expect(logged_in_page.locator('.threshold-min[data-nut="protein_in_g"]').first).to_have_value("70")
+    expect(
+        logged_in_page.locator('.threshold-min[data-nut="protein_in_g"]').first
+    ).to_have_value("70")

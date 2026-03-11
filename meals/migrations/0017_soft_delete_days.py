@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0016_alter_mealplan_visible_nutrients'),
+        ("meals", "0016_alter_mealplan_visible_nutrients"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mealplanday',
-            name='removed',
+            model_name="mealplanday",
+            name="removed",
             field=models.BooleanField(default=False),
         ),
     ]

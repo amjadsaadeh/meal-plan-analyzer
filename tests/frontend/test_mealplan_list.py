@@ -10,6 +10,7 @@ pytestmark = pytest.mark.django_db
 # Basic rendering
 # ---------------------------------------------------------------------------
 
+
 def test_mealplan_list_basic(logged_in_page, live_server, test_user):
     MealPlanFactory.create_batch(3)
 
@@ -24,6 +25,7 @@ def test_mealplan_list_basic(logged_in_page, live_server, test_user):
 # Create button
 # ---------------------------------------------------------------------------
 
+
 def test_mealplan_list_create_button(logged_in_page, live_server, test_user):
     logged_in_page.goto(live_server.url + "/")
 
@@ -35,6 +37,7 @@ def test_mealplan_list_create_button(logged_in_page, live_server, test_user):
 # ---------------------------------------------------------------------------
 # Live search — client-side filter with 300 ms debounce
 # ---------------------------------------------------------------------------
+
 
 def test_mealplan_list_search(logged_in_page, live_server, test_user):
     MealPlanFactory(name="Alpha Plan")
@@ -88,7 +91,9 @@ def test_mealplan_list_search_updates_url(logged_in_page, live_server, test_user
     expect(logged_in_page).to_have_url(re.compile(r".*[?&]search=Alpha.*"))
 
 
-def test_mealplan_list_url_search_param_restores_filter(logged_in_page, live_server, test_user):
+def test_mealplan_list_url_search_param_restores_filter(
+    logged_in_page, live_server, test_user
+):
     MealPlanFactory(name="Alpha Plan")
     MealPlanFactory(name="Beta Plan")
 
@@ -105,6 +110,7 @@ def test_mealplan_list_url_search_param_restores_filter(logged_in_page, live_ser
 # Row navigation
 # ---------------------------------------------------------------------------
 
+
 def test_mealplan_list_navigation(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="Nav Test Plan")
 
@@ -120,6 +126,7 @@ def test_mealplan_list_navigation(logged_in_page, live_server, test_user):
 # Day badges
 # ---------------------------------------------------------------------------
 
+
 def test_mealplan_list_day_badges(logged_in_page, live_server, test_user):
     plan = MealPlanFactory(name="Plan With Days")
     day = MealPlanDayFactory(meal_plan=plan, name="Day 1")
@@ -132,7 +139,9 @@ def test_mealplan_list_day_badges(logged_in_page, live_server, test_user):
     expect(badge).to_have_attribute("href", f"/meal-plan/{plan.id}/#day-{day.id}")
 
 
-def test_mealplan_list_day_badge_click_does_not_navigate_to_plan(logged_in_page, live_server, test_user):
+def test_mealplan_list_day_badge_click_does_not_navigate_to_plan(
+    logged_in_page, live_server, test_user
+):
     plan = MealPlanFactory(name="Plan With Day")
     MealPlanDayFactory(meal_plan=plan, name="Day 1")
 
@@ -151,6 +160,7 @@ def test_mealplan_list_day_badge_click_does_not_navigate_to_plan(logged_in_page,
 # ---------------------------------------------------------------------------
 # Delete a plan from the list
 # ---------------------------------------------------------------------------
+
 
 def test_mealplan_list_delete_plan(logged_in_page, live_server, test_user):
     MealPlanFactory(name="Plan To Delete")
@@ -194,7 +204,10 @@ def test_mealplan_list_delete_cancel_keeps_plan(logged_in_page, live_server, tes
 # Delete confirmation modal — specific modal behaviour
 # ---------------------------------------------------------------------------
 
-def test_delete_modal_shows_correct_plan_name_and_content(logged_in_page, live_server, test_user):
+
+def test_delete_modal_shows_correct_plan_name_and_content(
+    logged_in_page, live_server, test_user
+):
     """Modal displays the targeted plan's name plus title and hint text."""
     MealPlanFactory(name="Alpha Plan")
     MealPlanFactory(name="Beta Plan")
@@ -203,7 +216,9 @@ def test_delete_modal_shows_correct_plan_name_and_content(logged_in_page, live_s
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(2)
 
     # Open the modal via the row that contains "Alpha Plan"
-    logged_in_page.locator(".meal-plan-row", has_text="Alpha Plan").locator(".delete-btn").click()
+    logged_in_page.locator(".meal-plan-row", has_text="Alpha Plan").locator(
+        ".delete-btn"
+    ).click()
 
     modal = logged_in_page.locator(".modal-overlay")
     expect(modal).to_be_visible()
@@ -252,7 +267,9 @@ def test_delete_modal_backdrop_click_dismisses(logged_in_page, live_server, test
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
 
 
-def test_delete_modal_removes_only_targeted_plan(logged_in_page, live_server, test_user):
+def test_delete_modal_removes_only_targeted_plan(
+    logged_in_page, live_server, test_user
+):
     """Confirming deletion removes only the plan whose delete button was clicked."""
     MealPlanFactory(name="Plan Alpha")
     MealPlanFactory(name="Plan Beta")
@@ -261,7 +278,9 @@ def test_delete_modal_removes_only_targeted_plan(logged_in_page, live_server, te
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(2)
 
     # Target "Plan Alpha" specifically
-    logged_in_page.locator(".meal-plan-row", has_text="Plan Alpha").locator(".delete-btn").click()
+    logged_in_page.locator(".meal-plan-row", has_text="Plan Alpha").locator(
+        ".delete-btn"
+    ).click()
 
     modal = logged_in_page.locator(".modal-overlay")
     expect(modal).to_be_visible()
@@ -275,6 +294,7 @@ def test_delete_modal_removes_only_targeted_plan(logged_in_page, live_server, te
 # ---------------------------------------------------------------------------
 # Pagination appears when more than 10 plans exist
 # ---------------------------------------------------------------------------
+
 
 def test_mealplan_list_pagination(logged_in_page, live_server, test_user):
     MealPlanFactory.create_batch(12)
@@ -295,6 +315,7 @@ def test_mealplan_list_pagination(logged_in_page, live_server, test_user):
 # ---------------------------------------------------------------------------
 # Unauthenticated access redirects to login
 # ---------------------------------------------------------------------------
+
 
 def test_unauthenticated_redirect_to_login(page, live_server, db):
     page.goto(live_server.url + "/")
