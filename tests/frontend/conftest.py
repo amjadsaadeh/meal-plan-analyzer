@@ -13,7 +13,6 @@ from tests.frontend.factories import (
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 
-
 @pytest.fixture
 def test_password():
     return "pass1234"
@@ -58,5 +57,7 @@ def meal_plan_with_food(db):
         fat_in_g_per_100g=10.0,
         carbohydrate_in_g_per_100g=25.0,
     )
-    mpf = MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="breakfast")
+    mpf = MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="breakfast"
+    )
     return plan, day, food, mpf

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0012_food_carbohydrate_in_g_per_100g'),
+        ("meals", "0012_food_carbohydrate_in_g_per_100g"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mealplan',
-            name='thresholds',
+            model_name="mealplan",
+            name="thresholds",
             field=models.JSONField(blank=True, default=dict),
         ),
     ]

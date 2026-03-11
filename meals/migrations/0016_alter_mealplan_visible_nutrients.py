@@ -7,13 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0015_alter_thresholdpreset_name'),
+        ("meals", "0015_alter_thresholdpreset_name"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mealplan',
-            name='visible_nutrients',
-            field=models.JSONField(blank=True, default=meals.models.get_default_visible_nutrients),
+            model_name="mealplan",
+            name="visible_nutrients",
+            field=models.JSONField(
+                blank=True, default=meals.models.get_default_visible_nutrients
+            ),
         ),
     ]

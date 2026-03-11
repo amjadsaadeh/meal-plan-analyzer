@@ -7,30 +7,44 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0009_mealplanday_alter_mealplanfood_unique_together_and_more'),
+        ("meals", "0009_mealplanday_alter_mealplanfood_unique_together_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MealPlan',
+            name="MealPlan",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(default='Neuer Plan', max_length=255)),
-                ('creation_date', models.DateTimeField(auto_now_add=True)),
-                ('change_date', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(default="Neuer Plan", max_length=255)),
+                ("creation_date", models.DateTimeField(auto_now_add=True)),
+                ("change_date", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'ordering': ['-creation_date'],
+                "ordering": ["-creation_date"],
             },
         ),
         migrations.AlterField(
-            model_name='mealplanday',
-            name='name',
-            field=models.CharField(default='Neuer Tag', max_length=255),
+            model_name="mealplanday",
+            name="name",
+            field=models.CharField(default="Neuer Tag", max_length=255),
         ),
         migrations.AddField(
-            model_name='mealplanday',
-            name='meal_plan',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='days', to='meals.mealplan'),
+            model_name="mealplanday",
+            name="meal_plan",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="days",
+                to="meals.mealplan",
+            ),
         ),
     ]

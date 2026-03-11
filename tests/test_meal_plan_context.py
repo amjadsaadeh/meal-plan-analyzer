@@ -15,9 +15,10 @@ from django.utils import translation
 from meals.models import Food, MealPlan, MealPlanDay, MealPlanFood
 from meals.views import get_meal_plan_context
 
+
 @pytest.fixture(autouse=True)
 def set_german_locale():
-    translation.activate('de')
+    translation.activate("de")
     yield
     translation.deactivate()
 
@@ -25,6 +26,7 @@ def set_german_locale():
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_food(**kwargs):
     """Create a Food with all nutrient fields defaulting to 0."""
@@ -52,12 +54,14 @@ def make_food(**kwargs):
     make_food._counter += 1
     return Food.objects.create(**defaults)
 
+
 make_food._counter = 0
 
 
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 class TestGetMealPlanContextNutrientCalculation:
@@ -78,7 +82,9 @@ class TestGetMealPlanContextNutrientCalculation:
 
         ctx = get_meal_plan_context(plan.pk)
 
-        kcal_summary = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        kcal_summary = next(
+            n for n in ctx["summary_nutrients"] if n["label"] == "Energie"
+        )
         assert kcal_summary["value"] == pytest.approx(200.0)
 
     def test_single_food_half_portion(self):
@@ -96,7 +102,9 @@ class TestGetMealPlanContextNutrientCalculation:
 
         ctx = get_meal_plan_context(plan.pk)
 
-        kcal_summary = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        kcal_summary = next(
+            n for n in ctx["summary_nutrients"] if n["label"] == "Energie"
+        )
         assert kcal_summary["value"] == pytest.approx(200.0)
 
     def test_two_foods_same_day_summed(self):
@@ -118,7 +126,9 @@ class TestGetMealPlanContextNutrientCalculation:
 
         ctx = get_meal_plan_context(plan.pk)
 
-        kcal_summary = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        kcal_summary = next(
+            n for n in ctx["summary_nutrients"] if n["label"] == "Energie"
+        )
         assert kcal_summary["value"] == pytest.approx(300.0)
 
     def test_two_days_average_is_computed(self):
@@ -142,7 +152,9 @@ class TestGetMealPlanContextNutrientCalculation:
         ctx = get_meal_plan_context(plan.pk)
 
         assert ctx["days_count"] == 2
-        kcal_summary = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        kcal_summary = next(
+            n for n in ctx["summary_nutrients"] if n["label"] == "Energie"
+        )
         assert kcal_summary["value"] == pytest.approx(200.0)
 
     def test_removed_days_excluded_from_calculation(self):
@@ -153,19 +165,31 @@ class TestGetMealPlanContextNutrientCalculation:
             visible_nutrients=["energy_in_kcal"],
             thresholds={},
         )
-        active_day = MealPlanDay.objects.create(name="Active", meal_plan=plan, removed=False)
-        removed_day = MealPlanDay.objects.create(name="Gone", meal_plan=plan, removed=True)
-        MealPlanFood.objects.create(
-            meal_plan_day=active_day, food=food, amount_in_g=200.0, meal_type="breakfast"
+        active_day = MealPlanDay.objects.create(
+            name="Active", meal_plan=plan, removed=False
+        )
+        removed_day = MealPlanDay.objects.create(
+            name="Gone", meal_plan=plan, removed=True
         )
         MealPlanFood.objects.create(
-            meal_plan_day=removed_day, food=food, amount_in_g=999.0, meal_type="breakfast"
+            meal_plan_day=active_day,
+            food=food,
+            amount_in_g=200.0,
+            meal_type="breakfast",
+        )
+        MealPlanFood.objects.create(
+            meal_plan_day=removed_day,
+            food=food,
+            amount_in_g=999.0,
+            meal_type="breakfast",
         )
 
         ctx = get_meal_plan_context(plan.pk)
 
         assert ctx["days_count"] == 1
-        kcal_summary = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        kcal_summary = next(
+            n for n in ctx["summary_nutrients"] if n["label"] == "Energie"
+        )
         assert kcal_summary["value"] == pytest.approx(200.0)
 
 
@@ -189,7 +213,9 @@ class TestGetMealPlanContextThresholds:
     def test_both_min_max_within_range_is_ok(self):
         """avg within [min, max] → is_ok = True, ref_val = midpoint."""
         # avg = 200 kcal, min=100, max=300
-        plan = self._plan_with_kcal(200.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}})
+        plan = self._plan_with_kcal(
+            200.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
@@ -201,7 +227,9 @@ class TestGetMealPlanContextThresholds:
     def test_both_min_max_below_min_not_ok(self):
         """avg below min → is_ok = False."""
         # avg = 50 kcal, min=100
-        plan = self._plan_with_kcal(50.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}})
+        plan = self._plan_with_kcal(
+            50.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
@@ -210,7 +238,9 @@ class TestGetMealPlanContextThresholds:
     def test_both_min_max_above_max_not_ok(self):
         """avg above max → is_ok = False."""
         # avg = 400 kcal, max=300
-        plan = self._plan_with_kcal(400.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}})
+        plan = self._plan_with_kcal(
+            400.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
@@ -218,7 +248,9 @@ class TestGetMealPlanContextThresholds:
 
     def test_only_min_set_above_min_is_ok(self):
         """Only min set; avg >= min → is_ok = True, ref_val = min."""
-        plan = self._plan_with_kcal(200.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}})
+        plan = self._plan_with_kcal(
+            200.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
@@ -228,7 +260,9 @@ class TestGetMealPlanContextThresholds:
 
     def test_only_min_set_below_min_not_ok(self):
         """Only min set; avg < min → is_ok = False."""
-        plan = self._plan_with_kcal(50.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}})
+        plan = self._plan_with_kcal(
+            50.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
@@ -236,7 +270,9 @@ class TestGetMealPlanContextThresholds:
 
     def test_only_max_set_below_max_is_ok(self):
         """Only max set; avg <= max → is_ok = True, ref_val = max."""
-        plan = self._plan_with_kcal(100.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}})
+        plan = self._plan_with_kcal(
+            100.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
@@ -246,7 +282,9 @@ class TestGetMealPlanContextThresholds:
 
     def test_only_max_set_above_max_not_ok(self):
         """Only max set; avg > max → is_ok = False."""
-        plan = self._plan_with_kcal(400.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}})
+        plan = self._plan_with_kcal(
+            400.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
@@ -291,7 +329,9 @@ class TestGetMealPlanContextThresholds:
 
     def test_zero_ref_val_percentage_is_zero(self):
         """ref_val of 0 does not cause ZeroDivisionError; percentage = 0."""
-        plan = self._plan_with_kcal(200.0, 100.0, {"energy_in_kcal": {"min": 0, "max": 0}})
+        plan = self._plan_with_kcal(
+            200.0, 100.0, {"energy_in_kcal": {"min": 0, "max": 0}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
         assert s["percentage"] == 0
@@ -299,14 +339,18 @@ class TestGetMealPlanContextThresholds:
     def test_percentage_calculation(self):
         """percentage = int((avg / ref_val) * 100)."""
         # avg=200, min=200, max=200 → ref_val=200, percentage=100
-        plan = self._plan_with_kcal(200.0, 100.0, {"energy_in_kcal": {"min": 200, "max": 200}})
+        plan = self._plan_with_kcal(
+            200.0, 100.0, {"energy_in_kcal": {"min": 200, "max": 200}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
         assert s["percentage"] == 100
 
     def test_percentage_half_of_target(self):
         """avg=100, ref_val=200 → percentage=50."""
-        plan = self._plan_with_kcal(100.0, 100.0, {"energy_in_kcal": {"min": 200, "max": 200}})
+        plan = self._plan_with_kcal(
+            100.0, 100.0, {"energy_in_kcal": {"min": 200, "max": 200}}
+        )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
         assert s["percentage"] == 50
@@ -328,7 +372,9 @@ class TestGetMealPlanContextStructure:
         assert ctx["days_count"] == 1  # defaults to 1 to avoid ZeroDivisionError
         assert ctx["days_data"] == []
         assert len(ctx["summary_nutrients"]) >= 1
-        kcal_summary = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        kcal_summary = next(
+            n for n in ctx["summary_nutrients"] if n["label"] == "Energie"
+        )
         assert kcal_summary["value"] == pytest.approx(0.0)
 
     def test_day_with_no_foods_contributes_zero(self):
@@ -343,7 +389,9 @@ class TestGetMealPlanContextStructure:
         ctx = get_meal_plan_context(plan.pk)
 
         assert ctx["days_count"] == 1
-        kcal_summary = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        kcal_summary = next(
+            n for n in ctx["summary_nutrients"] if n["label"] == "Energie"
+        )
         assert kcal_summary["value"] == pytest.approx(0.0)
 
     def test_visible_nutrients_energy_always_present(self):
@@ -374,6 +422,7 @@ class TestGetMealPlanContextStructure:
     def test_all_nutrients_always_returned(self):
         """all_nutrients always contains all 15 nutrients regardless of visibility."""
         from meals.nutrients import NUTRIENTS
+
         plan = MealPlan.objects.create(
             name="P",
             visible_nutrients=["energy_in_kcal"],
@@ -405,7 +454,9 @@ class TestGetMealPlanContextStructure:
 
     def test_plan_object_included_in_context(self):
         """The plan object itself is present in the returned context."""
-        plan = MealPlan.objects.create(name="My Plan", visible_nutrients=[], thresholds={})
+        plan = MealPlan.objects.create(
+            name="My Plan", visible_nutrients=[], thresholds={}
+        )
         ctx = get_meal_plan_context(plan.pk)
         assert ctx["plan"].pk == plan.pk
         assert ctx["plan"].name == "My Plan"
@@ -429,4 +480,4 @@ class TestGetMealPlanContextStructure:
         prot_s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Protein")
 
         assert kcal_s["value"] == pytest.approx(600.0)  # 300 * 200/100
-        assert prot_s["value"] == pytest.approx(40.0)   # 20 * 200/100
+        assert prot_s["value"] == pytest.approx(40.0)  # 20 * 200/100

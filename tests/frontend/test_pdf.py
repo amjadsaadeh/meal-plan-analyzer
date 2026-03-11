@@ -3,6 +3,7 @@ PDF-related tests split into two layers:
   1. Unit tests — exercise get_meal_plan_context() and WeasyPrint directly (no browser)
   2. Playwright test — verify the preview page renders correct content in the iframe
 """
+
 import pytest
 import weasyprint
 from django.template.loader import render_to_string
@@ -21,6 +22,7 @@ pytestmark = pytest.mark.django_db
 # ---------------------------------------------------------------------------
 # Unit: get_meal_plan_context() returns correct structure
 # ---------------------------------------------------------------------------
+
 
 def test_get_meal_plan_context_structure():
     """Context dict must contain all required keys with the right types."""
@@ -52,7 +54,9 @@ def test_get_meal_plan_context_nutrient_totals():
         energy_in_kcal_per_100g=400.0,
         protein_in_g_per_100g=40.0,
     )
-    MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=250.0, meal_type="breakfast")
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=250.0, meal_type="breakfast"
+    )
 
     ctx = get_meal_plan_context(plan.id)
 
@@ -73,7 +77,9 @@ def test_get_meal_plan_context_threshold_status():
     plan = MealPlanFactory()
     day = MealPlanDayFactory(meal_plan=plan)
     food = FoodFactory(name="Low Protein Food", protein_in_g_per_100g=1.0)
-    MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="breakfast")
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="breakfast"
+    )
 
     # Set a minimum protein threshold of 50 g — the plan has only 1 g
     plan.thresholds = {"protein_in_g": {"min": 50.0, "max": None}}
@@ -89,6 +95,7 @@ def test_get_meal_plan_context_threshold_status():
 # Unit: WeasyPrint produces a valid (non-empty) PDF binary
 # ---------------------------------------------------------------------------
 
+
 def test_pdf_generation():
     """WeasyPrint must generate a non-empty PDF from the plan context."""
     from meals.views import get_meal_plan_context
@@ -103,7 +110,9 @@ def test_pdf_generation():
         ctx["logo_path"] = f"file://{logo_path}"
 
     html_string = render_to_string("meals/mealplan_pdf.html.j2", ctx)
-    pdf = weasyprint.HTML(string=html_string, base_url="http://localhost:8001").write_pdf()
+    pdf = weasyprint.HTML(
+        string=html_string, base_url="http://localhost:8001"
+    ).write_pdf()
 
     assert len(pdf) > 0
 
@@ -115,11 +124,15 @@ def test_pdf_generation_with_food():
     plan = MealPlanFactory(name="PDF With Food")
     day = MealPlanDayFactory(meal_plan=plan)
     food = FoodFactory(name="PDF Banana", energy_in_kcal_per_100g=90.0)
-    MealPlanFoodFactory(meal_plan_day=day, food=food, amount_in_g=200.0, meal_type="lunch")
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=200.0, meal_type="lunch"
+    )
 
     ctx = get_meal_plan_context(plan.id)
     html_string = render_to_string("meals/mealplan_pdf.html.j2", ctx)
-    pdf = weasyprint.HTML(string=html_string, base_url="http://localhost:8001").write_pdf()
+    pdf = weasyprint.HTML(
+        string=html_string, base_url="http://localhost:8001"
+    ).write_pdf()
 
     assert len(pdf) > 0
 
@@ -127,6 +140,7 @@ def test_pdf_generation_with_food():
 # ---------------------------------------------------------------------------
 # Unit: minilogo rendering in the PDF template
 # ---------------------------------------------------------------------------
+
 
 def test_minilogo_absent_when_not_in_context():
     """No .day-minilogo element is rendered when minilogo_path is absent from context."""
@@ -226,7 +240,9 @@ def test_pdf_generation_with_minilogo():
         ctx["minilogo_path"] = f"file://{logo_path}"  # reuse static logo as minilogo
 
     html_string = render_to_string("meals/mealplan_pdf.html.j2", ctx)
-    pdf = weasyprint.HTML(string=html_string, base_url="http://localhost:8001").write_pdf()
+    pdf = weasyprint.HTML(
+        string=html_string, base_url="http://localhost:8001"
+    ).write_pdf()
 
     assert len(pdf) > 0
 
@@ -234,6 +250,7 @@ def test_pdf_generation_with_minilogo():
 # ---------------------------------------------------------------------------
 # Playwright: preview iframe renders the correct plan content
 # ---------------------------------------------------------------------------
+
 
 def test_pdf_preview_iframe_content(logged_in_page, live_server, test_user):
     """The preview iframe must display the plan name and nutrient summary."""

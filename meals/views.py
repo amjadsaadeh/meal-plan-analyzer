@@ -10,12 +10,22 @@ from rest_framework import viewsets, filters
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from .models import (
-    Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset, 
-    SiteSettings, get_alias_index, FoodAlias, ALIAS_CACHE_KEY
+    Food,
+    MealPlan,
+    MealPlanDay,
+    MealPlanFood,
+    ThresholdPreset,
+    SiteSettings,
+    get_alias_index,
+    FoodAlias,
+    ALIAS_CACHE_KEY,
 )
 from .serializers import (
-    FoodSerializer, MealPlanSerializer, MealPlanDaySerializer,
-    MealPlanFoodSerializer, ThresholdPresetSerializer
+    FoodSerializer,
+    MealPlanSerializer,
+    MealPlanDaySerializer,
+    MealPlanFoodSerializer,
+    ThresholdPresetSerializer,
 )
 from .nutrients import NUTRIENTS
 
@@ -23,7 +33,7 @@ from .nutrients import NUTRIENTS
 # Umlaut helpers
 # ---------------------------------------------------------------------------
 
-_UMLAUT_PAIRS = [('a', 'ä'), ('A', 'Ä'), ('o', 'ö'), ('O', 'Ö'), ('u', 'ü'), ('U', 'Ü')]
+_UMLAUT_PAIRS = [("a", "ä"), ("A", "Ä"), ("o", "ö"), ("O", "Ö"), ("u", "ü"), ("U", "Ü")]
 
 
 def normalize_umlauts(text: str) -> str:
@@ -83,18 +93,19 @@ def _umlaut_search_variants(text: str) -> list[str]:
                 for bit, (idx, _, umlaut) in enumerate(positions):
                     if mask >> bit & 1:
                         chars[idx] = umlaut
-                variant = ''.join(chars)
+                variant = "".join(chars)
                 if variant != text:
                     variants.add(variant)
         else:
             # Fallback: single-position substitutions only
             for idx, _, umlaut in positions:
-                variant = base[:idx] + umlaut + base[idx + 1:]
+                variant = base[:idx] + umlaut + base[idx + 1 :]
                 if variant != text:
                     variants.add(variant)
 
     variants.discard(text)
     return list(variants)
+
 
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
@@ -102,15 +113,17 @@ from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.shortcuts import get_object_or_404
 
+
 @login_required
 def index(request):
-    return render(request, 'meals/index.html.j2')
+    return render(request, "meals/index.html.j2")
+
 
 @login_required
 def meal_plan_list(request):
-    search_query = request.GET.get('search', '').strip()
+    search_query = request.GET.get("search", "").strip()
     queryset = MealPlan.objects.all()
-    
+
     if search_query:
         # Semantic/Fuzzy Search logic (simplified for names)
         terms = search_query.split()
@@ -118,9 +131,9 @@ def meal_plan_list(request):
         for term in terms:
             if len(term) >= 2:
                 name_query |= Q(name__icontains=term)
-        
+
         queryset = queryset.filter(name_query)
-        
+
         # Weighted Relevance Ranking
         queryset = queryset.annotate(
             relevance=Case(
@@ -130,18 +143,20 @@ def meal_plan_list(request):
                 default=Value(1),
                 output_field=IntegerField(),
             )
-        ).order_by('-relevance', '-change_date')
+        ).order_by("-relevance", "-change_date")
     else:
-        queryset = queryset.order_by('-change_date')
+        queryset = queryset.order_by("-change_date")
 
     paginator = Paginator(queryset, 10)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    
-    return render(request, 'meals/mealplan_list.html.j2', {
-        'page_obj': page_obj,
-        'search_query': search_query
-    })
+
+    return render(
+        request,
+        "meals/mealplan_list.html.j2",
+        {"page_obj": page_obj, "search_query": search_query},
+    )
+
 
 @login_required
 def meal_plan_detail(request, pk=None):
@@ -150,7 +165,8 @@ def meal_plan_detail(request, pk=None):
         parent_plan = MealPlan.objects.create(name=_("New Plan"))
         plan_day = MealPlanDay.objects.create(name=_("Day 1"), meal_plan=parent_plan)
         from django.shortcuts import redirect
-        return redirect('meal-plan-detail', pk=parent_plan.pk)
+
+        return redirect("meal-plan-detail", pk=parent_plan.pk)
 
     import json
     from django.urls import reverse
@@ -159,83 +175,98 @@ def meal_plan_detail(request, pk=None):
 
     nutrients_list = [
         {
-            'key': key,
-            'label': str(data['label']),
-            'unit': data['unit'],
-            'food_key': data['food_key'],
-            'precision': data.get('precision', 1),
+            "key": key,
+            "label": str(data["label"]),
+            "unit": data["unit"],
+            "food_key": data["food_key"],
+            "precision": data.get("precision", 1),
         }
         for key, data in NUTRIENTS.items()
     ]
 
     i18n = {
-        'saved': _('Saved'),
-        'unsavedChanges': _('Unsaved changes'),
-        'dayPrefix': _('Day'),
-        'errorCreatingDay': _('Error creating day'),
-        'deleteIngredient': _('Delete Ingredient'),
-        'confirmDeleteIngredient': _('Are you sure you want to remove this ingredient?'),
-        'errorDeletingRow': _('Error deleting row'),
-        'searchFood': _('Search food...'),
-        'noResults': _('No results'),
-        'codeLabel': _('Code'),
-        'aliasBadge': _('alias'),
-        'daySummaryOverview': _('Overview'),
-        'confirmApplyTemplate': _('Apply this template? The current reference values will be overwritten.'),
-        'templateSavedSuccess': _('Template saved successfully.'),
-        'nameTooShort': _('The name must be at least 3 characters long.'),
-        'checkingAvailability': _('Checking availability...'),
-        'nameAlreadyTaken': _('This name is already taken.'),
-        'validationError': _('Validation error.'),
-        'savingError': _('Error saving.'),
-        'networkError': _('Network error while saving.'),
-        'deleteDay': _('Delete Day'),
-        'confirmDeleteDay': _('Do you really want to delete this day?'),
-        'cannotBeUndone': _('This action cannot be undone.'),
-        'cancel': _('Cancel'),
-        'delete': _('Delete'),
-        'planOverview': _('Plan Overview (Total)'),
-        'saveTemplate': _('Save Template'),
-        'saveAsTemplate': _('Save as Reference Value Template'),
-        'templateName': _('Template name (min. 3 chars)...'),
-        'breakfast': _('Breakfast'),
-        'lunch': _('Lunch'),
-        'dinner': _('Dinner'),
-        'addDay': _('Add Day'),
-        'selectColumns': _('Select Columns'),
-        'referenceValueTemplate': _('Reference Value Template'),
-        'searchTemplate': _('Search template...'),
-        'ingredient': _('Ingredient'),
-        'amountG': _('Amount (g)'),
-        'subtotal': _('Subtotal:'),
-        'backToPlans': _('Back to Plans'),
-        'planNo': _('Plan No.'),
-        'exportPdf': _('Export PDF'),
-        'editName': _('Edit name'),
-        'editDayName': _('Edit day name'),
-        'deleteDay2': _('Delete day'),
-        'columns': _('Columns'),
-        'min': _('min'),
-        'max': _('max'),
-        'syncing': _('Syncing...'),
-        'deleting': _('Deleting...'),
+        "saved": _("Saved"),
+        "unsavedChanges": _("Unsaved changes"),
+        "dayPrefix": _("Day"),
+        "errorCreatingDay": _("Error creating day"),
+        "deleteIngredient": _("Delete Ingredient"),
+        "confirmDeleteIngredient": _(
+            "Are you sure you want to remove this ingredient?"
+        ),
+        "errorDeletingRow": _("Error deleting row"),
+        "searchFood": _("Search food..."),
+        "noResults": _("No results"),
+        "codeLabel": _("Code"),
+        "aliasBadge": _("alias"),
+        "daySummaryOverview": _("Overview"),
+        "confirmApplyTemplate": _(
+            "Apply this template? The current reference values will be overwritten."
+        ),
+        "templateSavedSuccess": _("Template saved successfully."),
+        "nameTooShort": _("The name must be at least 3 characters long."),
+        "checkingAvailability": _("Checking availability..."),
+        "nameAlreadyTaken": _("This name is already taken."),
+        "validationError": _("Validation error."),
+        "savingError": _("Error saving."),
+        "networkError": _("Network error while saving."),
+        "deleteDay": _("Delete Day"),
+        "confirmDeleteDay": _("Do you really want to delete this day?"),
+        "cannotBeUndone": _("This action cannot be undone."),
+        "cancel": _("Cancel"),
+        "delete": _("Delete"),
+        "planOverview": _("Plan Overview (Total)"),
+        "saveTemplate": _("Save Template"),
+        "saveAsTemplate": _("Save as Reference Value Template"),
+        "templateName": _("Template name (min. 3 chars)..."),
+        "breakfast": _("Breakfast"),
+        "lunch": _("Lunch"),
+        "dinner": _("Dinner"),
+        "addDay": _("Add Day"),
+        "selectColumns": _("Select Columns"),
+        "referenceValueTemplate": _("Reference Value Template"),
+        "searchTemplate": _("Search template..."),
+        "ingredient": _("Ingredient"),
+        "amountG": _("Amount (g)"),
+        "subtotal": _("Subtotal:"),
+        "backToPlans": _("Back to Plans"),
+        "planNo": _("Plan No."),
+        "exportPdf": _("Export PDF"),
+        "editName": _("Edit name"),
+        "editDayName": _("Edit day name"),
+        "deleteDay2": _("Delete day"),
+        "columns": _("Columns"),
+        "min": _("min"),
+        "max": _("max"),
+        "syncing": _("Syncing..."),
+        "deleting": _("Deleting..."),
     }
 
-    return render(request, 'meals/mealplan_detail.html.j2', {
-        'plan': plan,
-        'plan_id': plan.pk,
-        'nutrients_json': json.dumps(nutrients_list),
-        'i18n_json': json.dumps({k: str(v) for k, v in i18n.items()}),
-        'pdf_url': reverse('meal-plan-pdf', args=[plan.pk]),
-        'preview_url': reverse('meal-plan-preview', args=[plan.pk]),
-        'plan_list_url': reverse('meal-plan-list'),
-    })
+    return render(
+        request,
+        "meals/mealplan_detail.html.j2",
+        {
+            "plan": plan,
+            "plan_id": plan.pk,
+            "nutrients_json": json.dumps(nutrients_list),
+            "i18n_json": json.dumps({k: str(v) for k, v in i18n.items()}),
+            "pdf_url": reverse("meal-plan-pdf", args=[plan.pk]),
+            "preview_url": reverse("meal-plan-preview", args=[plan.pk]),
+            "plan_list_url": reverse("meal-plan-list"),
+        },
+    )
+
 
 def parse_food_search(search_query):
     """Return (low_energy_intent, high_energy_intent, clean_search) for a raw query."""
-    low_energy_intent = bool(re.search(r'\blow\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
-    high_energy_intent = bool(re.search(r'\bhigh\b.*\b(energy|cal|kcal|kj)\b', search_query, re.I))
-    clean_search = re.sub(r'\b(low|high)\b.*\b(energy|cal|kcal|kj)\b', '', search_query, flags=re.I).strip()
+    low_energy_intent = bool(
+        re.search(r"\blow\b.*\b(energy|cal|kcal|kj)\b", search_query, re.I)
+    )
+    high_energy_intent = bool(
+        re.search(r"\bhigh\b.*\b(energy|cal|kcal|kj)\b", search_query, re.I)
+    )
+    clean_search = re.sub(
+        r"\b(low|high)\b.*\b(energy|cal|kcal|kj)\b", "", search_query, flags=re.I
+    ).strip()
     if not clean_search and not (low_energy_intent or high_energy_intent):
         clean_search = search_query
     return low_energy_intent, high_energy_intent, clean_search
@@ -250,7 +281,7 @@ def get_food_search_query(clean_search):
     for term in terms:
         if len(term) >= 2:
             name_query |= Q(name__icontains=term)
-    
+
     all_variants: set[str] = set(_umlaut_search_variants(clean_search))
     for term in terms:
         all_variants.update(_umlaut_search_variants(term))
@@ -267,9 +298,7 @@ def get_food_ids_by_alias(clean_search):
 
     search_norm = normalize_umlauts(clean_search.lower())
     terms_norm = [
-        normalize_umlauts(t.lower())
-        for t in clean_search.split()
-        if len(t) >= 2
+        normalize_umlauts(t.lower()) for t in clean_search.split() if len(t) >= 2
     ]
     alias_index = get_alias_index()
     matched_ids = set()
@@ -284,7 +313,7 @@ def get_food_ids_by_alias(clean_search):
 
 class _FoodBrowsePagination(PageNumberPagination):
     page_size = 100
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 500
 
 
@@ -295,13 +324,15 @@ class FoodViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Food.objects.all()
-        search_query = self.request.query_params.get('search', '').strip()
+        search_query = self.request.query_params.get("search", "").strip()
 
         if len(search_query) < 2:
             return queryset.none() if search_query else queryset
 
         # 1. Semantic Extraction
-        low_energy_intent, high_energy_intent, clean_search = parse_food_search(search_query)
+        low_energy_intent, high_energy_intent, clean_search = parse_food_search(
+            search_query
+        )
 
         # 2. Filtering by name / bls_code (with umlaut-tolerant variants)
         if clean_search:
@@ -320,12 +351,12 @@ class FoodViewSet(viewsets.ModelViewSet):
         )
 
         # 4. Final Ordering
-        order_params = ['-relevance']
+        order_params = ["-relevance"]
         if low_energy_intent:
-            order_params.insert(0, 'energy_in_kcal_per_100g')
+            order_params.insert(0, "energy_in_kcal_per_100g")
         elif high_energy_intent:
-            order_params.insert(0, '-energy_in_kcal_per_100g')
-        order_params.append('name')
+            order_params.insert(0, "-energy_in_kcal_per_100g")
+        order_params.append("name")
 
         return queryset.order_by(*order_params)
 
@@ -341,11 +372,11 @@ class FoodViewSet(viewsets.ModelViewSet):
         given all matching results are returned without pagination (existing
         behaviour, used by the meal-plan food-search dropdown).
         """
-        search_query = request.query_params.get('search', '').strip()
+        search_query = request.query_params.get("search", "").strip()
 
         if not search_query:
             # ── Paginated browse (no search) ──────────────────────────────
-            queryset = Food.objects.all().order_by('name')
+            queryset = Food.objects.all().order_by("name")
             page = self.paginate_queryset(queryset)
             if page is not None:
                 for food in page:
@@ -382,15 +413,18 @@ class FoodViewSet(viewsets.ModelViewSet):
                 for food_id, aliases in alias_index.items():
                     for alias in aliases:
                         alias_norm = normalize_umlauts(alias.lower())
-                        if search_norm in alias_norm or any(t in alias_norm for t in terms_norm):
+                        if search_norm in alias_norm or any(
+                            t in alias_norm for t in terms_norm
+                        ):
                             alias_matches[food_id] = alias
                             break
 
         # Fetch foods that matched only via alias (not already in name results)
         alias_only_ids = set(alias_matches.keys()) - name_food_ids
         alias_only_foods = (
-            list(Food.objects.filter(id__in=alias_only_ids).order_by('name'))
-            if alias_only_ids else []
+            list(Food.objects.filter(id__in=alias_only_ids).order_by("name"))
+            if alias_only_ids
+            else []
         )
 
         # Annotate: name-matched foods get None, alias-only foods get the alias string
@@ -410,17 +444,17 @@ class FoodViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        name = request.data.get('name', '').strip()
+        name = request.data.get("name", "").strip()
         if not name:
-            return Response({'name': 'This field is required.'}, status=400)
+            return Response({"name": "This field is required."}, status=400)
         for _ in range(10):
-            code = f'custom_{secrets.token_hex(4)}'
+            code = f"custom_{secrets.token_hex(4)}"
             if not Food.objects.filter(bls_code=code).exists():
                 break
         food = Food.objects.create(
             name=name,
             bls_code=code,
-            data_source='custom',
+            data_source="custom",
             energy_in_kj_per_100g=0.0,
             energy_in_kcal_per_100g=0.0,
         )
@@ -430,29 +464,34 @@ class FoodViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         food = self.get_object()
-        if food.data_source != 'custom':
+        if food.data_source != "custom":
             return Response(
-                {'detail': 'Only custom foods can be edited.'},
+                {"detail": "Only custom foods can be edited."},
                 status=403,
             )
-        
-        if 'energy_in_kj_per_100g' in request.data and 'energy_in_kcal_per_100g' in request.data:
+
+        if (
+            "energy_in_kj_per_100g" in request.data
+            and "energy_in_kcal_per_100g" in request.data
+        ):
             return Response(
-                {'detail': 'Cannot set both energy_in_kj_per_100g and energy_in_kcal_per_100g at the same time.'},
+                {
+                    "detail": "Cannot set both energy_in_kj_per_100g and energy_in_kcal_per_100g at the same time."
+                },
                 status=400,
             )
 
         return super().update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        kwargs['partial'] = True
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         food = self.get_object()
-        if food.data_source != 'custom':
+        if food.data_source != "custom":
             return Response(
-                {'detail': 'Only custom foods can be deleted.'},
+                {"detail": "Only custom foods can be deleted."},
                 status=403,
             )
         return super().destroy(request, *args, **kwargs)
@@ -460,19 +499,24 @@ class FoodViewSet(viewsets.ModelViewSet):
 
 from django.db.models import Prefetch
 
+
 class MealPlanViewSet(viewsets.ModelViewSet):
     queryset = MealPlan.objects.all()
     serializer_class = MealPlanSerializer
-    
+
     def get_queryset(self):
-        active_days = MealPlanDay.objects.filter(removed=False).order_by('creation_date')
+        active_days = MealPlanDay.objects.filter(removed=False).order_by(
+            "creation_date"
+        )
         return MealPlan.objects.prefetch_related(
-            Prefetch('days', queryset=active_days)
+            Prefetch("days", queryset=active_days)
         ).all()
+
 
 class MealPlanDayViewSet(viewsets.ModelViewSet):
     queryset = MealPlanDay.objects.filter(removed=False)
     serializer_class = MealPlanDaySerializer
+
 
 class MealPlanFoodViewSet(viewsets.ModelViewSet):
     queryset = MealPlanFood.objects.all()
@@ -492,6 +536,7 @@ class MealPlanFoodViewSet(viewsets.ModelViewSet):
         If not (or if it doesn't match the current food), add it as an alias.
         """
         from django.core.cache import cache
+
         export_name = instance.export_name
         if not export_name or len(export_name) < 2:
             return
@@ -516,99 +561,113 @@ class MealPlanFoodViewSet(viewsets.ModelViewSet):
             # Signal handles invalidation, but we do it explicitly as requested
             cache.delete(ALIAS_CACHE_KEY)
 
+
 class ThresholdPresetViewSet(viewsets.ModelViewSet):
     queryset = ThresholdPreset.objects.all()
     serializer_class = ThresholdPresetSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 import weasyprint
 
+
 def get_meal_plan_context(pk):
     plan = get_object_or_404(MealPlan, pk=pk)
-    days = plan.days.filter(removed=False).order_by('creation_date').prefetch_related('mealplanfood_set__food')
-    
+    days = (
+        plan.days.filter(removed=False)
+        .order_by("creation_date")
+        .prefetch_related("mealplanfood_set__food")
+    )
+
     # 1. Define Nutrients
     visible_keys = plan.visible_nutrients
-    
+
     visible_nutrients = []
     for key, data in NUTRIENTS.items():
-        if key in visible_keys or key == 'energy_in_kcal':
-            visible_nutrients.append({
-                'key': key,
-                'label': data['label'],
-                'unit': data['unit'],
-                'food_key': data['food_key']
-            })
-    
+        if key in visible_keys or key == "energy_in_kcal":
+            visible_nutrients.append(
+                {
+                    "key": key,
+                    "label": data["label"],
+                    "unit": data["unit"],
+                    "food_key": data["food_key"],
+                }
+            )
+
     # 2. Calculate Daily Data
     days_data = []
     total_nutrients_sum = {key: 0.0 for key in NUTRIENTS.keys()}
-    
-    breakfast_label = _('Breakfast')
-    lunch_label = _('Lunch')
-    dinner_label = _('Dinner')
+
+    breakfast_label = _("Breakfast")
+    lunch_label = _("Lunch")
+    dinner_label = _("Dinner")
     meal_type_labels = {
-        'breakfast': breakfast_label,
-        'lunch': lunch_label,
-        'dinner': dinner_label,
+        "breakfast": breakfast_label,
+        "lunch": lunch_label,
+        "dinner": dinner_label,
     }
 
     for day in days:
         day_info = {
-            'name': day.name,
-            'meals': {breakfast_label: [], lunch_label: [], dinner_label: []}
+            "name": day.name,
+            "meals": {breakfast_label: [], lunch_label: [], dinner_label: []},
         }
-        
+
         for mpf in day.mealplanfood_set.all():
             factor = mpf.amount_in_g / 100.0
-            
+
             # Calculate nutrients for this item
             item_nutrients = {}
             for n in visible_nutrients:
-                val = getattr(mpf.food, n['food_key']) * factor
-                item_nutrients[n['key']] = val
-                total_nutrients_sum[n['key']] += val
-            
+                val = getattr(mpf.food, n["food_key"]) * factor
+                item_nutrients[n["key"]] = val
+                total_nutrients_sum[n["key"]] += val
+
             # Add to proper meal category
-            label = meal_type_labels.get(mpf.meal_type, 'Other')
-            if label in day_info['meals']:
-                day_info['meals'][label].append({
-                    'mpf_id': mpf.id,
-                    'food': mpf.food,
-                    'export_name': mpf.export_name,
-                    'amount_in_g': mpf.amount_in_g,
-                    'nutrients': item_nutrients
-                })
-        
+            label = meal_type_labels.get(mpf.meal_type, "Other")
+            if label in day_info["meals"]:
+                day_info["meals"][label].append(
+                    {
+                        "mpf_id": mpf.id,
+                        "food": mpf.food,
+                        "export_name": mpf.export_name,
+                        "amount_in_g": mpf.amount_in_g,
+                        "nutrients": item_nutrients,
+                    }
+                )
+
         days_data.append(day_info)
 
     # 3. Reference Logic & Summary
     summary_nutrients = []
     num_days = len(days) if len(days) > 0 else 1
-    
+
     for n in visible_nutrients:
-        avg_val = total_nutrients_sum[n['key']] / num_days
-        
-        threshold_data = plan.thresholds.get(n['key'])
+        avg_val = total_nutrients_sum[n["key"]] / num_days
+
+        threshold_data = plan.thresholds.get(n["key"])
         if not isinstance(threshold_data, dict):
             threshold_data = {}
-        
-        min_val = threshold_data.get('min')
-        max_val = threshold_data.get('max')
-        
-        if min_val == '': min_val = None
-        if max_val == '': max_val = None
-        
-        if min_val is not None: min_val = float(min_val)
-        if max_val is not None: max_val = float(max_val)
-        
+
+        min_val = threshold_data.get("min")
+        max_val = threshold_data.get("max")
+
+        if min_val == "":
+            min_val = None
+        if max_val == "":
+            max_val = None
+
+        if min_val is not None:
+            min_val = float(min_val)
+        if max_val is not None:
+            max_val = float(max_val)
+
         ref_val = None
         threshold_label = ""
-        
+
         if min_val is not None and max_val is not None:
             ref_val = (min_val + max_val) / 2
             threshold_label = f"{min_val} - {max_val}"
@@ -618,52 +677,59 @@ def get_meal_plan_context(pk):
         elif max_val is not None:
             ref_val = max_val
             threshold_label = f"< {max_val}"
-            
+
         percentage = 0
         if ref_val and ref_val > 0:
             percentage = (avg_val / ref_val) * 100
-            
+
         is_ok = True
         if min_val is not None and avg_val < min_val:
             is_ok = False
         if max_val is not None and avg_val > max_val:
             is_ok = False
-            
-        summary_nutrients.append({
-            'label': n['label'],
-            'unit': n['unit'],
-            'value': avg_val,
-            'reference_val': ref_val,
-            'percentage': int(percentage),
-            'threshold_label': threshold_label,
-            'is_ok': is_ok
-        })
+
+        summary_nutrients.append(
+            {
+                "label": n["label"],
+                "unit": n["unit"],
+                "value": avg_val,
+                "reference_val": ref_val,
+                "percentage": int(percentage),
+                "threshold_label": threshold_label,
+                "is_ok": is_ok,
+            }
+        )
 
     all_nutrients = []
     for key, data in NUTRIENTS.items():
-        all_nutrients.append({
-            'key': key,
-            'label': data['label'],
-            'unit': data['unit'],
-            'food_key': data['food_key']
-        })
+        all_nutrients.append(
+            {
+                "key": key,
+                "label": data["label"],
+                "unit": data["unit"],
+                "food_key": data["food_key"],
+            }
+        )
 
     return {
-        'plan': plan,
-        'days_count': num_days,
-        'visible_nutrients': visible_nutrients,
-        'all_nutrients': all_nutrients,
-        'summary_nutrients': summary_nutrients,
-        'days_data': days_data,
-        'csrf_token_string': '', # We'll handle CSRF from the request if needed
+        "plan": plan,
+        "days_count": num_days,
+        "visible_nutrients": visible_nutrients,
+        "all_nutrients": all_nutrients,
+        "summary_nutrients": summary_nutrients,
+        "days_data": days_data,
+        "csrf_token_string": "",  # We'll handle CSRF from the request if needed
     }
 
+
 from django.views.decorators.clickjacking import xframe_options_sameorigin
+
 
 @login_required
 def meal_plan_preview(request, pk):
     plan = get_object_or_404(MealPlan, pk=pk)
-    return render(request, 'meals/mealplan_preview.html.j2', {'plan': plan})
+    return render(request, "meals/mealplan_preview.html.j2", {"plan": plan})
+
 
 @login_required
 @xframe_options_sameorigin
@@ -671,19 +737,22 @@ def meal_plan_preview_content(request, pk):
     context = get_meal_plan_context(pk)
     site = SiteSettings.get()
     if site.logo:
-        context['logo_path'] = site.logo.url
+        context["logo_path"] = site.logo.url
     if site.minilogo:
-        context['minilogo_path'] = site.minilogo.url
+        context["minilogo_path"] = site.minilogo.url
     else:
         from django.templatetags.static import static
-        context['minilogo_path'] = static('meals/img/logo.png')
-    return render(request, 'meals/mealplan_pdf.html.j2', context)
+
+        context["minilogo_path"] = static("meals/img/logo.png")
+    return render(request, "meals/mealplan_pdf.html.j2", context)
+
 
 from urllib.parse import urlparse
 
+
 def django_url_fetcher(url, **kwargs):
     """
-    Custom URL fetcher for WeasyPrint that resolves static and media URLs 
+    Custom URL fetcher for WeasyPrint that resolves static and media URLs
     to local file paths for reliability in production environments.
     Handles absolute URLs and hashed assets.
     """
@@ -693,28 +762,29 @@ def django_url_fetcher(url, **kwargs):
     # 1. Resolve static file URLs
     if settings.STATIC_URL and url_path.startswith(settings.STATIC_URL):
         # Extract the relative path within static directory
-        relative_path = url_path.replace(settings.STATIC_URL, '', 1)
-        
+        relative_path = url_path.replace(settings.STATIC_URL, "", 1)
+
         # In production with hashed assets, first check STATIC_ROOT
         if settings.STATIC_ROOT:
             full_path = os.path.join(settings.STATIC_ROOT, relative_path)
             if os.path.exists(full_path):
-                return weasyprint.default_url_fetcher(f'file://{full_path}', **kwargs)
-        
+                return weasyprint.default_url_fetcher(f"file://{full_path}", **kwargs)
+
         # Fallback to staticfiles finders (useful for development or if not in STATIC_ROOT)
         normalized_path = finders.find(relative_path)
         if normalized_path:
-            return weasyprint.default_url_fetcher(f'file://{normalized_path}', **kwargs)
+            return weasyprint.default_url_fetcher(f"file://{normalized_path}", **kwargs)
 
     # 2. Resolve media file URLs
     if settings.MEDIA_URL and url_path.startswith(settings.MEDIA_URL):
-        relative_path = url_path.replace(settings.MEDIA_URL, '', 1)
+        relative_path = url_path.replace(settings.MEDIA_URL, "", 1)
         full_path = os.path.join(settings.MEDIA_ROOT, relative_path)
         if os.path.exists(full_path):
-            return weasyprint.default_url_fetcher(f'file://{full_path}', **kwargs)
+            return weasyprint.default_url_fetcher(f"file://{full_path}", **kwargs)
 
     # 3. Fallback to default fetcher for other URLs (e.g. external fonts)
     return weasyprint.default_url_fetcher(url, **kwargs)
+
 
 @login_required
 def meal_plan_pdf(request, pk):
@@ -722,78 +792,84 @@ def meal_plan_pdf(request, pk):
 
     site = SiteSettings.get()
     if site.logo:
-        context['logo_path'] = f"file://{site.logo.path}"
+        context["logo_path"] = f"file://{site.logo.path}"
     else:
-        logo_disk_path = finders.find('meals/img/logo.png')
+        logo_disk_path = finders.find("meals/img/logo.png")
         if logo_disk_path:
-            context['logo_path'] = f"file://{logo_disk_path}"
+            context["logo_path"] = f"file://{logo_disk_path}"
 
     if site.minilogo:
-        context['minilogo_path'] = f"file://{site.minilogo.path}"
+        context["minilogo_path"] = f"file://{site.minilogo.path}"
     else:
-        logo_disk_path = finders.find('meals/img/logo.png')
+        logo_disk_path = finders.find("meals/img/logo.png")
         if logo_disk_path:
-            context['minilogo_path'] = f"file://{logo_disk_path}"
+            context["minilogo_path"] = f"file://{logo_disk_path}"
 
-    html_string = render_to_string('meals/mealplan_pdf.html.j2', context)
+    html_string = render_to_string("meals/mealplan_pdf.html.j2", context)
 
     html = weasyprint.HTML(
-        string=html_string, 
+        string=html_string,
         base_url=request.build_absolute_uri(),
-        url_fetcher=django_url_fetcher
+        url_fetcher=django_url_fetcher,
     )
     pdf = html.write_pdf()
 
-    response = HttpResponse(pdf, content_type='application/pdf')
-    
+    response = HttpResponse(pdf, content_type="application/pdf")
+
     # Sanitize filename: replace non-ASCII with '_' and spaces with '-'
     filename_base = "".join(c if ord(c) < 128 else "_" for c in context["plan"].name)
     filename_base = filename_base.replace(" ", "-")
-    
-    response['Content-Disposition'] = f'attachment; filename="{filename_base}.pdf"'
+
+    response["Content-Disposition"] = f'attachment; filename="{filename_base}.pdf"'
     return response
 
 
 @login_required
 def food_database(request):
-    return render(request, 'meals/food_database.html.j2', {})
+    return render(request, "meals/food_database.html.j2", {})
 
 
 @login_required
 def food_editor(request, pk):
     nutrients_list = [
         {
-            'key': key,
-            'label': str(meta['label']),
-            'unit': meta['unit'],
-            'food_key': meta['food_key'],
-            'precision': meta['precision'],
+            "key": key,
+            "label": str(meta["label"]),
+            "unit": meta["unit"],
+            "food_key": meta["food_key"],
+            "precision": meta["precision"],
         }
         for key, meta in NUTRIENTS.items()
     ]
     i18n = {
-        'saved': _('Saved'),
-        'saving': _('Saving…'),
-        'error': _('Error saving'),
-        'backToList': _('Food Database'),
-        'readonlyHint': _('BLS data is read-only. Click the copy button to copy a value.'),
-        'copiedToClipboard': _('Copied!'),
-        'customBadge': _('Custom'),
-        'blsBadge': _('BLS'),
-        'networkError': _('Network error'),
-        'notFound': _('Food not found.'),
-        'energyKj': _('Energy (kJ)'),
-        'energyKcal': _('Energy (kcal)'),
-        'name': _('Name'),
-        'nameLabel': _('Name'),
-        'energy': _('Energy'),
-        'macronutrients': _('Macronutrients'),
-        'vitamins': _('Vitamins'),
-        'minerals': _('Minerals'),
+        "saved": _("Saved"),
+        "saving": _("Saving…"),
+        "error": _("Error saving"),
+        "backToList": _("Food Database"),
+        "readonlyHint": _(
+            "BLS data is read-only. Click the copy button to copy a value."
+        ),
+        "copiedToClipboard": _("Copied!"),
+        "customBadge": _("Custom"),
+        "blsBadge": _("BLS"),
+        "networkError": _("Network error"),
+        "notFound": _("Food not found."),
+        "energyKj": _("Energy (kJ)"),
+        "energyKcal": _("Energy (kcal)"),
+        "name": _("Name"),
+        "nameLabel": _("Name"),
+        "energy": _("Energy"),
+        "macronutrients": _("Macronutrients"),
+        "vitamins": _("Vitamins"),
+        "minerals": _("Minerals"),
     }
-    return render(request, 'meals/food_editor.html.j2', {
-        'food_id': pk,
-        'nutrients_json': json.dumps(nutrients_list),
-        'i18n_json': json.dumps({k: str(v) for k, v in i18n.items()}),
-        'food_list_url': reverse('food-database'),
-    })
+    return render(
+        request,
+        "meals/food_editor.html.j2",
+        {
+            "food_id": pk,
+            "nutrients_json": json.dumps(nutrients_list),
+            "i18n_json": json.dumps({k: str(v) for k, v in i18n.items()}),
+            "food_list_url": reverse("food-database"),
+        },
+    )

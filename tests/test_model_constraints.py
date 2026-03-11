@@ -30,25 +30,36 @@ def _food(**kwargs):
 class TestFoodModel:
     def test_str_returns_name(self):
         food = Food.objects.create(
-            bls_code="F001", name="Banana", energy_in_kj_per_100g=371, energy_in_kcal_per_100g=89
+            bls_code="F001",
+            name="Banana",
+            energy_in_kj_per_100g=371,
+            energy_in_kcal_per_100g=89,
         )
         assert str(food) == "Banana"
 
     def test_bls_code_unique_constraint(self):
         """Creating two Food records with the same bls_code raises IntegrityError."""
         Food.objects.create(
-            bls_code="DUP001", name="First", energy_in_kj_per_100g=0, energy_in_kcal_per_100g=0
+            bls_code="DUP001",
+            name="First",
+            energy_in_kj_per_100g=0,
+            energy_in_kcal_per_100g=0,
         )
         with pytest.raises(IntegrityError):
             Food.objects.create(
-                bls_code="DUP001", name="Second", energy_in_kj_per_100g=0, energy_in_kcal_per_100g=0
+                bls_code="DUP001",
+                name="Second",
+                energy_in_kj_per_100g=0,
+                energy_in_kcal_per_100g=0,
             )
 
     def test_nutrient_fields_default_to_zero(self):
         """All optional nutrient FloatFields default to 0.0."""
         food = Food.objects.create(
-            bls_code="DEFLT", name="Default Food",
-            energy_in_kj_per_100g=100, energy_in_kcal_per_100g=24
+            bls_code="DEFLT",
+            name="Default Food",
+            energy_in_kj_per_100g=100,
+            energy_in_kcal_per_100g=24,
         )
         assert food.protein_in_g_per_100g == 0.0
         assert food.fat_in_g_per_100g == 0.0
@@ -56,9 +67,23 @@ class TestFoodModel:
 
     def test_ordering_is_by_name(self):
         """Food.Meta.ordering = ['name'] → queryset is alphabetical."""
-        Food.objects.create(bls_code="ORD_B", name="Zucchini", energy_in_kj_per_100g=0, energy_in_kcal_per_100g=0)
-        Food.objects.create(bls_code="ORD_A", name="Avocado", energy_in_kj_per_100g=0, energy_in_kcal_per_100g=0)
-        names = list(Food.objects.filter(bls_code__in=["ORD_A", "ORD_B"]).values_list('name', flat=True))
+        Food.objects.create(
+            bls_code="ORD_B",
+            name="Zucchini",
+            energy_in_kj_per_100g=0,
+            energy_in_kcal_per_100g=0,
+        )
+        Food.objects.create(
+            bls_code="ORD_A",
+            name="Avocado",
+            energy_in_kj_per_100g=0,
+            energy_in_kcal_per_100g=0,
+        )
+        names = list(
+            Food.objects.filter(bls_code__in=["ORD_A", "ORD_B"]).values_list(
+                "name", flat=True
+            )
+        )
         assert names == ["Avocado", "Zucchini"]
 
 
@@ -94,7 +119,7 @@ class TestMealPlanDayModel:
         plan = MealPlan.objects.create()
         day1 = MealPlanDay.objects.create(name="First", meal_plan=plan)
         day2 = MealPlanDay.objects.create(name="Second", meal_plan=plan)
-        days = list(plan.days.values_list('name', flat=True))
+        days = list(plan.days.values_list("name", flat=True))
         # Second was created later so it should appear first
         assert days[0] == "Second"
         assert days[1] == "First"
@@ -104,8 +129,10 @@ class TestMealPlanDayModel:
 class TestMealPlanFoodModel:
     def _make_food(self, bls):
         return Food.objects.create(
-            bls_code=bls, name=f"Food {bls}",
-            energy_in_kj_per_100g=0, energy_in_kcal_per_100g=0
+            bls_code=bls,
+            name=f"Food {bls}",
+            energy_in_kj_per_100g=0,
+            energy_in_kcal_per_100g=0,
         )
 
     def test_unique_together_enforced_at_db_level(self):
@@ -113,16 +140,24 @@ class TestMealPlanFoodModel:
         plan = MealPlan.objects.create()
         day = MealPlanDay.objects.create(meal_plan=plan)
         food = self._make_food("UNQ_F1")
-        MealPlanFood.objects.create(meal_plan_day=day, food=food, amount_in_g=100, meal_type="breakfast")
+        MealPlanFood.objects.create(
+            meal_plan_day=day, food=food, amount_in_g=100, meal_type="breakfast"
+        )
         with pytest.raises(IntegrityError):
-            MealPlanFood.objects.create(meal_plan_day=day, food=food, amount_in_g=200, meal_type="breakfast")
+            MealPlanFood.objects.create(
+                meal_plan_day=day, food=food, amount_in_g=200, meal_type="breakfast"
+            )
 
     def test_same_food_different_meal_type_is_allowed(self):
         plan = MealPlan.objects.create()
         day = MealPlanDay.objects.create(meal_plan=plan)
         food = self._make_food("UNQ_F2")
-        MealPlanFood.objects.create(meal_plan_day=day, food=food, amount_in_g=100, meal_type="breakfast")
-        mpf2 = MealPlanFood.objects.create(meal_plan_day=day, food=food, amount_in_g=50, meal_type="lunch")
+        MealPlanFood.objects.create(
+            meal_plan_day=day, food=food, amount_in_g=100, meal_type="breakfast"
+        )
+        mpf2 = MealPlanFood.objects.create(
+            meal_plan_day=day, food=food, amount_in_g=50, meal_type="lunch"
+        )
         assert mpf2.pk is not None
 
     def test_default_meal_type_is_breakfast(self):

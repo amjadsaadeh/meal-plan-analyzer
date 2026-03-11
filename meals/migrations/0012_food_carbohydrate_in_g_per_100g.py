@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0011_remove_mealplanday_visible_nutrients_and_more'),
+        ("meals", "0011_remove_mealplanday_visible_nutrients_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='food',
-            name='carbohydrate_in_g_per_100g',
+            model_name="food",
+            name="carbohydrate_in_g_per_100g",
             field=models.FloatField(default=0.0),
         ),
     ]

@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('meals', '0010_mealplan_alter_mealplanday_name_and_more'),
+        ("meals", "0010_mealplan_alter_mealplanday_name_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='mealplanday',
-            name='visible_nutrients',
+            model_name="mealplanday",
+            name="visible_nutrients",
         ),
         migrations.AddField(
-            model_name='mealplan',
-            name='visible_nutrients',
+            model_name="mealplan",
+            name="visible_nutrients",
             field=models.JSONField(blank=True, default=list),
         ),
     ]
