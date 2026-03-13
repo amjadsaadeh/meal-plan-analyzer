@@ -1,4 +1,5 @@
 """Playwright tests for the food editor aliases section."""
+
 import pytest
 from playwright.sync_api import expect
 from meals.models import FoodAlias
@@ -65,9 +66,9 @@ def test_add_alias_via_button(logged_in_page, live_server):
     logged_in_page.fill(".alias-input", "Aubergine")
     logged_in_page.click(".alias-add-btn")
 
-    expect(logged_in_page.locator(".alias-badge").filter(has_text="Aubergine")).to_be_visible(
-        timeout=8000
-    )
+    expect(
+        logged_in_page.locator(".alias-badge").filter(has_text="Aubergine")
+    ).to_be_visible(timeout=8000)
     expect(logged_in_page.locator(".alias-input")).to_have_value("")
     assert FoodAlias.objects.filter(food=food, alias="Aubergine").exists()
 
@@ -79,9 +80,9 @@ def test_add_alias_via_enter_key(logged_in_page, live_server):
     logged_in_page.fill(".alias-input", "Zucchini")
     logged_in_page.press(".alias-input", "Enter")
 
-    expect(logged_in_page.locator(".alias-badge").filter(has_text="Zucchini")).to_be_visible(
-        timeout=8000
-    )
+    expect(
+        logged_in_page.locator(".alias-badge").filter(has_text="Zucchini")
+    ).to_be_visible(timeout=8000)
     assert FoodAlias.objects.filter(food=food, alias="Zucchini").exists()
 
 
@@ -107,9 +108,9 @@ def test_add_duplicate_alias_does_not_create_double_badge(logged_in_page, live_s
     logged_in_page.click(".alias-add-btn")
 
     # Still only one badge (backend returns existing object)
-    expect(logged_in_page.locator(".alias-badge").filter(has_text="Duplicate")).to_have_count(
-        1, timeout=8000
-    )
+    expect(
+        logged_in_page.locator(".alias-badge").filter(has_text="Duplicate")
+    ).to_have_count(1, timeout=8000)
 
 
 # ---------------------------------------------------------------------------
@@ -129,9 +130,9 @@ def test_remove_alias_removes_badge(logged_in_page, live_server):
     logged_in_page.on("dialog", lambda dialog: dialog.accept())
     badge.locator(".alias-remove-btn").click()
 
-    expect(logged_in_page.locator(".alias-badge").filter(has_text="RemoveMe")).to_have_count(
-        0, timeout=8000
-    )
+    expect(
+        logged_in_page.locator(".alias-badge").filter(has_text="RemoveMe")
+    ).to_have_count(0, timeout=8000)
     assert not FoodAlias.objects.filter(food=food, alias="RemoveMe").exists()
 
 
