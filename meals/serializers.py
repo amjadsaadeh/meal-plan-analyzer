@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Food, FoodAlias, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
+from .models import (
+    Food,
+    FoodAlias,
+    MealPlan,
+    MealPlanDay,
+    MealPlanFood,
+    ThresholdPreset,
+)
 
 
 class FoodSerializer(serializers.ModelSerializer):

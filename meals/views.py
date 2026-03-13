@@ -892,7 +892,7 @@ def food_editor(request, pk):
         "aliases": _("Aliases"),
         "aliasInputPlaceholder": _("Add alias…"),
         "addAlias": _("Add"),
-        "deleteAliasConfirm": _("Remove alias \"{alias}\"?"),
+        "deleteAliasConfirm": _('Remove alias "{alias}"?'),
         "aliasAlreadyExists": _("This alias already exists."),
         "minerals": _("Minerals"),
     }
