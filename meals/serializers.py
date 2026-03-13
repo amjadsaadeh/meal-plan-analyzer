@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Food, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
+from .models import Food, FoodAlias, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset
 
 
 class FoodSerializer(serializers.ModelSerializer):
@@ -72,6 +72,12 @@ class FoodSerializer(serializers.ModelSerializer):
             data["energy_in_kcal_per_100g"] = round(kj / 4.184, 1)
 
         return data
+
+
+class FoodAliasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FoodAlias
+        fields = ["id", "food", "alias"]
 
 
 class ThresholdPresetSerializer(serializers.ModelSerializer):

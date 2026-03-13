@@ -248,6 +248,103 @@
     .field-label { opacity: 0.75; }
 }
 
+// ── Aliases section ────────────────────────────────────────────
+.aliases-section {
+    margin-bottom: 0;
+}
+
+.aliases-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.alias-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-height: 28px;
+    align-items: center;
+}
+
+.alias-empty {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+.alias-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px 3px 10px;
+    background: var(--primary-glow);
+    color: var(--primary-hover);
+    border-radius: 20px;
+    font-size: 0.83rem;
+    font-weight: 500;
+}
+
+.alias-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.65;
+    transition: opacity 0.15s, background 0.15s;
+    flex-shrink: 0;
+
+    &:hover {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.12);
+    }
+}
+
+.alias-add-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.alias-input {
+    max-width: 280px;
+}
+
+.alias-add-btn {
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    background: var(--primary-glow);
+    color: var(--primary-hover);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+        background: var(--primary);
+        color: #fff;
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
+}
+
+.alias-error {
+    font-size: 0.83rem;
+    color: var(--danger);
+    margin: 0;
+}
+
 // ── Copy button ────────────────────────────────────────────────
 .copy-btn {
     display: inline-flex;

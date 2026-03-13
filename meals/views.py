@@ -22,6 +22,7 @@ from .models import (
 )
 from .serializers import (
     FoodSerializer,
+    FoodAliasSerializer,
     MealPlanSerializer,
     MealPlanDaySerializer,
     MealPlanFoodSerializer,
@@ -500,6 +501,33 @@ class FoodViewSet(viewsets.ModelViewSet):
 from django.db.models import Prefetch
 
 
+class FoodAliasViewSet(viewsets.ModelViewSet):
+    """CRUD for FoodAlias records. Filter by food with ?food=<id>."""
+
+    serializer_class = FoodAliasSerializer
+    http_method_names = ["get", "post", "delete", "head", "options"]
+
+    def get_queryset(self):
+        qs = FoodAlias.objects.all()
+        food_id = self.request.query_params.get("food")
+        if food_id:
+            qs = qs.filter(food_id=food_id)
+        return qs.order_by("alias")
+
+    def create(self, request, *args, **kwargs):
+        alias_text = (request.data.get("alias") or "").strip()
+        food_id = request.data.get("food")
+        if not alias_text:
+            return Response({"alias": "This field is required."}, status=400)
+        if not food_id:
+            return Response({"food": "This field is required."}, status=400)
+        obj, created = FoodAlias.objects.get_or_create(
+            food_id=food_id, alias=alias_text
+        )
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data, status=201 if created else 200)
+
+
 class MealPlanViewSet(viewsets.ModelViewSet):
     queryset = MealPlan.objects.all()
     serializer_class = MealPlanSerializer
@@ -861,6 +889,11 @@ def food_editor(request, pk):
         "energy": _("Energy"),
         "macronutrients": _("Macronutrients"),
         "vitamins": _("Vitamins"),
+        "aliases": _("Aliases"),
+        "aliasInputPlaceholder": _("Add alias…"),
+        "addAlias": _("Add"),
+        "deleteAliasConfirm": _("Remove alias \"{alias}\"?"),
+        "aliasAlreadyExists": _("This alias already exists."),
         "minerals": _("Minerals"),
     }
     return render(
