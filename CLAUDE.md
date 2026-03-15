@@ -98,7 +98,7 @@ meal-plan-analyzer/
 │   │   ├── img/             # Static assets (logo, etc.)
 │   │   └── scss/            # SCSS source files
 │   ├── migrations/          # Django migrations (0001–0024)
-│   └── management/commands/
+│   └── management/commands/  # Django management commands
 │       ├── import_foods.py  # BLS Excel import command
 │       └── build_scss.py    # SCSS compilation command
 │
@@ -117,12 +117,14 @@ meal-plan-analyzer/
 │   │   ├── test_threshold_presets.py
 │   │   ├── test_food_search_semantics.py
 │   │   ├── test_export_name_auto_alias.py
-│   │   └── test_food_energy_sync.py
+│   │   ├── test_food_energy_sync.py
+│   │   └── test_food_aliases.py
 │   ├── frontend/
 │   │   ├── conftest.py      # Playwright fixtures (logged_in_page)
 │   │   ├── factories.py     # factory-boy factories
 │   │   ├── test_mealplan_list.py
 │   │   ├── test_mealplan_detail.py
+│   │   ├── test_food_editor.py
 │   │   └── test_pdf.py
 │   ├── test_admin.py
 │   ├── test_error_handling.py
@@ -296,6 +298,7 @@ All endpoints require authentication (`IsAuthenticated`). The API uses DRF's `De
 | `/api/mealplan-days/` | `MealPlanDayViewSet` | Queryset pre-filtered to `removed=False` |
 | `/api/mealplan-foods/` | `MealPlanFoodViewSet` | Full CRUD; auto-creates aliases from `export_name` |
 | `/api/threshold-presets/` | `ThresholdPresetViewSet` | Full CRUD |
+| `/api/food-aliases/` | `FoodAliasViewSet` | GET/POST/DELETE for `FoodAlias` records; filter by food with `?food=<id>` |
 
 Default page size is 100. `FoodViewSet` disables pagination (`pagination_class = None`).
 
@@ -324,6 +327,14 @@ The food search (`?search=`) supports intent detection and multi-source matching
 
 ### Auto-alias creation
 When a `MealPlanFood` is created or updated with a non-empty `export_name`, the system checks whether that name is already findable via food search (name or alias). If not, it automatically creates a `FoodAlias` linking the `export_name` to the food and invalidates the alias cache.
+
+### Food alias management
+`FoodAliasViewSet` provides direct CRUD for alias records (used by the food editor UI):
+
+- **List** (`GET /api/food-aliases/?food=<id>`) — returns aliases for a specific food.
+- **Create** (`POST /api/food-aliases/`) — creates an alias; uses `get_or_create` so duplicate POSTs are idempotent.
+- **Delete** (`DELETE /api/food-aliases/<id>/`) — removes an alias and the cache is invalidated via signal.
+- `PUT`/`PATCH` are not supported (aliases are atomic: delete and re-create to rename).
 
 ---
 
@@ -411,7 +422,26 @@ pnpm build            # build to frontend/dist/
 ### Vue Component Tree (`frontend/src/food-editor/`)
 
 - `main.js` — mounts `FoodEditorApp` for creating and editing a single custom food
-- `FoodEditorApp.vue` — form with all nutrient fields; calls `POST`/`PUT` on `/api/foods/`; enforces `data_source == 'custom'` edit rules
+- `FoodEditorApp.vue` — form with all nutrient fields; calls `POST`/`PUT` on `/api/foods/`; enforces `data_source == 'custom'` edit rules; includes an **Aliases** section (available for all foods, BLS and custom) that calls `/api/food-aliases/` to list, add, and delete aliases
+
+### Vue Component Tree (`frontend/src/mealplan-detail/`)
+
+The meal plan detail page is a full Vue 3 SPA. Source lives in `frontend/src/mealplan-detail/`.
+
+- `main.js` — mounts `MealPlanDetailApp` on `#meal-plan-detail-app`; provides `planId`, `csrfToken`, `nutrients`, `i18n`, `pdfUrl`, `previewUrl`, `planListUrl`
+- `components/MealPlanDetailApp.vue` — root component; orchestrates the detail page
+- `components/PageHeader.vue` — plan name/subtitle editing, navigation back to list
+- `components/Toolbar.vue` — top action bar (add day, export PDF, etc.)
+- `components/StickyBar.vue` — nutrient summary bar that sticks to the viewport
+- `components/PlanOverview.vue` — nutrient totals overview across all days
+- `components/DaySection.vue` — one day's card with meals and foods
+- `components/DaySidePanel.vue` — side panel showing nutrients for a single day
+- `components/MealSection.vue` — breakfast/lunch/dinner section within a day
+- `components/IngredientRow.vue` — a single food entry with amount and meal type
+- `components/FoodSearchDropdown.vue` — autocomplete search dropdown for adding foods
+- `components/SavePresetModal.vue` — dialog for saving current thresholds as a preset
+- `components/ConfirmDeleteDayModal.vue` — confirmation dialog for day deletion
+- `components/ConfirmDeleteIngredientModal.vue` — confirmation dialog for ingredient removal
 
 i18n strings are passed via the `data-i18n` attribute on the mount element (Django renders translations server-side).
 
@@ -492,6 +522,7 @@ The command uses `openpyxl` with hard-coded BLS column mappings (e.g. column A =
 
 ## Key Conventions
 
+- **Python formatting**: `black` is the code formatter. Run `uv run black .` to format; CI enforces `uv run black --check .`. Always format before committing Python changes.
 - **Soft deletes**: `MealPlanDay.removed` — never hard-delete days; set `removed=True` instead. Always filter with `removed=False` in queries.
 - **Nutrient keys**: Use the exact string keys from `NUTRIENT_IDS` (e.g. `"protein_in_g"`, not `"protein"`). The `MealPlan.clean()` method migrates old key names on save.
 - **Model validation**: `MealPlan.save()` always calls `full_clean()`. Do not bypass validation with `update()` if you need thresholds/nutrient integrity.
@@ -546,8 +577,8 @@ Manifests live in `deployment/app-deployment/k8s/`. The Ansible playbook handles
 
 ## Testing Conventions
 
-- API tests (`tests/api/`) use `@pytest.mark.django_db` and the `authenticated_client` / `api_client` fixtures.
-- Frontend tests (`tests/frontend/`) use the `logged_in_page` fixture (Playwright `Page` already logged in).
+- API tests (`tests/api/`) use `@pytest.mark.django_db` and the `authenticated_client` / `api_client` fixtures. Includes `test_food_aliases.py` for the `/api/food-aliases/` endpoint.
+- Frontend tests (`tests/frontend/`) use the `logged_in_page` fixture (Playwright `Page` already logged in). Includes `test_food_editor.py` for the food editor aliases UI.
 - Top-level tests (`tests/test_*.py`) cover models, views, admin, nutrients, template filters, search utilities, PDF views, and food import.
 - Factory definitions for test objects are in `tests/frontend/factories.py` (`FoodFactory`, `MealPlanFactory`, `MealPlanDayFactory`, `MealPlanFoodFactory`).
 - Test food data is loaded from `tests/data/food_fixtures.json` once per session.
@@ -556,8 +587,11 @@ Manifests live in `deployment/app-deployment/k8s/`. The Ansible playbook handles
 
 ### CI (GitHub Actions)
 
-Two separate jobs in `.github/workflows/tests.yml` run on pull requests to `main`:
-- **API Tests**: `uv run pytest tests/api/ --create-db`
-- **Frontend Tests**: `uv run python manage.py build_scss` → `uv run playwright install --with-deps chromium` → `uv run pytest tests/frontend/ --create-db`
+Four jobs in `.github/workflows/tests.yml` run on pull requests to `main`:
 
-Both jobs install WeasyPrint system dependencies via apt before running.
+- **Lint (Black)**: `uv run black --check .` — enforces consistent Python formatting.
+- **Unit & Integration Tests**: builds JS (`pnpm build`), compiles SCSS, then runs `uv run pytest tests/test_*.py --create-db`.
+- **API Tests**: builds JS, then runs `uv run pytest tests/api/ --create-db`.
+- **Frontend Tests (Playwright)**: builds JS, compiles SCSS, installs Playwright Chromium, then runs `uv run pytest tests/frontend/ --create-db --screenshot=only-on-failure --tracing=retain-on-failure`. Playwright failure artifacts (screenshots + traces) are uploaded on failure.
+
+All test jobs install WeasyPrint system dependencies via apt before running. Test results are published via `dorny/test-reporter` as JUnit XML to the GitHub Checks tab. A final **Test Summary** job writes a Markdown table to the workflow summary.
