@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
 from .views import (
     FoodViewSet,
+    FoodAliasViewSet,
     MealPlanViewSet,
     MealPlanDayViewSet,
     MealPlanFoodViewSet,
@@ -19,6 +20,7 @@ from .views import (
 
 router = DefaultRouter()
 router.register(r"foods", FoodViewSet, basename="food")
+router.register(r"food-aliases", FoodAliasViewSet, basename="foodalias")
 router.register(r"mealplans", MealPlanViewSet, basename="mealplan")
 router.register(r"mealplan-days", MealPlanDayViewSet, basename="mealplanday")
 router.register(r"mealplan-foods", MealPlanFoodViewSet, basename="mealplanfood")

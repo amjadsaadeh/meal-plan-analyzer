@@ -48,6 +48,46 @@
         </div>
       </div>
 
+      <!-- Aliases section -->
+      <div class="aliases-section nutrient-group" style="margin-bottom: 2rem;">
+        <h2 class="group-label">{{ i18n.aliases }}</h2>
+        <div class="aliases-body">
+          <div class="alias-badges">
+            <span v-if="aliases.length === 0" class="alias-empty">—</span>
+            <span
+              v-for="a in aliases"
+              :key="a.id"
+              class="alias-badge"
+            >
+              {{ a.alias }}
+              <button
+                class="alias-remove-btn"
+                :title="i18n.aliases"
+                @click="confirmRemoveAlias(a)"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </span>
+          </div>
+          <div class="alias-add-row">
+            <input
+              v-model="newAlias"
+              type="text"
+              class="field-input alias-input"
+              :placeholder="i18n.aliasInputPlaceholder"
+              @keydown.enter.prevent="addAlias"
+            />
+            <button class="alias-add-btn" :disabled="!newAlias.trim()" @click="addAlias">
+              {{ i18n.addAlias }}
+            </button>
+          </div>
+          <p v-if="aliasError" class="alias-error">{{ aliasError }}</p>
+        </div>
+      </div>
+
       <!-- Nutrient groups -->
       <div class="nutrient-groups">
         <div v-for="group in nutrientGroups" :key="group.label" class="nutrient-group">
@@ -112,6 +152,9 @@ const syncStatus = ref('saved')   // 'saved' | 'pending' | 'error'
 const syncMessage = ref('')
 const copyFeedback = ref(null)
 const titleEl = ref(null)
+const aliases = ref([])
+const newAlias = ref('')
+const aliasError = ref('')
 
 let saveTimer = null
 
@@ -253,8 +296,62 @@ function formatValue(val, precision) {
   return Number(val).toFixed(precision ?? 1)
 }
 
+async function loadAliases() {
+  try {
+    const res = await fetch(`/api/food-aliases/?food=${foodId}`)
+    if (res.ok) {
+      const data = await res.json()
+      aliases.value = data.results ?? data
+    }
+  } catch { /* ignore */ }
+}
+
+async function addAlias() {
+  const text = newAlias.value.trim()
+  if (!text) return
+  aliasError.value = ''
+  try {
+    const res = await fetch('/api/food-aliases/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ food: foodId, alias: text }),
+    })
+    if (res.ok) {
+      const obj = await res.json()
+      if (!aliases.value.find(a => a.id === obj.id)) {
+        aliases.value = [...aliases.value, obj].sort((a, b) => a.alias.localeCompare(b.alias))
+      }
+      newAlias.value = ''
+    } else {
+      const err = await res.json().catch(() => ({}))
+      aliasError.value = err.alias || err.detail || i18n.error
+    }
+  } catch {
+    aliasError.value = i18n.networkError
+  }
+}
+
+function confirmRemoveAlias(alias) {
+  const msg = (i18n.deleteAliasConfirm || 'Remove alias "{alias}"?').replace('{alias}', alias.alias)
+  if (!confirm(msg)) return
+  removeAlias(alias)
+}
+
+async function removeAlias(alias) {
+  try {
+    const res = await fetch(`/api/food-aliases/${alias.id}/`, {
+      method: 'DELETE',
+      headers: { 'X-CSRFToken': csrfToken },
+    })
+    if (res.ok || res.status === 204) {
+      aliases.value = aliases.value.filter(a => a.id !== alias.id)
+    }
+  } catch { /* ignore */ }
+}
+
 onMounted(async () => {
   await loadFood()
+  await loadAliases()
   if (titleEl.value && food.value) {
     titleEl.value.textContent = food.value.name
   }
