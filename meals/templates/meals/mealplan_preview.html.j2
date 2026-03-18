@@ -78,6 +78,10 @@
             '{% trans "Export failed." %}' + (msg ? ' (' + msg + ')' : '');
         show('export-error');
     }
+
+    window.addEventListener('beforeunload', function () {
+        if (pollTimer) clearInterval(pollTimer);
+    });
 })();
 </script>
 {% endblock %}
