@@ -21,7 +21,11 @@ This milestone adds async background task infrastructure to the existing Django/
   2. The Celery app starts without error (`celery -A config worker --dry-run`) and discovers tasks
   3. The Django cache backend is Redis — setting a cache key in one process is readable in another (no LocMemCache isolation)
   4. The worker is configured with `max_tasks_per_child` so WeasyPrint memory leaks are bounded
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Wire Celery into Django and switch cache backend to Redis
+- [ ] 01-02-PLAN.md — Add BackgroundJob model and migration 0025
 
 ### Phase 2: Task and API
 **Goal**: The backend is feature-complete — a Celery task generates PDFs with progress reporting, and REST endpoints let clients create jobs, poll status, and download results.
@@ -53,6 +57,6 @@ This milestone adds async background task infrastructure to the existing Django/
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/2 | Not started | - |
 | 2. Task and API | 0/TBD | Not started | - |
 | 3. Docker and Frontend | 0/TBD | Not started | - |
