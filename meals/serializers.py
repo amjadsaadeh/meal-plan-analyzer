@@ -6,6 +6,7 @@ from .models import (
     MealPlanDay,
     MealPlanFood,
     ThresholdPreset,
+    BackgroundJob,
 )
 
 
@@ -169,3 +170,19 @@ class MealPlanSerializer(serializers.ModelSerializer):
                 )
             raise e
         return attrs
+
+
+class BackgroundJobCreateSerializer(serializers.Serializer):
+    meal_plan_id = serializers.IntegerField()
+
+    def validate_meal_plan_id(self, value):
+        if not MealPlan.objects.filter(pk=value).exists():
+            raise serializers.ValidationError("Meal plan not found.")
+        return value
+
+
+class BackgroundJobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BackgroundJob
+        fields = ["id", "status", "progress", "error_message", "created_at", "updated_at"]
+        read_only_fields = ["id", "status", "progress", "error_message", "created_at", "updated_at"]
