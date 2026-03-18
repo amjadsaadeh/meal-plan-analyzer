@@ -481,3 +481,11 @@ msgstr ""
 #: meals/views.py:65
 msgid "Day 1"
 msgstr ""
+
+#: meals/views.py
+msgid "Export failed. Please retry."
+msgstr "Export failed. Please retry."
+
+#: meals/views.py
+msgid "Retry"
+msgstr "Retry"

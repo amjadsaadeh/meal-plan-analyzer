@@ -242,6 +242,8 @@ def meal_plan_detail(request, pk=None):
         "max": _("max"),
         "syncing": _("Syncing..."),
         "deleting": _("Deleting..."),
+        "exportFailed": _("Export failed. Please retry."),
+        "retry": _("Retry"),
     }
 
     return render(
