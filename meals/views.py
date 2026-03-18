@@ -6,7 +6,8 @@ from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from .models import (
@@ -19,6 +20,7 @@ from .models import (
     get_alias_index,
     FoodAlias,
     ALIAS_CACHE_KEY,
+    BackgroundJob,
 )
 from .serializers import (
     FoodSerializer,
@@ -240,6 +242,8 @@ def meal_plan_detail(request, pk=None):
         "max": _("max"),
         "syncing": _("Syncing..."),
         "deleting": _("Deleting..."),
+        "exportFailed": _("Export failed. Please retry."),
+        "retry": _("Retry"),
     }
 
     return render(
@@ -597,8 +601,10 @@ class ThresholdPresetViewSet(viewsets.ModelViewSet):
     search_fields = ["name"]
 
 
-from django.http import HttpResponse
+from datetime import timedelta
+from django.http import HttpResponse, FileResponse, Http404
 from django.template.loader import render_to_string
+from django.utils import timezone
 import weasyprint
 
 
@@ -850,6 +856,61 @@ def meal_plan_pdf(request, pk):
 
     response["Content-Disposition"] = f'attachment; filename="{filename_base}.pdf"'
     return response
+
+
+from .tasks import generate_pdf_task
+from .serializers import BackgroundJobCreateSerializer, BackgroundJobSerializer
+
+
+class ExportJobViewSet(viewsets.ViewSet):
+    """
+    POST /api/export-jobs/          — create job + dispatch task
+    GET  /api/export-jobs/<id>/     — poll status
+    GET  /api/export-jobs/<id>/result/ — download PDF when done
+    """
+
+    def create(self, request):
+        serializer = BackgroundJobCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        meal_plan_pk = serializer.validated_data["meal_plan_id"]
+
+        job = BackgroundJob.objects.create(
+            task_type="pdf_export",
+            task_kwargs={"meal_plan_pk": meal_plan_pk},
+            expires_at=timezone.now() + timedelta(hours=24),
+        )
+        generate_pdf_task.delay(str(job.pk), meal_plan_pk)
+
+        return Response(
+            BackgroundJobSerializer(job).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def retrieve(self, request, pk=None):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        try:
+            job = BackgroundJob.objects.get(pk=pk)
+        except (BackgroundJob.DoesNotExist, ValueError, DjangoValidationError):
+            raise Http404
+        return Response(BackgroundJobSerializer(job).data)
+
+    @action(detail=True, methods=["get"], url_path="result")
+    def result(self, request, pk=None):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        try:
+            job = BackgroundJob.objects.get(pk=pk)
+        except (BackgroundJob.DoesNotExist, ValueError, DjangoValidationError):
+            raise Http404
+        if job.status != BackgroundJob.Status.DONE or not job.result_file:
+            raise Http404
+        return FileResponse(
+            job.result_file.open("rb"),
+            content_type="application/pdf",
+            as_attachment=True,
+            filename=os.path.basename(job.result_file.name),
+        )
 
 
 @login_required

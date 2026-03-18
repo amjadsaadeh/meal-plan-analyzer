@@ -991,3 +991,54 @@ tfoot tr {
 // ── Text utilities ───────────────────────────────────────────
 .text-right  { text-align: right; }
 .text-center { text-align: center; }
+
+// --- Async Export Button ---
+
+.export-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-progress-bar {
+  width: 120px;
+  height: 8px;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 4px;
+  overflow: hidden;
+
+  &::-webkit-progress-bar {
+    background: var(--glass-border);
+    border-radius: 4px;
+  }
+
+  &::-webkit-progress-value {
+    background: var(--primary);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  &::-moz-progress-bar {
+    background: var(--primary);
+    border-radius: 4px;
+  }
+}
+
+.export-progress-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  min-width: 32px;
+}
+
+.export-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-error-msg {
+  font-size: 0.75rem;
+  color: var(--danger);
+  max-width: 200px;
+}

@@ -8,6 +8,7 @@ from .views import (
     MealPlanDayViewSet,
     MealPlanFoodViewSet,
     ThresholdPresetViewSet,
+    ExportJobViewSet,
     index,
     meal_plan_list,
     meal_plan_detail,
@@ -27,6 +28,7 @@ router.register(r"mealplan-foods", MealPlanFoodViewSet, basename="mealplanfood")
 router.register(
     r"threshold-presets", ThresholdPresetViewSet, basename="thresholdpreset"
 )
+router.register(r"export-jobs", ExportJobViewSet, basename="exportjob")
 
 urlpatterns = [
     path(

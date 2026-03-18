@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -284,6 +286,32 @@ class SiteSettings(models.Model):
     def get(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+
+class BackgroundJob(models.Model):
+    """Tracks the state and result of a background task (PDF export, BLS import, etc.)."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        RUNNING = "running", "Running"
+        DONE = "done", "Done"
+        FAILED = "failed", "Failed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    task_type = models.CharField(max_length=50)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+    progress = models.PositiveSmallIntegerField(default=0)
+    task_kwargs = models.JSONField(default=dict, blank=True)
+    result_file = models.FileField(upload_to="exports/", null=True, blank=True)
+    error_message = models.TextField(blank=True, default="")
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class FoodAlias(models.Model):

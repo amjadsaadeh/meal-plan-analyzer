@@ -602,6 +602,14 @@ msgstr "Vitamine"
 msgid "Minerals"
 msgstr "Mineralstoffe"
 
+#: meals/views.py
+msgid "Export failed. Please retry."
+msgstr "Export fehlgeschlagen. Bitte erneut versuchen."
+
+#: meals/views.py
+msgid "Retry"
+msgstr "Erneut versuchen"
+
 #~ msgid "Do you really want to delete \"<span id=\"deleteDayName\"></span>\"?"
 #~ msgstr ""
 #~ "Möchtest du \"<span id=\"deleteDayName\"></span>\" wirklich löschen?"

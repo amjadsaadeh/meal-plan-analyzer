@@ -214,6 +214,36 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "meal-plan-list"
 LOGOUT_REDIRECT_URL = "login"
 
+# --- Celery ---
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = (
+    None  # BackgroundJob model is the source of truth; no Celery result backend needed
+)
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_TRACK_STARTED = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # prevents long tasks from starving the queue
+CELERY_WORKER_MAX_TASKS_PER_CHILD = (
+    50  # TASK-04: WeasyPrint CFFI memory leak mitigation
+)
+CELERY_WORKER_MAX_MEMORY_PER_CHILD = 200_000  # 200 MB safety net (in KB)
+CELERY_TIMEZONE = "UTC"
+CELERY_ENABLE_UTC = True
+
+# --- Django cache (Redis replaces LocMemCache so alias cache is shared across workers) ---
+# Use db/1 to isolate cache from Celery broker on db/0 — prevents key collisions
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": env("REDIS_URL", default="redis://localhost:6379/1"),
+    }
+}
+
+# --- WeasyPrint worker context ---
+# The Celery worker has no HTTP request; base_url must be an absolute URL from settings
+SITE_BASE_URL = env("SITE_BASE_URL", default="http://localhost:8000")
+
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",

@@ -13,6 +13,14 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
     build: .
     command: >
@@ -22,6 +30,8 @@ services:
              gunicorn --bind 0.0.0.0:8000 config.wsgi:application"
     volumes:
       - .:/app
+      - /app/.venv
+      - media_files:/app/media
     ports:
       - "8000:8000"
     environment:
@@ -29,9 +39,37 @@ services:
       - DEBUG=True
       - ALLOWED_HOSTS=localhost,127.0.0.1
       - DATABASE_URL=postgres://mealplanner:mealplanner@db:5432/mealplanner
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/1
+      - SITE_BASE_URL=http://web:8000
     depends_on:
       db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: .
+    command: >
+      celery -A config worker
+        --loglevel=info
+        --concurrency=2
+        --max-tasks-per-child=50
+    volumes:
+      - media_files:/app/media
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-change-me-generate-a-real-key-for-production}
+      - DEBUG=True
+      - DATABASE_URL=postgres://mealplanner:mealplanner@db:5432/mealplanner
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/1
+      - SITE_BASE_URL=http://web:8000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:
   postgres_data:
+  media_files:
