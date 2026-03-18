@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-16)
 ## Current Position
 
 Phase: 2 of 3 (Task and API)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-03-18 — Completed 02-01-PLAN.md (generate_pdf_task Celery task)
+Plan: 2 of 2 in current phase
+Status: Phase complete
+Last activity: 2026-03-18 — Completed 02-02-PLAN.md (ExportJobViewSet, API tests, task tests)
 
-Progress: [███░░░░░░░] 30%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -28,10 +28,10 @@ Progress: [███░░░░░░░] 30%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 2 | ~20 min | ~10 min |
-| 02-task-and-api | 1 | ~2 min | ~2 min |
+| 02-task-and-api | 2 | ~6 min | ~3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01, 01-02, 02-01
+- Last 5 plans: 01-01, 01-02, 02-01, 02-02
 - Trend: On track
 
 *Updated after each plan completion*
@@ -53,6 +53,9 @@ Recent decisions affecting current work:
 - 02-01: Import views inside Celery task function body (not module level) to avoid circular imports
 - 02-01: SoftTimeLimitExceeded not re-raised — expected timeout, job transitions to failed cleanly
 - 02-01: update_fields must include updated_at when saving model with auto_now field
+- 02-02: viewsets.ViewSet not ModelViewSet for ExportJobViewSet — only three specific endpoints needed
+- 02-02: Catch DjangoValidationError for invalid UUID pk — UUIDField raises Django ValidationError not Python ValueError
+- 02-02: expires_at set to timezone.now() + timedelta(hours=24) on job creation
 
 ### Pending Todos
 
@@ -67,5 +70,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Completed 02-01-PLAN.md — generate_pdf_task Celery task in meals/tasks.py
+Stopped at: Completed 02-02-PLAN.md — ExportJobViewSet API and tests
 Resume file: None

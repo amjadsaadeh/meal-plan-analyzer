@@ -27,10 +27,10 @@
 
 ### API
 
-- [ ] **API-01**: `POST /api/export-jobs/` creates a `BackgroundJob` and dispatches `generate_pdf_task`; returns job `id` and `status`
-- [ ] **API-02**: `GET /api/export-jobs/<id>/` returns current `status`, `progress`, and `error_message`
-- [ ] **API-03**: `GET /api/export-jobs/<id>/result/` streams or redirects to the generated PDF file when `status=done`; returns 404 if not ready
-- [ ] **API-04**: All export job endpoints require authentication
+- [x] **API-01**: `POST /api/export-jobs/` creates a `BackgroundJob` and dispatches `generate_pdf_task`; returns job `id` and `status`
+- [x] **API-02**: `GET /api/export-jobs/<id>/` returns current `status`, `progress`, and `error_message`
+- [x] **API-03**: `GET /api/export-jobs/<id>/result/` streams or redirects to the generated PDF file when `status=done`; returns 404 if not ready
+- [x] **API-04**: All export job endpoints require authentication
 
 ### Frontend
 
@@ -78,10 +78,10 @@
 | TASK-02 | Phase 2 | Complete |
 | TASK-03 | Phase 2 | Complete |
 | TASK-04 | Phase 1 | Pending |
-| API-01 | Phase 2 | Pending |
-| API-02 | Phase 2 | Pending |
-| API-03 | Phase 2 | Pending |
-| API-04 | Phase 2 | Pending |
+| API-01 | Phase 2 | Complete |
+| API-02 | Phase 2 | Complete |
+| API-03 | Phase 2 | Complete |
+| API-04 | Phase 2 | Complete |
 | UI-01 | Phase 3 | Pending |
 | UI-02 | Phase 3 | Pending |
 | UI-03 | Phase 3 | Pending |
