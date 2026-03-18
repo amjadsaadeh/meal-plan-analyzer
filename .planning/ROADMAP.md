@@ -37,7 +37,11 @@ Plans:
   3. `GET /api/export-jobs/<id>/result/` returns a downloadable PDF when the job is done, and 404 when not ready
   4. If the task exceeds the soft time limit, the job transitions to `status=failed` rather than staying stuck as `running`
   5. All export job endpoints return 403 for unauthenticated requests
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Implement generate_pdf_task Celery task with progress milestones and error handling
+- [ ] 02-02-PLAN.md — Add ExportJobViewSet, serializers, URL registration, and API + task tests
 
 ### Phase 3: Docker and Frontend
 **Goal**: The full feature works end-to-end in Docker Compose — the export button shows a live progress bar and auto-downloads the PDF when ready.
@@ -58,5 +62,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete    | 2026-03-18 |
-| 2. Task and API | 0/TBD | Not started | - |
+| 2. Task and API | 0/2 | Not started | - |
 | 3. Docker and Frontend | 0/TBD | Not started | - |
