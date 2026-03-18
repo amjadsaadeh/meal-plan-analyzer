@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-03-16)
 ## Current Position
 
 Phase: 3 of 3 (Docker and Frontend)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-03-18 — Completed 03-02-PLAN.md (ExportButton.vue async polling component)
+Plan: 3 of 3 in current phase
+Status: Project complete
+Last activity: 2026-03-18 — Completed 03-03-PLAN.md (Playwright tests for ExportButton with mocked API routes)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 7
 - Average duration: ~7 min
 - Total execution time: 0.35 hours
 
@@ -29,10 +29,10 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | 01-foundation | 2 | ~20 min | ~10 min |
 | 02-task-and-api | 2 | ~6 min | ~3 min |
-| 03-docker-and-frontend | 2 | ~4 min | ~2 min |
+| 03-docker-and-frontend | 3 | ~9 min | ~3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01, 01-02, 02-01, 02-02, 03-02
+- Last 5 plans: 02-01, 02-02, 03-01, 03-02, 03-03
 - Trend: On track
 
 *Updated after each plan completion*
@@ -60,6 +60,8 @@ Recent decisions affecting current work:
 - 03-02: ExportButton uses inject(planId/csrfToken/i18n) from main.js app.provide — no prop drilling needed
 - 03-02: onUnmounted clears pollTimer to prevent dangling setInterval on navigation
 - 03-02: pdfUrl prop kept in PageHeader.vue defineProps to avoid unnecessary breaking churn
+- 03-03: Two tests only (visibility + error state) — 'done' flow excluded because mocking window.location.href assignment in Playwright adds fragility without proportional coverage value
+- 03-03: POST/GET disambiguation via route.request.method in single page.route() handler prevents accidental GET poll interception
 
 ### Pending Todos
 
@@ -74,5 +76,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Completed 03-02-PLAN.md — ExportButton.vue async polling component
+Stopped at: Completed 03-03-PLAN.md — Playwright tests for ExportButton with mocked API routes (project complete)
 Resume file: None

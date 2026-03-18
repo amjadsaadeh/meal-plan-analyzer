@@ -56,9 +56,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Add redis/worker services and shared media_files volume to Docker Compose
+- [x] 03-01-PLAN.md — Add redis/worker services and shared media_files volume to Docker Compose
 - [x] 03-02-PLAN.md — Create ExportButton.vue with polling logic and add i18n strings
-- [ ] 03-03-PLAN.md — Playwright tests for ExportButton with mocked API routes
+- [x] 03-03-PLAN.md — Playwright tests for ExportButton with mocked API routes
 
 ## Progress
 
@@ -68,4 +68,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete    | 2026-03-18 |
 | 2. Task and API | 2/2 | Complete    | 2026-03-18 |
-| 3. Docker and Frontend | 1/3 | In progress | - |
+| 3. Docker and Frontend | 3/3 | Complete    | 2026-03-18 |
