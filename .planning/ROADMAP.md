@@ -6,7 +6,7 @@ This milestone adds async background task infrastructure to the existing Django/
 
 ## Phases
 
-- [ ] **Phase 1: Foundation** - Celery app wiring, Redis cache backend, BackgroundJob model
+- [x] **Phase 1: Foundation** - Celery app wiring, Redis cache backend, BackgroundJob model
 - [ ] **Phase 2: Task and API** - PDF Celery task with progress reporting and export job endpoints
 - [ ] **Phase 3: Docker and Frontend** - Redis/worker services in Compose, shared volume, Vue export button
 
@@ -24,8 +24,8 @@ This milestone adds async background task infrastructure to the existing Django/
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Wire Celery into Django and switch cache backend to Redis
-- [ ] 01-02-PLAN.md — Add BackgroundJob model and migration 0025
+- [x] 01-01-PLAN.md — Wire Celery into Django and switch cache backend to Redis
+- [x] 01-02-PLAN.md — Add BackgroundJob model and migration 0025
 
 ### Phase 2: Task and API
 **Goal**: The backend is feature-complete — a Celery task generates PDFs with progress reporting, and REST endpoints let clients create jobs, poll status, and download results.
@@ -57,6 +57,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Not started | - |
+| 1. Foundation | 2/2 | Complete | 2026-03-18 |
 | 2. Task and API | 0/TBD | Not started | - |
 | 3. Docker and Frontend | 0/TBD | Not started | - |

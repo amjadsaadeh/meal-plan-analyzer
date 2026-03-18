@@ -15,8 +15,8 @@
 
 ### Job Model
 
-- [ ] **JOB-01**: `BackgroundJob` model exists with UUID primary key, `task_type` CharField, `status` TextChoices (`pending/running/done/failed`), `progress` PositiveSmallIntegerField (0–100), `task_kwargs` JSONField, `result_file` FileField (nullable), `error_message` TextField (blank), `expires_at` DateTimeField, `created_at`/`updated_at` auto timestamps
-- [ ] **JOB-02**: Migration is created and applied for `BackgroundJob`
+- [x] **JOB-01**: `BackgroundJob` model exists with UUID primary key, `task_type` CharField, `status` TextChoices (`pending/running/done/failed`), `progress` PositiveSmallIntegerField (0–100), `task_kwargs` JSONField, `result_file` FileField (nullable), `error_message` TextField (blank), `expires_at` DateTimeField, `created_at`/`updated_at` auto timestamps
+- [x] **JOB-02**: Migration is created and applied for `BackgroundJob`
 
 ### Task
 
@@ -72,8 +72,8 @@
 | INFRA-03 | Phase 3 | Pending |
 | INFRA-04 | Phase 3 | Pending |
 | INFRA-05 | Phase 1 | Pending |
-| JOB-01 | Phase 1 | Pending |
-| JOB-02 | Phase 1 | Pending |
+| JOB-01 | Phase 1 | Complete |
+| JOB-02 | Phase 1 | Complete |
 | TASK-01 | Phase 2 | Pending |
 | TASK-02 | Phase 2 | Pending |
 | TASK-03 | Phase 2 | Pending |

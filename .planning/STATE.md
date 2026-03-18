@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-03-16)
 ## Current Position
 
 Phase: 1 of 3 (Foundation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-18 — Roadmap created
+Plan: 2 of TBD in current phase
+Status: In progress
+Last activity: 2026-03-18 — Completed 01-02-PLAN.md (BackgroundJob model + migration)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 2
+- Average duration: ~10 min
+- Total execution time: 0.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-foundation | 2 | ~20 min | ~10 min |
 
 **Recent Trend:**
-- Last 5 plans: -
-- Trend: -
+- Last 5 plans: 01-01, 01-02
+- Trend: On track
 
 *Updated after each plan completion*
 
@@ -46,6 +46,9 @@ Recent decisions affecting current work:
 - All phases: Polling not SSE/WebSockets — simpler infra, sufficient for 5-30s export latency
 - All phases: Generic BackgroundJob model — future tasks (BLS import) slot in with zero schema changes
 - Phase 1: Switch Django cache to Redis in same changeset — fixes LocMemCache alias cross-worker staleness
+- 01-02: UUID primary key for BackgroundJob prevents job ID enumeration in HTTP poll URLs
+- 01-02: expires_at null=True schema included from day one; cleanup mechanism deferred to later phase
+- 01-02: task_kwargs JSONField allows arbitrary task params without new migrations
 
 ### Pending Todos
 
@@ -60,5 +63,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Roadmap created, STATE.md initialized — ready to plan Phase 1
+Stopped at: Completed 01-02-PLAN.md — BackgroundJob model + migration 0025 committed
 Resume file: None
