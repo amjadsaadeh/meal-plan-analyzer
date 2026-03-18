@@ -20,9 +20,9 @@
 
 ### Task
 
-- [ ] **TASK-01**: `generate_pdf_task` Celery task wraps existing `get_meal_plan_context` + WeasyPrint rendering without using a request object
-- [ ] **TASK-02**: Task updates `BackgroundJob.progress` at meaningful milestones (context load ~25%, render start ~60%, render complete ~90%, file saved 100%)
-- [ ] **TASK-03**: Task sets `soft_time_limit` to prevent stuck workers; handles `SoftTimeLimitExceeded` by marking the job `failed`
+- [x] **TASK-01**: `generate_pdf_task` Celery task wraps existing `get_meal_plan_context` + WeasyPrint rendering without using a request object
+- [x] **TASK-02**: Task updates `BackgroundJob.progress` at meaningful milestones (context load ~25%, render start ~60%, render complete ~90%, file saved 100%)
+- [x] **TASK-03**: Task sets `soft_time_limit` to prevent stuck workers; handles `SoftTimeLimitExceeded` by marking the job `failed`
 - [ ] **TASK-04**: Worker is configured with `max_tasks_per_child` to prevent WeasyPrint CFFI memory leaks
 
 ### API
@@ -74,9 +74,9 @@
 | INFRA-05 | Phase 1 | Pending |
 | JOB-01 | Phase 1 | Complete |
 | JOB-02 | Phase 1 | Complete |
-| TASK-01 | Phase 2 | Pending |
-| TASK-02 | Phase 2 | Pending |
-| TASK-03 | Phase 2 | Pending |
+| TASK-01 | Phase 2 | Complete |
+| TASK-02 | Phase 2 | Complete |
+| TASK-03 | Phase 2 | Complete |
 | TASK-04 | Phase 1 | Pending |
 | API-01 | Phase 2 | Pending |
 | API-02 | Phase 2 | Pending |
