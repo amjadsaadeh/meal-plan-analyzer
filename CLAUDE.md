@@ -43,9 +43,23 @@ The compose stack spins up a PostgreSQL 16 container and the Django app on port 
 
 ---
 
-## Running Tests
+## Code Formatting
+
+**Always run `black` before running tests.** The CI pipeline enforces Black formatting and will fail if files are not formatted.
 
 ```bash
+uv run black .             # format all Python files
+uv run black --check .     # check formatting without modifying files
+```
+
+---
+
+## Running Tests
+
+**Always run `black .` before running tests** to avoid CI failures due to formatting.
+
+```bash
+uv run black . && uv run pytest              # format then run full suite
 uv run pytest              # full suite (API + frontend)
 uv run pytest tests/api/   # API tests only
 uv run pytest tests/frontend/  # Playwright browser tests only
