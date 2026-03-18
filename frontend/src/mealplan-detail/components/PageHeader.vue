@@ -27,7 +27,7 @@
         <div class="status-icon" id="syncIcon" v-html="statusIcon"></div>
       </div>
       <div style="display: flex; gap: 8px;">
-        <a v-if="previewUrl" :href="previewUrl" class="btn btn-pdf">{{ i18n.exportPdf }}</a>
+        <a v-if="previewUrl" :href="previewUrl" target="_blank" rel="noopener" class="btn btn-pdf">{{ i18n.exportPdf }}</a>
       </div>
     </div>
   </div>
