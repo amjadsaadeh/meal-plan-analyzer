@@ -53,7 +53,12 @@ Plans:
   3. Clicking the export button on the meal plan detail page shows a progress bar that advances from 0% to 100%
   4. When the job completes, the browser automatically downloads the PDF without the user navigating to a separate URL
   5. When the job fails, an inline error message appears with a retry option — no silent failures
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Add redis/worker services and shared media_files volume to Docker Compose
+- [ ] 03-02-PLAN.md — Create ExportButton.vue with polling logic and add i18n strings
+- [ ] 03-03-PLAN.md — Playwright tests for ExportButton with mocked API routes
 
 ## Progress
 
@@ -63,4 +68,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete    | 2026-03-18 |
 | 2. Task and API | 2/2 | Complete    | 2026-03-18 |
-| 3. Docker and Frontend | 0/TBD | Not started | - |
+| 3. Docker and Frontend | 0/3 | Not started | - |
