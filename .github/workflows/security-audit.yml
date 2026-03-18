@@ -1,0 +1,161 @@
+name: Security Audit
+
+on:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 3 * * 1" # Every Monday at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  python-audit:
+    name: Python Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Run pip-audit
+        run: |
+          uv tool run pip-audit \
+            --requirement <(uv export --frozen --no-dev --no-emit-project) \
+            --format cyclonedx-json \
+            --output python-sbom.json \
+            --no-deps || true
+          uv tool run pip-audit \
+            --requirement <(uv export --frozen --no-dev --no-emit-project) \
+            --format json \
+            --output python-audit.json \
+            --no-deps
+
+      - name: Upload Python audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-audit-report
+          path: |
+            python-audit.json
+            python-sbom.json
+          retention-days: 90
+
+      - name: Summarize Python audit results
+        if: always()
+        run: |
+          echo "## Python Dependency Audit" >> $GITHUB_STEP_SUMMARY
+          if [ -f python-audit.json ]; then
+            VULN_COUNT=$(python3 -c "
+          import json, sys
+          data = json.load(open('python-audit.json'))
+          vulns = data.get('vulnerabilities', [])
+          print(len(vulns))
+          ")
+            if [ "$VULN_COUNT" = "0" ]; then
+              echo "✅ No vulnerabilities found in Python dependencies." >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **$VULN_COUNT vulnerability/vulnerabilities found** in Python dependencies." >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              python3 -c "
+          import json
+          data = json.load(open('python-audit.json'))
+          for v in data.get('vulnerabilities', []):
+              print(f\"| {v.get('name','?')} {v.get('version','?')} | {', '.join(v.get('vulns',[{}])[0].get('aliases',['?']) if v.get('vulns') else ['?'])} | {v.get('vulns',[{}])[0].get('description','')[:120] if v.get('vulns') else ''} |\")
+          " >> $GITHUB_STEP_SUMMARY || true
+            fi
+          fi
+
+  js-audit:
+    name: JavaScript Dependency Audit (pnpm)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pnpm audit
+        id: pnpm_audit
+        run: |
+          pnpm audit --json > js-audit.json 2>&1 || true
+          pnpm audit 2>&1 | tee js-audit.txt || true
+
+      - name: Upload JS audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: js-audit-report
+          path: |
+            js-audit.json
+            js-audit.txt
+          retention-days: 90
+
+      - name: Fail on high/critical JS vulnerabilities
+        run: |
+          pnpm audit --audit-level high
+
+      - name: Summarize JS audit results
+        if: always()
+        run: |
+          echo "## JavaScript Dependency Audit" >> $GITHUB_STEP_SUMMARY
+          if [ -f js-audit.json ]; then
+            python3 -c "
+          import json, sys
+          try:
+              data = json.load(open('js-audit.json'))
+              meta = data.get('metadata', {})
+              vulns = meta.get('vulnerabilities', {})
+              total = sum(vulns.values()) if isinstance(vulns, dict) else 0
+              if total == 0:
+                  print('✅ No vulnerabilities found in JavaScript dependencies.')
+              else:
+                  print(f'⚠️ **{total} vulnerability/vulnerabilities found** in JavaScript dependencies.')
+                  for sev, count in vulns.items():
+                      if count:
+                          emoji = '🔴' if sev in ('high','critical') else '🟡'
+                          print(f'- {emoji} {sev}: {count}')
+          except Exception as e:
+              print(f'Could not parse audit JSON: {e}')
+          " >> $GITHUB_STEP_SUMMARY || cat js-audit.txt >> $GITHUB_STEP_SUMMARY
+          fi
+
+  security-summary:
+    name: Security Audit Summary
+    runs-on: ubuntu-latest
+    needs: [python-audit, js-audit]
+    if: always()
+
+    steps:
+      - name: Write summary
+        run: |
+          echo "## Security Audit Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Python dependencies (pip-audit) | ${{ needs.python-audit.result == 'success' && '✅ passed' || needs.python-audit.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| JavaScript dependencies (pnpm audit) | ${{ needs.js-audit.result == 'success' && '✅ passed' || needs.js-audit.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Full audit reports are available as workflow artifacts (retained 90 days)." >> $GITHUB_STEP_SUMMARY
