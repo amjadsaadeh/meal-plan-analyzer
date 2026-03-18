@@ -273,6 +273,12 @@ class SiteSettings(models.Model):
         null=True,
         help_text="Small logo (50×50 px) shown on the top-right of every PDF page except the first.",
     )
+    pdf_footer_line_content = models.TextField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="Text shown as a light-gray left-aligned footer line on each page of the PDF export.",
+    )
 
     class Meta:
         verbose_name = "Site Settings"

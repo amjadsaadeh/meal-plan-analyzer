@@ -778,6 +778,7 @@ def meal_plan_preview_content(request, pk):
         from django.templatetags.static import static
 
         context["minilogo_path"] = static("meals/img/logo.png")
+    context["pdf_footer_line_content"] = site.pdf_footer_line_content
     return render(request, "meals/mealplan_pdf.html.j2", context)
 
 
@@ -838,6 +839,8 @@ def meal_plan_pdf(request, pk):
         logo_disk_path = finders.find("meals/img/logo.png")
         if logo_disk_path:
             context["minilogo_path"] = f"file://{logo_disk_path}"
+
+    context["pdf_footer_line_content"] = site.pdf_footer_line_content
 
     html_string = render_to_string("meals/mealplan_pdf.html.j2", context)
 
