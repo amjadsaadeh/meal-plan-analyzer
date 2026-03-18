@@ -28,18 +28,39 @@ jobs:
       - name: Install Python dependencies
         run: uv sync --frozen
 
+      - name: Export requirements
+        run: uv export --frozen --no-dev --no-emit-project > requirements-audit.txt
+
       - name: Run pip-audit
         run: |
           uv tool run pip-audit \
-            --requirement <(uv export --frozen --no-dev --no-emit-project) \
+            --requirement requirements-audit.txt \
             --format cyclonedx-json \
             --output python-sbom.json \
             --no-deps || true
           uv tool run pip-audit \
-            --requirement <(uv export --frozen --no-dev --no-emit-project) \
+            --requirement requirements-audit.txt \
             --format json \
             --output python-audit.json \
-            --no-deps
+            --no-deps || true
+
+      - name: Fail on vulnerabilities
+        run: |
+          python3 -c "
+          import json, sys
+          try:
+              data = json.load(open('python-audit.json'))
+              vulns = data.get('vulnerabilities', [])
+              if vulns:
+                  print(f'Found {len(vulns)} vulnerable package(s):', file=sys.stderr)
+                  for v in vulns:
+                      aliases = v.get('vulns', [{}])[0].get('aliases', []) if v.get('vulns') else []
+                      print(f'  - {v[\"name\"]} {v[\"version\"]}: {aliases}', file=sys.stderr)
+                  sys.exit(1)
+          except FileNotFoundError:
+              print('python-audit.json not found — pip-audit may have failed to run', file=sys.stderr)
+              sys.exit(1)
+          "
 
       - name: Upload Python audit report
         uses: actions/upload-artifact@v4
@@ -86,6 +107,7 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: 10
           run_install: false
 
       - name: Set up Node.js
