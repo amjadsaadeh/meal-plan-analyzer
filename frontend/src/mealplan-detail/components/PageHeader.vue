@@ -27,7 +27,7 @@
         <div class="status-icon" id="syncIcon" v-html="statusIcon"></div>
       </div>
       <div style="display: flex; gap: 8px;">
-        <ExportButton />
+        <a v-if="previewUrl" :href="previewUrl" class="btn btn-pdf">{{ i18n.exportPdf }}</a>
       </div>
     </div>
   </div>
@@ -35,7 +35,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, inject } from 'vue'
-import ExportButton from './ExportButton.vue'
 
 const i18n = inject('i18n')
 

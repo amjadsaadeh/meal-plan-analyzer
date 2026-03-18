@@ -10,5 +10,74 @@
 {% block content %}
 <div class="preview-wrapper">
     <iframe src="{% url 'meal-plan-preview-content' plan.id %}" class="preview-frame"></iframe>
+
+    <div id="export-overlay" class="export-overlay">
+        <div id="export-idle" class="export-card">
+            <button class="btn btn-pdf" onclick="startExport()">{% trans "Export PDF" %}</button>
+        </div>
+        <div id="export-progress" class="export-card" style="display:none">
+            <div class="export-progress-label">{% trans "Generating PDF…" %} <span id="export-pct">0</span>%</div>
+            <div class="export-progress-bar-track">
+                <div class="export-progress-bar" id="export-bar" style="width:0%"></div>
+            </div>
+        </div>
+        <div id="export-error" class="export-card" style="display:none">
+            <span class="export-error-msg"></span>
+            <button class="btn btn-pdf" onclick="startExport()">{% trans "Retry" %}</button>
+        </div>
+    </div>
 </div>
+
+<script>
+(function () {
+    const PLAN_ID = {{ plan.id }};
+    const CSRF = '{{ csrf_token }}';
+    let pollTimer = null;
+
+    function show(id) {
+        ['export-idle', 'export-progress', 'export-error'].forEach(function(s) {
+            document.getElementById(s).style.display = s === id ? '' : 'none';
+        });
+    }
+
+    window.startExport = function () {
+        show('export-progress');
+        document.getElementById('export-pct').textContent = '0';
+        document.getElementById('export-bar').style.width = '0%';
+
+        fetch('/api/export-jobs/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+            body: JSON.stringify({ meal_plan_id: PLAN_ID }),
+        })
+        .then(function(r) { return r.ok ? r.json() : Promise.reject(r); })
+        .then(function(job) { pollTimer = setInterval(function() { poll(job.id); }, 1500); })
+        .catch(function() { showError(); });
+    };
+
+    function poll(jobId) {
+        fetch('/api/export-jobs/' + jobId + '/')
+        .then(function(r) { return r.ok ? r.json() : Promise.reject(r); })
+        .then(function(job) {
+            document.getElementById('export-pct').textContent = job.progress;
+            document.getElementById('export-bar').style.width = job.progress + '%';
+            if (job.status === 'done') {
+                clearInterval(pollTimer);
+                window.location.href = '/api/export-jobs/' + jobId + '/result/';
+                show('export-idle');
+            } else if (job.status === 'failed') {
+                clearInterval(pollTimer);
+                showError(job.error_message);
+            }
+        })
+        .catch(function() { clearInterval(pollTimer); showError(); });
+    }
+
+    function showError(msg) {
+        document.querySelector('.export-error-msg').textContent =
+            '{% trans "Export failed." %}' + (msg ? ' (' + msg + ')' : '');
+        show('export-error');
+    }
+})();
+</script>
 {% endblock %}
