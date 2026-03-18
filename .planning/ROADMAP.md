@@ -57,6 +57,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/2 | Complete | 2026-03-18 |
+| 1. Foundation | 2/2 | Complete    | 2026-03-18 |
 | 2. Task and API | 0/TBD | Not started | - |
 | 3. Docker and Frontend | 0/TBD | Not started | - |
