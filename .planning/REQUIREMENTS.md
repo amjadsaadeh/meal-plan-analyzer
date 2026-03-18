@@ -34,11 +34,11 @@
 
 ### Frontend
 
-- [ ] **UI-01**: The PDF export link on `mealplan_detail` is replaced with an async export button component
-- [ ] **UI-02**: Clicking export triggers `POST /api/export-jobs/` and starts polling `GET /api/export-jobs/<id>/` at ~1.5s intervals
-- [ ] **UI-03**: An in-page progress bar shows current `progress` percentage while the job is `pending` or `running`
-- [ ] **UI-04**: When `status=done`, the browser automatically triggers a file download and the progress bar clears
-- [ ] **UI-05**: When `status=failed`, an error message is displayed inline with an option to retry
+- [x] **UI-01**: The PDF export link on `mealplan_detail` is replaced with an async export button component
+- [x] **UI-02**: Clicking export triggers `POST /api/export-jobs/` and starts polling `GET /api/export-jobs/<id>/` at ~1.5s intervals
+- [x] **UI-03**: An in-page progress bar shows current `progress` percentage while the job is `pending` or `running`
+- [x] **UI-04**: When `status=done`, the browser automatically triggers a file download and the progress bar clears
+- [x] **UI-05**: When `status=failed`, an error message is displayed inline with an option to retry
 
 ## v2 Requirements
 
@@ -82,11 +82,11 @@
 | API-02 | Phase 2 | Complete |
 | API-03 | Phase 2 | Complete |
 | API-04 | Phase 2 | Complete |
-| UI-01 | Phase 3 | Pending |
-| UI-02 | Phase 3 | Pending |
-| UI-03 | Phase 3 | Pending |
-| UI-04 | Phase 3 | Pending |
-| UI-05 | Phase 3 | Pending |
+| UI-01 | Phase 3 | Complete |
+| UI-02 | Phase 3 | Complete |
+| UI-03 | Phase 3 | Complete |
+| UI-04 | Phase 3 | Complete |
+| UI-05 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 20 total

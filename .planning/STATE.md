@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Users can trigger PDF export and get live progress feedback — page stays responsive, shows a progress bar, delivers the download when ready.
-**Current focus:** Phase 2 — Task and API
+**Current focus:** Phase 3 — Docker and Frontend
 
 ## Current Position
 
-Phase: 2 of 3 (Task and API)
+Phase: 3 of 3 (Docker and Frontend)
 Plan: 2 of 2 in current phase
 Status: Phase complete
-Last activity: 2026-03-18 — Completed 02-02-PLAN.md (ExportJobViewSet, API tests, task tests)
+Last activity: 2026-03-18 — Completed 03-02-PLAN.md (ExportButton.vue async polling component)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -29,9 +29,10 @@ Progress: [█████░░░░░] 50%
 |-------|-------|-------|----------|
 | 01-foundation | 2 | ~20 min | ~10 min |
 | 02-task-and-api | 2 | ~6 min | ~3 min |
+| 03-docker-and-frontend | 2 | ~4 min | ~2 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01, 01-02, 02-01, 02-02
+- Last 5 plans: 01-01, 01-02, 02-01, 02-02, 03-02
 - Trend: On track
 
 *Updated after each plan completion*
@@ -56,6 +57,9 @@ Recent decisions affecting current work:
 - 02-02: viewsets.ViewSet not ModelViewSet for ExportJobViewSet — only three specific endpoints needed
 - 02-02: Catch DjangoValidationError for invalid UUID pk — UUIDField raises Django ValidationError not Python ValueError
 - 02-02: expires_at set to timezone.now() + timedelta(hours=24) on job creation
+- 03-02: ExportButton uses inject(planId/csrfToken/i18n) from main.js app.provide — no prop drilling needed
+- 03-02: onUnmounted clears pollTimer to prevent dangling setInterval on navigation
+- 03-02: pdfUrl prop kept in PageHeader.vue defineProps to avoid unnecessary breaking churn
 
 ### Pending Todos
 
@@ -70,5 +74,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Completed 02-02-PLAN.md — ExportJobViewSet API and tests
+Stopped at: Completed 03-02-PLAN.md — ExportButton.vue async polling component
 Resume file: None

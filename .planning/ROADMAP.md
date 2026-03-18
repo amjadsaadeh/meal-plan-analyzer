@@ -8,7 +8,7 @@ This milestone adds async background task infrastructure to the existing Django/
 
 - [x] **Phase 1: Foundation** - Celery app wiring, Redis cache backend, BackgroundJob model
 - [x] **Phase 2: Task and API** - PDF Celery task with progress reporting and export job endpoints (completed 2026-03-18)
-- [ ] **Phase 3: Docker and Frontend** - Redis/worker services in Compose, shared volume, Vue export button
+- [x] **Phase 3: Docker and Frontend** - Redis/worker services in Compose, shared volume, Vue export button
 
 ## Phase Details
 
@@ -40,8 +40,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Implement generate_pdf_task Celery task with progress milestones and error handling
-- [ ] 02-02-PLAN.md — Add ExportJobViewSet, serializers, URL registration, and API + task tests
+- [x] 02-01-PLAN.md — Implement generate_pdf_task Celery task with progress milestones and error handling
+- [x] 02-02-PLAN.md — Add ExportJobViewSet, serializers, URL registration, and API + task tests
 
 ### Phase 3: Docker and Frontend
 **Goal**: The full feature works end-to-end in Docker Compose — the export button shows a live progress bar and auto-downloads the PDF when ready.
@@ -57,7 +57,7 @@ Plans:
 
 Plans:
 - [ ] 03-01-PLAN.md — Add redis/worker services and shared media_files volume to Docker Compose
-- [ ] 03-02-PLAN.md — Create ExportButton.vue with polling logic and add i18n strings
+- [x] 03-02-PLAN.md — Create ExportButton.vue with polling logic and add i18n strings
 - [ ] 03-03-PLAN.md — Playwright tests for ExportButton with mocked API routes
 
 ## Progress
@@ -68,4 +68,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 2/2 | Complete    | 2026-03-18 |
 | 2. Task and API | 2/2 | Complete    | 2026-03-18 |
-| 3. Docker and Frontend | 0/3 | Not started | - |
+| 3. Docker and Frontend | 1/3 | In progress | - |
