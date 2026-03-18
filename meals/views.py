@@ -888,6 +888,7 @@ class ExportJobViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         from django.core.exceptions import ValidationError as DjangoValidationError
+
         try:
             job = BackgroundJob.objects.get(pk=pk)
         except (BackgroundJob.DoesNotExist, ValueError, DjangoValidationError):
@@ -897,6 +898,7 @@ class ExportJobViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["get"], url_path="result")
     def result(self, request, pk=None):
         from django.core.exceptions import ValidationError as DjangoValidationError
+
         try:
             job = BackgroundJob.objects.get(pk=pk)
         except (BackgroundJob.DoesNotExist, ValueError, DjangoValidationError):

@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 @shared_task(
     bind=True,
-    soft_time_limit=300,   # raises SoftTimeLimitExceeded after 5 min
-    time_limit=360,        # hard kill after 6 min
+    soft_time_limit=300,  # raises SoftTimeLimitExceeded after 5 min
+    time_limit=360,  # hard kill after 6 min
     name="meals.tasks.generate_pdf_task",
 )
 def generate_pdf_task(self, job_id: str, meal_plan_pk: int) -> None:
@@ -39,7 +39,10 @@ def generate_pdf_task(self, job_id: str, meal_plan_pk: int) -> None:
 
         # 2. Import inside function body to avoid circular imports
         from meals.models import SiteSettings  # noqa: PLC0415
-        from meals.views import get_meal_plan_context, django_url_fetcher  # noqa: PLC0415
+        from meals.views import (
+            get_meal_plan_context,
+            django_url_fetcher,
+        )  # noqa: PLC0415
 
         # 3. Load meal plan context
         context = get_meal_plan_context(meal_plan_pk)
@@ -88,7 +91,9 @@ def generate_pdf_task(self, job_id: str, meal_plan_pk: int) -> None:
             .encode("ascii", errors="ignore")
             .decode("ascii")
         )
-        safe_name = "".join(c if c.isalnum() or c in "-_" else "-" for c in ascii_name).strip("-")
+        safe_name = "".join(
+            c if c.isalnum() or c in "-_" else "-" for c in ascii_name
+        ).strip("-")
         if not safe_name:
             safe_name = "meal-plan"
         suffix = str(job_id)[:8]

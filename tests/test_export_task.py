@@ -20,9 +20,11 @@ class TestGeneratePdfTask:
 
         fake_pdf_bytes = b"%PDF-1.4 fake"
 
-        with patch("meals.views.get_meal_plan_context") as mock_ctx, \
-             patch("meals.views.django_url_fetcher"), \
-             patch("weasyprint.HTML") as mock_html_cls:
+        with (
+            patch("meals.views.get_meal_plan_context") as mock_ctx,
+            patch("meals.views.django_url_fetcher"),
+            patch("weasyprint.HTML") as mock_html_cls,
+        ):
             mock_ctx.return_value = {"plan": plan, "days": []}
             mock_html_instance = MagicMock()
             mock_html_instance.write_pdf.return_value = fake_pdf_bytes
@@ -40,7 +42,9 @@ class TestGeneratePdfTask:
         plan = MealPlan.objects.create(name="Test Plan")
         job = self._make_job(plan)
 
-        with patch("meals.views.get_meal_plan_context", side_effect=SoftTimeLimitExceeded()):
+        with patch(
+            "meals.views.get_meal_plan_context", side_effect=SoftTimeLimitExceeded()
+        ):
             generate_pdf_task(str(job.pk), plan.pk)
 
         job.refresh_from_db()
@@ -52,7 +56,9 @@ class TestGeneratePdfTask:
         plan = MealPlan.objects.create(name="Test Plan")
         job = self._make_job(plan)
 
-        with patch("meals.views.get_meal_plan_context", side_effect=RuntimeError("boom")):
+        with patch(
+            "meals.views.get_meal_plan_context", side_effect=RuntimeError("boom")
+        ):
             with pytest.raises(RuntimeError, match="boom"):
                 generate_pdf_task(str(job.pk), plan.pk)
 
@@ -67,9 +73,11 @@ class TestGeneratePdfTask:
 
         fake_pdf_bytes = b"%PDF-1.4 fake"
 
-        with patch("meals.views.get_meal_plan_context") as mock_ctx, \
-             patch("meals.views.django_url_fetcher"), \
-             patch("weasyprint.HTML") as mock_html_cls:
+        with (
+            patch("meals.views.get_meal_plan_context") as mock_ctx,
+            patch("meals.views.django_url_fetcher"),
+            patch("weasyprint.HTML") as mock_html_cls,
+        ):
             mock_ctx.return_value = {"plan": plan, "days": []}
             mock_html_instance = MagicMock()
             mock_html_instance.write_pdf.return_value = fake_pdf_bytes

@@ -8,7 +8,9 @@ from meals.models import BackgroundJob, MealPlan
 class TestExportJobCreate:
     def test_requires_authentication(self, api_client):
         """API-04: unauthenticated POST returns 403"""
-        response = api_client.post("/api/export-jobs/", {"meal_plan_id": 1}, format="json")
+        response = api_client.post(
+            "/api/export-jobs/", {"meal_plan_id": 1}, format="json"
+        )
         assert response.status_code == http_status.HTTP_403_FORBIDDEN
 
     def test_create_returns_201_with_pending_status(self, authenticated_client):
@@ -75,6 +77,7 @@ class TestExportJobRetrieve:
 
     def test_retrieve_nonexistent_job_returns_404(self, authenticated_client):
         import uuid
+
         response = authenticated_client.get(f"/api/export-jobs/{uuid.uuid4()}/")
         assert response.status_code == http_status.HTTP_404_NOT_FOUND
 
