@@ -11,7 +11,7 @@ v1.2.0 extends this to the Kubernetes production deployment by wiring Redis and 
 - [x] **Phase 1: Foundation** - Celery app wiring, Redis cache backend, BackgroundJob model
 - [x] **Phase 2: Task and API** - PDF Celery task with progress reporting and export job endpoints (completed 2026-03-18)
 - [x] **Phase 3: Docker and Frontend** - Redis/worker services in Compose, shared volume, Vue export button
-- [ ] **Phase 4: K8s Infrastructure** - Redis Deployment/Service, ConfigMap additions, Celery worker sidecar, kustomize wiring
+- [x] **Phase 4: K8s Infrastructure** - Redis Deployment/Service, ConfigMap additions, Celery worker sidecar, kustomize wiring (completed 2026-03-19)
 
 ## Phase Details
 
@@ -87,4 +87,4 @@ Plans:
 | 1. Foundation | 2/2 | Complete | 2026-03-18 |
 | 2. Task and API | 2/2 | Complete | 2026-03-18 |
 | 3. Docker and Frontend | 3/3 | Complete | 2026-03-18 |
-| 4. K8s Infrastructure | 0/2 | Not started | - |
+| 4. K8s Infrastructure | 2/2 | Complete   | 2026-03-19 |
