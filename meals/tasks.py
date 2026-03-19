@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.files.base import ContentFile
 from django.template.loader import render_to_string
+from django.utils.translation import activate, deactivate
 
 from meals.models import BackgroundJob
 
@@ -20,7 +21,9 @@ logger = logging.getLogger(__name__)
     time_limit=360,  # hard kill after 6 min
     name="meals.tasks.generate_pdf_task",
 )
-def generate_pdf_task(self, job_id: str, meal_plan_pk: int) -> None:
+def generate_pdf_task(
+    self, job_id: str, meal_plan_pk: int, language: str = "en"
+) -> None:
     """Generate a PDF for the given meal plan and store it on the BackgroundJob.
 
     Progress milestones:
@@ -30,6 +33,7 @@ def generate_pdf_task(self, job_id: str, meal_plan_pk: int) -> None:
       90 — PDF bytes produced by WeasyPrint
       100 — file saved, status set to DONE
     """
+    activate(language)
     try:
         # 1. Mark job RUNNING
         BackgroundJob.objects.filter(pk=job_id).update(
@@ -128,3 +132,5 @@ def generate_pdf_task(self, job_id: str, meal_plan_pk: int) -> None:
             error_message=str(exc)[:1000],
         )
         raise  # re-raise so Celery marks the task as FAILURE in its own state
+    finally:
+        deactivate()

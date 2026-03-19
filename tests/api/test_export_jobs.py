@@ -37,7 +37,7 @@ class TestExportJobCreate:
             )
         assert response.status_code == http_status.HTTP_201_CREATED
         job_id = response.data["id"]
-        mock_delay.assert_called_once_with(str(job_id), plan.pk)
+        mock_delay.assert_called_once_with(str(job_id), plan.pk, "en")
 
     def test_create_invalid_meal_plan_id(self, authenticated_client):
         """API-01: non-existent meal_plan_id returns 400"""

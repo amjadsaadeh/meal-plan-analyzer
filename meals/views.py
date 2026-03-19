@@ -5,7 +5,7 @@ import secrets
 from django.shortcuts import render
 from django.db.models import Q, Case, When, Value, IntegerField, FloatField
 from django.urls import reverse
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, get_language
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -882,7 +882,7 @@ class ExportJobViewSet(viewsets.ViewSet):
             task_kwargs={"meal_plan_pk": meal_plan_pk},
             expires_at=timezone.now() + timedelta(hours=24),
         )
-        generate_pdf_task.delay(str(job.pk), meal_plan_pk)
+        generate_pdf_task.delay(str(job.pk), meal_plan_pk, get_language() or "en")
 
         return Response(
             BackgroundJobSerializer(job).data,
