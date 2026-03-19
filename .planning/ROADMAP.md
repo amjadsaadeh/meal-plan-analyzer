@@ -72,7 +72,11 @@ Plans:
   2. `kubectl exec` into the worker container and running `celery inspect ping` returns a response, confirming the worker connects to Redis
   3. Triggering a PDF export via the web UI in the k8s environment shows the progress bar advancing and completes the download — the same end-to-end behavior as Docker Compose
   4. Both `dev` and `prod` overlays pick up the Redis resources without overlay-specific changes — `kubectl kustomize overlays/dev` and `kubectl kustomize overlays/prod` both include the Redis Deployment and Service
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Create Redis Deployment/Service manifest and wire into kustomize base
+- [ ] 04-02-PLAN.md — Add Celery/Redis env vars to ConfigMap and worker sidecar to Deployment
 
 ## Progress
 
@@ -83,4 +87,4 @@ Plans:
 | 1. Foundation | 2/2 | Complete | 2026-03-18 |
 | 2. Task and API | 2/2 | Complete | 2026-03-18 |
 | 3. Docker and Frontend | 3/3 | Complete | 2026-03-18 |
-| 4. K8s Infrastructure | 0/? | Not started | - |
+| 4. K8s Infrastructure | 0/2 | Not started | - |
