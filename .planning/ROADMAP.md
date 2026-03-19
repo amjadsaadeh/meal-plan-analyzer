@@ -4,11 +4,14 @@
 
 This milestone adds async background task infrastructure to the existing Django/Vue meal planner. Starting from a blocking synchronous PDF export, the work proceeds bottom-up: wire Celery + Redis and create the job model, then build the task and API layer, then connect Docker Compose infrastructure and replace the export button with a Vue progress component. When complete, users get a live progress bar on export with automatic download on completion.
 
+v1.2.0 extends this to the Kubernetes production deployment by wiring Redis and the Celery worker into the cluster manifests.
+
 ## Phases
 
 - [x] **Phase 1: Foundation** - Celery app wiring, Redis cache backend, BackgroundJob model
 - [x] **Phase 2: Task and API** - PDF Celery task with progress reporting and export job endpoints (completed 2026-03-18)
 - [x] **Phase 3: Docker and Frontend** - Redis/worker services in Compose, shared volume, Vue export button
+- [ ] **Phase 4: K8s Infrastructure** - Redis Deployment/Service, ConfigMap additions, Celery worker sidecar, kustomize wiring
 
 ## Phase Details
 
@@ -60,12 +63,24 @@ Plans:
 - [x] 03-02-PLAN.md — Create ExportButton.vue with polling logic and add i18n strings
 - [x] 03-03-PLAN.md — Playwright tests for ExportButton with mocked API routes
 
+### Phase 4: K8s Infrastructure
+**Goal**: The async PDF export feature works in the Kubernetes production deployment — Redis runs in the cluster and the Celery worker sidecar shares the media PVC with the web container.
+**Depends on**: Phase 3
+**Requirements**: K8S-01, K8S-02, K8S-03, K8S-04, K8S-05
+**Success Criteria** (what must be TRUE):
+  1. `kubectl get pods` shows the `meal-plan-analyzer` pod with two ready containers (`web` and `worker`) after applying the manifests
+  2. `kubectl exec` into the worker container and running `celery inspect ping` returns a response, confirming the worker connects to Redis
+  3. Triggering a PDF export via the web UI in the k8s environment shows the progress bar advancing and completes the download — the same end-to-end behavior as Docker Compose
+  4. Both `dev` and `prod` overlays pick up the Redis resources without overlay-specific changes — `kubectl kustomize overlays/dev` and `kubectl kustomize overlays/prod` both include the Redis Deployment and Service
+**Plans**: TBD
+
 ## Progress
 
-**Execution Order:** 1 → 2 → 3
+**Execution Order:** 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/2 | Complete    | 2026-03-18 |
-| 2. Task and API | 2/2 | Complete    | 2026-03-18 |
-| 3. Docker and Frontend | 3/3 | Complete    | 2026-03-18 |
+| 1. Foundation | 2/2 | Complete | 2026-03-18 |
+| 2. Task and API | 2/2 | Complete | 2026-03-18 |
+| 3. Docker and Frontend | 3/3 | Complete | 2026-03-18 |
+| 4. K8s Infrastructure | 0/? | Not started | - |
