@@ -104,6 +104,8 @@ spec:
             - secretRef:
                 name: meal-plan-analyzer-secret
           volumeMounts:
+            - name: staticfiles
+              mountPath: /app/staticfiles
             - name: media
               mountPath: /app/media
       volumes:
