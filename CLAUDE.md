@@ -111,7 +111,8 @@ meal-plan-analyzer/
 │   ├── static/meals/
 │   │   ├── img/             # Static assets (logo, etc.)
 │   │   └── scss/            # SCSS source files
-│   ├── migrations/          # Django migrations (0001–0024)
+│   ├── migrations/          # Django migrations (0001–0026)
+│   ├── tasks.py             # Celery async tasks (PDF generation)
 │   └── management/commands/  # Django management commands
 │       ├── import_foods.py  # BLS Excel import command
 │       └── build_scss.py    # SCSS compilation command
@@ -153,6 +154,8 @@ meal-plan-analyzer/
 │   ├── test_template_filters.py
 │   └── generate_test_data.py
 │
+├── frontend/                # Vue 3 / Vite SPA sources
+│   └── src/                 # Component trees (mealplan-list, mealplan-detail, food-database, food-editor)
 ├── deployment/              # Kubernetes manifests and Ansible playbooks
 ├── docs/                    # Development plans and documentation
 ├── AGENTS.md                # Coding agent guidelines
@@ -258,8 +261,22 @@ Singleton model for site-wide settings.
 
 - `logo` — FileField (uploaded to `logos/`); used as the logo in PDF exports. Falls back to the static `meals/img/logo.png` if not set.
 - `minilogo` — FileField (uploaded to `logos/`); 50×50 px logo on top-right of every PDF page except first. Falls back to nothing if not set.
+- `pdf_footer_line_content` — TextField(max_length=500, blank=True, default `''`); light-gray left-aligned footer text shown on every PDF page.
 - Enforces singleton via `save()` (always sets `pk=1`) and `SiteSettings.get()` classmethod.
 - Admin: list view auto-redirects to the single instance; add/delete are disabled.
+
+### `BackgroundJob`
+Tracks async task execution (e.g. PDF generation via Celery).
+
+- `id` — UUIDField (primary key, auto-generated)
+- `task_type` — CharField(50); currently only `"pdf_export"`
+- `status` — TextChoices: `PENDING`, `RUNNING`, `DONE`, `FAILED` (default `PENDING`)
+- `progress` — PositiveSmallIntegerField (0–100 percentage)
+- `task_kwargs` — JSONField; stores task parameters (e.g. `meal_plan_pk`, `language`)
+- `result_file` — FileField (uploaded to `exports/`); the generated PDF, set when `status=DONE`
+- `error_message` — TextField; populated on failure; truncated to 1000 chars
+- `expires_at` — DateTimeField (nullable); set to 24 hours after creation
+- `created_at`, `updated_at` — auto timestamps; ordered by `-created_at`
 
 ---
 
@@ -313,6 +330,7 @@ All endpoints require authentication (`IsAuthenticated`). The API uses DRF's `De
 | `/api/mealplan-foods/` | `MealPlanFoodViewSet` | Full CRUD; auto-creates aliases from `export_name` |
 | `/api/threshold-presets/` | `ThresholdPresetViewSet` | Full CRUD |
 | `/api/food-aliases/` | `FoodAliasViewSet` | GET/POST/DELETE for `FoodAlias` records; filter by food with `?food=<id>` |
+| `/api/export-jobs/` | `ExportJobViewSet` | POST to create async PDF export job; GET to poll status; GET `.../result/` to download PDF |
 
 Default page size is 100. `FoodViewSet` disables pagination (`pagination_class = None`).
 
@@ -349,6 +367,31 @@ When a `MealPlanFood` is created or updated with a non-empty `export_name`, the 
 - **Create** (`POST /api/food-aliases/`) — creates an alias; uses `get_or_create` so duplicate POSTs are idempotent.
 - **Delete** (`DELETE /api/food-aliases/<id>/`) — removes an alias and the cache is invalidated via signal.
 - `PUT`/`PATCH` are not supported (aliases are atomic: delete and re-create to rename).
+
+### Async PDF Export (`/api/export-jobs/`)
+PDF generation runs as a Celery background task. The frontend polls for completion.
+
+**Workflow:**
+1. **POST `/api/export-jobs/`** — body: `{ "meal_plan_id": <int> }`. Creates a `BackgroundJob` (status=PENDING, expires in 24h), dispatches `generate_pdf_task` via Celery, returns 201 with `BackgroundJobSerializer`.
+2. **GET `/api/export-jobs/<id>/`** — poll for status/progress. Returns `{ id, status, progress, error_message, created_at, updated_at }`.
+3. **GET `/api/export-jobs/<id>/result/`** — available once `status=DONE`. Returns PDF as `FileResponse` with `Content-Disposition: attachment`.
+
+**Serializers:**
+- `BackgroundJobCreateSerializer` — input only, validates `meal_plan_id`
+- `BackgroundJobSerializer` — read-only output for polling
+
+**`generate_pdf_task`** (in `meals/tasks.py`):
+- Celery shared task; soft limit 300s / hard limit 360s
+- Activates the user's language (`activate(language)`) for translated strings
+- Progress milestones: 0% → RUNNING, 25% → context loaded, 60% → HTML rendered, 90% → PDF bytes generated, 100% → DONE
+- Resolves static/media file URLs via `django_url_fetcher` (no HTTP context in worker)
+- Saves PDF to `exports/` via `BackgroundJob.result_file`; status → DONE on success, FAILED on error
+
+**`django_url_fetcher(url, **kwargs)`** (in `meals/views.py`):
+- Custom WeasyPrint URL fetcher used by both the sync view and the Celery task
+- Maps `STATIC_URL` → `STATIC_ROOT` / `finders.find()`; maps `MEDIA_URL` → `MEDIA_ROOT`; falls back to `weasyprint.default_url_fetcher`
+
+**Synchronous fallback:** `meal_plan_pdf(request, pk)` still exists for direct/browser download.
 
 ---
 
@@ -517,8 +560,48 @@ Copy `.env.example` to `.env` before running locally:
 | `ALLOWED_HOSTS` | No | Comma-separated; defaults to `localhost,127.0.0.1` |
 | `CSRF_TRUSTED_ORIGINS` | No | Comma-separated HTTPS origins |
 | `DATABASE_URL` | No | Default: `sqlite:///db.sqlite3`; prod: `postgres://…` |
+| `CELERY_BROKER_URL` | No | Default: `redis://localhost:6379/0`; broker for Celery tasks |
+| `REDIS_URL` | No | Default: `redis://localhost:6379/1`; Django cache backend |
+| `SITE_BASE_URL` | No | Default: `http://localhost:8000`; base URL used by the Celery worker to resolve static/media files (no HTTP request context available in worker) |
 
 Proxy headers (`X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-Port`) are trusted for reverse-proxy deployments.
+
+---
+
+## Celery / Redis
+
+Async task processing uses **Celery** backed by **Redis**.
+
+### Configuration (`config/celery.py` + `config/settings.py`)
+
+```python
+CELERY_BROKER_URL      = "redis://localhost:6379/0"   # task broker
+CELERY_RESULT_BACKEND  = None                          # BackgroundJob is source of truth
+CELERY_TASK_SERIALIZER = "json"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
+CELERY_WORKER_MAX_MEMORY_PER_CHILD = 200_000           # 200 MB
+CELERY_TIMEZONE = "UTC"
+```
+
+Redis also serves as Django's **cache backend** on DB 1 (separate from the broker on DB 0).
+
+### Running the worker locally
+
+```bash
+uv run celery -A config worker -l info
+```
+
+### Tasks (`meals/tasks.py`)
+
+| Task | Purpose |
+|---|---|
+| `generate_pdf_task` | Async PDF generation; updates `BackgroundJob.status`/`progress`; saves result to `exports/` |
+
+### K8s / Docker Compose
+
+In the Kubernetes deployment a Celery **worker sidecar container** runs alongside the Django container in the same pod (shares the `staticfiles` volume so `django_url_fetcher` can resolve static assets). The Docker Compose stack adds a separate `worker` service.
 
 ---
 
@@ -548,6 +631,10 @@ The command uses `openpyxl` with hard-coded BLS column mappings (e.g. column A =
 - **`export_name` on `MealPlanFood`**: Setting this field triggers automatic alias creation if the name is not already findable by search. This side-effect happens in `MealPlanFoodViewSet.perform_create/perform_update`.
 - **Custom foods**: Foods with `data_source='custom'` are user-created. BLS-imported foods have `data_source=''`. Only custom foods can be edited or deleted via the API. Custom BLS codes are auto-generated as `custom_<hex>`.
 - **Energy sync**: When creating or updating a food via the API, supply either `energy_in_kcal_per_100g` or `energy_in_kj_per_100g` — not both. The serializer automatically computes the missing value using 4.184 kJ/kcal.
+- **BackgroundJob as task state**: `BackgroundJob` is the sole source of truth for Celery task progress/results. `CELERY_RESULT_BACKEND` is intentionally `None`. Poll via `/api/export-jobs/<id>/`.
+- **PDF worker URL resolution**: The Celery worker has no HTTP request context. Static and media files are resolved by `django_url_fetcher` using filesystem paths. Always set `SITE_BASE_URL` in production so the worker can build absolute URLs when needed.
+- **PDF footer**: `SiteSettings.pdf_footer_line_content` controls the footer text on every PDF page. Access the setting via `SiteSettings.get()`.
+- **Migrations**: When adding models or fields, always create and commit migrations. Latest are `0025_backgroundjob` and `0026_sitesettings_pdf_footer_line_content`.
 
 ---
 
@@ -563,6 +650,7 @@ All models are registered in `meals/admin.py`:
 | `MealPlanDay` | `MealPlanDayAdmin` | Inline `MealPlanFood` |
 | `ThresholdPreset` | `ThresholdPresetAdmin` | Search on name |
 | `SiteSettings` | `SiteSettingsAdmin` | List view redirects to single instance; add/delete disabled |
+| `BackgroundJob` | `BackgroundJobAdmin` | Read-only status/progress view for async jobs |
 
 ---
 
