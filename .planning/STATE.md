@@ -19,7 +19,7 @@ Progress: [████████░░] 80% (phases 1-3 complete, phase 4 pla
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7 (phases 1-3)
+- Total plans completed: 8 (phases 1-3 + 04-01)
 - Average duration: ~7 min
 - Total execution time: ~0.8 hours
 
@@ -33,11 +33,10 @@ Progress: [████████░░] 80% (phases 1-3 complete, phase 4 pla
 | 04-k8s-infrastructure | 1 complete | ~5 min | ~5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01, 02-02, 03-01, 03-02, 03-03
+- Last 5 plans: 02-01, 02-02, 03-01, 03-02, 03-03, 04-01
 - Trend: Stable
 
 *Updated after each plan completion*
-| Phase 04-k8s-infrastructure P02 | 1 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -49,8 +48,8 @@ Recent decisions affecting current work:
 - All phases: Celery + Redis (not DB-backed queue) — standard Django async stack
 - All phases: Polling not SSE/WebSockets — simpler infra, sufficient for 5-30s export latency
 - Phase 4: Single phase for all 5 K8s requirements — Redis Deployment, Service, ConfigMap, sidecar, and kustomize wiring are tightly coupled and ship together
-- [Phase 04-k8s-infrastructure]: SITE_BASE_URL=http://localhost:8000 for Celery worker sidecar (same pod network namespace, not http://web:8000 like Docker Compose)
-- [Phase 04-k8s-infrastructure]: Worker sidecar mounts only media volume; no probes (Celery manages own health); --max-tasks-per-child=50 limits memory growth
+- 04-01: No PVC for Redis — ephemeral broker-only use; job state persisted in PostgreSQL
+- 04-01: ClusterIP Service for Redis — internal cluster traffic only, no external exposure
 
 ### Pending Todos
 
@@ -63,5 +62,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-19
-Stopped at: Roadmap written for v1.2.0 milestone; Phase 4 ready for planning
+Stopped at: Completed 04-01-PLAN.md — Redis manifests in kustomize base; ready for 04-02
 Resume file: None
