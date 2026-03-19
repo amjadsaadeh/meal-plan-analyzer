@@ -34,6 +34,7 @@ class Food(models.Model):
     name = models.CharField(max_length=255)
     energy_in_kj_per_100g = models.FloatField()
     energy_in_kcal_per_100g = models.FloatField()
+    water_in_g_per_100g = models.FloatField(default=0.0)
     protein_in_g_per_100g = models.FloatField(default=0.0)
     fat_in_g_per_100g = models.FloatField(default=0.0)
     carbohydrate_in_g_per_100g = models.FloatField(default=0.0)
@@ -75,6 +76,9 @@ class ThresholdPreset(models.Model):
 
     energy_in_kcal_min = models.FloatField(null=True, blank=True)
     energy_in_kcal_max = models.FloatField(null=True, blank=True)
+
+    water_in_g_min = models.FloatField(null=True, blank=True)
+    water_in_g_max = models.FloatField(null=True, blank=True)
 
     protein_in_g_min = models.FloatField(null=True, blank=True)
     protein_in_g_max = models.FloatField(null=True, blank=True)
