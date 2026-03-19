@@ -1,8 +1,17 @@
-# RSOS Meal Planner — Async Export
+# RSOS Meal Planner — K8s Async Export
+
+## Current Milestone: v1.2.0 K8s Async Export
+
+**Goal:** Wire Redis and the Celery PDF export worker into the Kubernetes deployment so the async export feature works in production.
+
+**Target features:**
+- Redis Deployment + Service in k8s
+- Celery worker sidecar container (shares media PVC with web)
+- ConfigMap additions for CELERY_BROKER_URL, REDIS_URL, SITE_BASE_URL
 
 ## What This Is
 
-RSOS Meal Planner is a Django 6.0 web application for meal planning and nutritional analysis, using food data from the German BLS database. This milestone adds an async background task infrastructure and migrates PDF export to run asynchronously, giving users a real-time in-page progress bar instead of a frozen UI.
+RSOS Meal Planner is a Django 6.0 web application for meal planning and nutritional analysis, using food data from the German BLS database. v1.0 added async PDF export via Celery + Redis (working in Docker Compose). v1.2.0 extends this to the Kubernetes production deployment.
 
 ## Core Value
 
@@ -22,11 +31,10 @@ Users can trigger a PDF export and immediately get feedback on progress — the 
 
 ### Active
 
-- [ ] Background task infrastructure (Celery + Redis) with a generic job model for tracking status and progress
-- [ ] Async PDF export — WeasyPrint runs in a Celery worker, not in the request cycle
-- [ ] Job status polling API — endpoint returns current job state (pending/running/done/failed) and progress percentage
-- [ ] In-page progress bar — triggers on export click, polls job status, shows percentage, auto-downloads when done
-- [ ] Infrastructure wired into Docker Compose (Redis service + Celery worker container)
+- [ ] Redis Deployment + Service in k8s cluster
+- [ ] Celery worker sidecar container in the meal-plan-analyzer pod (shares media PVC)
+- [ ] ConfigMap additions: CELERY_BROKER_URL, REDIS_URL, SITE_BASE_URL
+- [ ] Kustomize base wired to include new Redis resources
 
 ### Out of Scope
 
@@ -69,4 +77,4 @@ Users can trigger a PDF export and immediately get feedback on progress — the 
 | Reuse existing PDF logic | WeasyPrint task wraps `get_meal_plan_context` + existing render, no duplication | — Pending |
 
 ---
-*Last updated: 2026-03-16 after initialization*
+*Last updated: 2026-03-19 after milestone v1.2.0 started*
