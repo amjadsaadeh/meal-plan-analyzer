@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-16)
 
 ## Current Position
 
-Phase: 3 of 3 (Docker and Frontend)
-Plan: 3 of 3 in current phase
-Status: Project complete
-Last activity: 2026-03-18 — Completed 03-03-PLAN.md (Playwright tests for ExportButton with mocked API routes)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-19 — Milestone v1.2.0 started (K8s Async Export)
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
