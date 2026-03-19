@@ -7,6 +7,12 @@ NUTRIENTS = {
         "food_key": "energy_in_kcal_per_100g",
         "precision": 1,
     },
+    "water_in_g": {
+        "label": _("Water"),
+        "unit": "g",
+        "food_key": "water_in_g_per_100g",
+        "precision": 1,
+    },
     "protein_in_g": {
         "label": _("Protein"),
         "unit": "g",
