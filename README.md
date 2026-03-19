@@ -1,4 +1,4 @@
-# RSOS Meal Planner
+# Meal Plan Analyzer
 
 A web application for meal planning and nutritional analysis based on the
 [Bundeslebensmittelschlüssel (BLS)](https://www.blsdb.de/) — the German National Food Database.
