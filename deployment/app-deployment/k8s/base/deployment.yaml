@@ -87,6 +87,25 @@ spec:
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
+        - name: worker
+          image: image_name
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - config
+            - worker
+            - --loglevel=info
+            - --concurrency=2
+            - --max-tasks-per-child=50
+          envFrom:
+            - configMapRef:
+                name: meal-plan-analyzer-config
+            - secretRef:
+                name: meal-plan-analyzer-secret
+          volumeMounts:
+            - name: media
+              mountPath: /app/media
       volumes:
         - name: staticfiles
           emptyDir: {}
