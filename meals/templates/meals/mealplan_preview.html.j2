@@ -13,7 +13,14 @@
 
     <div id="export-overlay" class="export-overlay">
         <div id="export-idle" class="export-card">
-            <button class="btn btn-pdf" onclick="startExport()">{% trans "Export PDF" %}</button>
+            <button class="export-button" onclick="startExport()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                {% trans "PDF Export" %}
+            </button>
         </div>
         <div id="export-progress" class="export-card" style="display:none">
             <div class="export-progress-label">{% trans "Generating PDF…" %} <span id="export-pct">0</span>%</div>
@@ -23,7 +30,14 @@
         </div>
         <div id="export-error" class="export-card" style="display:none">
             <span class="export-error-msg"></span>
-            <button class="btn btn-pdf" onclick="startExport()">{% trans "Retry" %}</button>
+            <button class="export-button" onclick="startExport()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                {% trans "Retry" %}
+            </button>
         </div>
     </div>
 </div>

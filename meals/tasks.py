@@ -63,6 +63,11 @@ def generate_pdf_task(self, job_id: str, meal_plan_pk: int) -> None:
             if minilogo_disk_path:
                 context["minilogo_path"] = f"file://{minilogo_disk_path}"
 
+        if site.pdf_footer_line_content:
+            context["pdf_footer_line_content"] = site.pdf_footer_line_content
+        else:
+            context["pdf_footer_line_content"] = ""
+
         # Milestone 25% — context loaded
         BackgroundJob.objects.filter(pk=job_id).update(progress=25)
 

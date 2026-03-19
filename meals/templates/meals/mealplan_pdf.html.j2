@@ -15,9 +15,33 @@
                 font-family: 'Outfit', sans-serif;
                 font-size: 9pt;
             }
+            @bottom-left {
+                content: element(pdfFooter);
+                font-family: 'Outfit', sans-serif;
+                font-size: 8pt;
+                color: #aaa;
+            }
+        }
+
+        @page landscape {
+            @bottom-left {
+                content: element(pdfFooter);
+                font-family: 'Outfit', sans-serif;
+                font-size: 8pt;
+                color: #aaa;
+            }
+        }
+
+        .pdf-footer-running {
+            position: running(pdfFooter);
+            font-size: 8pt;
+            color: #aaa;
+            font-family: 'Outfit', sans-serif;
         }
 
         @media screen {
+            .pdf-footer-running { display: none; }
+
             .summary-page::after {
                 content: "{% trans "Page" %} 1";
                 position: absolute;
@@ -41,6 +65,10 @@
     </style>
 </head>
 <body>
+
+    {% if pdf_footer_line_content %}
+    <div class="pdf-footer-running">{{ pdf_footer_line_content }}</div>
+    {% endif %}
 
     <div class="export-container no-print">
         <div style="display: flex; gap: 10px; align-items: center;">
@@ -138,6 +166,9 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% if pdf_footer_line_content %}
+        <div class="pdf-footer-line no-print">{{ pdf_footer_line_content }}</div>
+        {% endif %}
     </div>
 
     <!-- Day Pages -->
@@ -184,9 +215,9 @@
             {% endif %}
         {% endfor %}
 
-        <!-- Daily Totals could go here if needed, but wasn't explicitly requested for the day detail pages, only summary on top. 
-             However, "Each day of the meal plan also got a static table..." usually implies just the list. 
-             I'll stick to the list. -->
+        {% if pdf_footer_line_content %}
+        <div class="pdf-footer-line no-print">{{ pdf_footer_line_content }}</div>
+        {% endif %}
     </div>
     {% endfor %}
 
