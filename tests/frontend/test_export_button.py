@@ -9,7 +9,7 @@ def test_export_button_visible(logged_in_page, live_server, meal_plan_with_day):
     page = logged_in_page
     page.goto(f"{live_server.url}/meal-plan/{plan.pk}/preview/")
     # The export overlay is rendered server-side — no Vue mount needed
-    export_btn = page.locator("#export-idle button.btn-pdf")
+    export_btn = page.locator("#export-idle button.export-button")
     expect(export_btn).to_be_visible(timeout=5000)
 
 
@@ -50,13 +50,13 @@ def test_export_button_error_state(logged_in_page, live_server, meal_plan_with_d
     )
 
     page.goto(f"{live_server.url}/meal-plan/{plan.pk}/preview/")
-    page.wait_for_selector("#export-idle button.btn-pdf", timeout=5000)
-    page.locator("#export-idle button.btn-pdf").click()
+    page.wait_for_selector("#export-idle button.export-button", timeout=5000)
+    page.locator("#export-idle button.export-button").click()
 
     # Progress card should appear while pending, then error card after poll responds
     expect(page.locator("#export-error")).to_be_visible(timeout=5000)
     expect(page.locator(".export-error-msg")).to_contain_text("Test failure message")
 
     # Retry button must be visible in the error state
-    retry_btn = page.locator("#export-error button.btn-pdf")
+    retry_btn = page.locator("#export-error button.export-button")
     expect(retry_btn).to_be_visible()
