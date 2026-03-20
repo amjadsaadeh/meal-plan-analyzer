@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - pvc.yaml
+  - cnpg-storage-class.yaml
 
 commonLabels:
   app: meal-plan-analyzer
