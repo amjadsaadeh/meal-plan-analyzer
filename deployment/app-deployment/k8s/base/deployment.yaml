@@ -87,6 +87,8 @@ spec:
                 name: meal-plan-analyzer-config
             - secretRef:
                 name: meal-plan-analyzer-secret
+            - secretRef:
+                name: meal-plan-analyzer-superuser-secret
         - name: import-foods
           image: image_name
           imagePullPolicy: Always
