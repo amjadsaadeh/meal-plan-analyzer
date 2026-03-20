@@ -38,12 +38,12 @@ $border:      #e2e8f0;
 body {
     font-family: 'Outfit', sans-serif;
     color: $text-main;
-    font-size: 10pt;
+    font-size: 9pt;
     line-height: 1.4;
 }
 
 h1 {
-    font-size: 14pt;
+    font-size: 13pt;
     color: $primary;
     margin-bottom: 20px;
     border-bottom: 2px solid $primary;
@@ -51,14 +51,14 @@ h1 {
 }
 
 h2 {
-    font-size: 17pt;
+    font-size: 15pt;
     color: $primary;
     margin-top: 20px;
     margin-bottom: 15px;
 }
 
 h3 {
-    font-size: 13pt;
+    font-size: 12pt;
     color: $text-dim;
     margin-top: 15px;
     margin-bottom: 10px;
@@ -76,7 +76,7 @@ h3 {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    font-size: 9pt;
+    font-size: 8pt;
 
     th,
     td {
@@ -122,7 +122,7 @@ h3 {
     margin-left: 0.75cm;
     bottom: 0.75cm;
     left: 0;
-    font-size: 8pt;
+    font-size: 7pt;
     color: #aaa;
     text-align: left;
 }
@@ -156,7 +156,7 @@ h3 {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
-    font-size: 8pt;
+    font-size: 7.5pt;
     table-layout: auto;
 
     th,
@@ -189,7 +189,7 @@ h3 {
 .meal-type-header {
     background-color: rgba($primary, 0.1) !important;
     color: $primary-hover;
-    font-size: 11pt;
+    font-size: 10pt;
 }
 
 .num-right {
@@ -285,7 +285,7 @@ h3 {
     gap: 10px;
     padding: 5px 0;
     cursor: pointer;
-    font-size: 8pt;
+    font-size: 7.5pt;
     color: $text-main;
 
     input {
@@ -382,7 +382,7 @@ h3 {
 .subtitle-pen { color: #bbb; flex-shrink: 0; }
 
 .plan-subtitle {
-    font-size: 11pt;
+    font-size: 10pt;
     color: #888;
     outline: none;
     border-radius: 4px;
@@ -414,7 +414,7 @@ h3 {
     color: #4180A6;
     border: 1px solid #c3ddf0;
     border-radius: 4px;
-    font-size: 6pt;
+    font-size: 5.5pt;
     font-weight: 600;
     padding: 1px 5px;
     white-space: nowrap;
@@ -434,7 +434,7 @@ h3 {
     transform: translateX(-50%);
     background: $text-main;
     color: #fff;
-    font-size: 7pt;
+    font-size: 6.5pt;
     font-weight: 400;
     padding: 4px 8px;
     border-radius: 5px;
