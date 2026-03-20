@@ -6,6 +6,8 @@ namespace: meal-plan-analyzer-dev
 resources:
   - namespace.yaml
   - ../../base
+  - cnpg-rbac.yaml
+  - cnpg-cluster.yaml
 
 secretGenerator:
   - name: meal-plan-analyzer-secret
