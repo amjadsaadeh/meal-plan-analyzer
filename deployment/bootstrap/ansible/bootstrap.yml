@@ -9,14 +9,6 @@
     db_password: ""
 
   tasks:
-    - name: Set prod db_password from vault
-      set_fact:
-        db_password: "{{ meal_plan_analyzer_prod_db_password }}"
-      when: env is not defined or env == 'prod'
-
-    - name: Include prod database configuration
-      include_tasks: database-prod.yml
-      when: env is not defined or env == 'prod'
 
     - name: Set dev db_password from vault
       set_fact:
@@ -35,24 +27,6 @@
     - ../../vault.yml
 
   tasks:
-    - name: Bootstrap Prod Kubernetes Resources
-      when: env is not defined or env == 'prod'
-      block:
-        - name: Set prod secrets
-          set_fact:
-            secret_key: "{{ meal_plan_analyzer_prod_secret_key }}"
-            db_password: "{{ meal_plan_analyzer_prod_db_password }}"
-            env: "prod"
-
-        - name: Render prod secrets.env
-          ansible.builtin.template:
-            src: secrets.env.j2
-            dest: ../k8s/overlays/prod/secrets.env
-            mode: '0600'
-
-        - name: Apply prod bootstrap kustomize
-          shell: kubectl apply -k ../k8s/overlays/prod/
-
     - name: Bootstrap Dev Kubernetes Resources
       when: env is not defined or env == 'dev'
       block:

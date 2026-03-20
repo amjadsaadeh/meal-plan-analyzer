@@ -11,8 +11,8 @@ spec:
     initdb:
       # Runs ONLY when the PVC is brand new (first boot).
       # All subsequent kubectl apply runs skip this block entirely.
-      database: meal_plan_analyzer_dev
-      owner: meal_plan_analyzer_dev
+      database: meal_plan_analyzer
+      owner: meal_plan_analyzer
       secret:
         # Ansible creates this secret before CNPG reads it.
         # CNPG enriches it with 'uri', 'host', 'port', 'dbname', etc.
