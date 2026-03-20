@@ -11,9 +11,3 @@ images:
   - name: image_name
     newName: "index.docker.io/amjadsaadeh/meal-plan-analyzer"
     newTag: "dev"
-
-patches:
-  - path: superuser-patch.yaml
-    target:
-      kind: Deployment
-      name: meal-plan-analyzer
