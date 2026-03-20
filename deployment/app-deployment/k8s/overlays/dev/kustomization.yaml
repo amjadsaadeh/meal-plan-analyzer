@@ -6,7 +6,6 @@ namespace: meal-plan-analyzer-dev
 resources:
   - ingress.yaml
   - ../../base
-  - cnpg-cluster.yaml
 
 images:
   - name: image_name
@@ -14,10 +13,6 @@ images:
     newTag: "dev"
 
 patches:
-  - path: cnpg-cluster-patch.yaml
-    target:
-      kind: Cluster
-      name: meal-plan-analyzer-db
   - path: superuser-patch.yaml
     target:
       kind: Deployment
