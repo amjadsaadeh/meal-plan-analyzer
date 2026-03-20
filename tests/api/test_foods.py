@@ -780,3 +780,15 @@ class TestUmlautNormalization:
             )
             assert item is not None, f"'Hühnerbrühe' not found for query '{query}'"
             assert item["matched_alias"] is None, f"Expected None for query '{query}'"
+
+
+@pytest.mark.django_db
+def test_food_response_includes_water_field(authenticated_client):
+    response = authenticated_client.get("/api/foods/")
+    assert response.status_code == 200
+    data = response.json()
+    foods = data.get("results", data)
+    assert len(foods) > 0
+    assert (
+        "water_in_g_per_100g" in foods[0]
+    ), "water_in_g_per_100g field missing from food API response"

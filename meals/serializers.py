@@ -23,6 +23,7 @@ class FoodSerializer(serializers.ModelSerializer):
             "name",
             "energy_in_kj_per_100g",
             "energy_in_kcal_per_100g",
+            "water_in_g_per_100g",
             "protein_in_g_per_100g",
             "fat_in_g_per_100g",
             "carbohydrate_in_g_per_100g",
