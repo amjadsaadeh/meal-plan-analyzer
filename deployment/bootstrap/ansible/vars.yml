@@ -3,7 +3,8 @@
 # Leave empty to bootstrap both
 env: ""
 
-# Database connection
+# Database connection — used by prod only.
+# Dev uses the CNPG-managed service endpoint (meal-plan-analyzer-db-rw).
 db_host: "pgcluster-rw.cloudnative-pg.svc.cluster.local"
 db_port: "5432"
 
