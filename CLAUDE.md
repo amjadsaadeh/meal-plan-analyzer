@@ -39,7 +39,7 @@ uv run python manage.py runserver
 docker compose up
 ```
 
-The compose stack spins up a PostgreSQL 16 container and the Django app on port 8000. Migrations and `collectstatic` run automatically on startup.
+The compose stack runs four services: **db** (PostgreSQL 16), **redis** (Redis 7), **web** (Django + gunicorn on port 8000), and **worker** (Celery). The web service automatically runs `migrate`, `build_scss`, and `collectstatic` on startup. The worker and web services share a media volume.
 
 ---
 
@@ -662,18 +662,97 @@ All models are registered in `meals/admin.py`:
 docker compose up --build
 ```
 
-The Dockerfile uses a multi-stage build:
-1. **builder** (`ghcr.io/astral-sh/uv:python3.12-bookworm-slim`): installs Python dependencies via `uv sync --frozen --no-dev`
-2. **final** (`python:3.12-slim-bookworm`): copies the venv, installs WeasyPrint system libs, runs gunicorn
+The Dockerfile uses a **three-stage build**:
+
+1. **node-builder** (`node:22-slim`): installs JS deps with `pnpm install --frozen-lockfile` and builds the Vue frontend (`pnpm build`).
+2. **builder** (`ghcr.io/astral-sh/uv:python3.12-bookworm-slim`): installs Python dependencies via `uv sync --frozen --no-install-project --no-dev`.
+3. **final** (`python:3.12-slim-bookworm`): copies the venv from builder and the built JS assets from node-builder; installs WeasyPrint system libraries (`libglib2.0-0`, `libpango-1.0-0`, `libharfbuzz0b`, `libpangoft2-1.0-0`, `libpangocairo-1.0-0`, `libcairo2`, `libgdk-pixbuf2.0-0`); exposes port 8000; starts gunicorn.
 
 ### Kubernetes (via Ansible)
 
-```bash
-cd deployment/app-deployment/ansible
-uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy.yml
+The project targets a **k3s** cluster. Infrastructure is split into two areas:
+
+```
+deployment/
+├── bootstrap/           # One-time cluster infrastructure setup
+│   ├── ansible/         # bootstrap.yml playbook + Jinja2 secret templates
+│   └── k8s/
+│       ├── base/        # PVC (1 Gi media), StorageClass (local-path-retain)
+│       └── overlays/dev/  # Namespace, CNPG Postgres cluster, secretGenerator
+└── app-deployment/      # Application deployment (built + pushed on every release)
+    ├── ansible/         # deploy.yml playbook + vars.yml
+    └── k8s/
+        ├── base/        # Deployment, Service, Redis, ConfigMap
+        └── overlays/dev/  # Ingress (TLS), image tag, resource limits
 ```
 
-Manifests live in `deployment/app-deployment/k8s/`. The Ansible playbook handles DNS, database, and app deployment to a k3s cluster.
+#### Bootstrap (run once per environment)
+
+```bash
+cd deployment/bootstrap/ansible
+uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client bootstrap.yml
+```
+
+The bootstrap playbook renders Jinja2 secret templates (database credentials, Django `SECRET_KEY`, superuser credentials) from Ansible Vault into `k8s/overlays/dev/*.env` files (mode `0600`), then applies the kustomize overlay to create the namespace, PVC, StorageClass, and a **CloudNativePG (CNPG)** Postgres cluster (1 replica, 2 Gi `local-path-retain` storage).
+
+The CNPG service endpoint exposed to the app is `meal-plan-analyzer-db-rw:5432`.
+
+#### Application deployment
+
+```bash
+cd deployment/app-deployment/ansible
+uv run ansible-playbook --vault-id ${ANSIBLE_VAULT_ID}@vault-key-client deploy.yml -e env=dev
+```
+
+The deploy playbook builds and pushes the Docker image to DockerHub, then applies `k8s/overlays/{env}/` via `kubectl apply -k` and triggers a rolling restart (`kubectl rollout restart`).
+
+#### K8s pod init-container chain
+
+When the app pod starts, five **init containers** run in sequence before the main containers:
+
+| Init container | Command |
+|---|---|
+| `build-scss` | `python manage.py build_scss` |
+| `collect-static` | `python manage.py collectstatic --noinput` |
+| `migrate` | `python manage.py migrate` |
+| `create-superuser` | Python shell — idempotent superuser creation |
+| `import-foods` | `python manage.py import_foods` (downloads BLS ZIP) |
+
+After init, two **app containers** run in the same pod:
+- `meal-plan-analyzer` — gunicorn on port 8000; liveness/readiness probes configured
+- `worker` — Celery sidecar; shares the `staticfiles` and `media` volumes so `django_url_fetcher` can resolve assets without HTTP
+
+**Shared volumes**: `staticfiles` (emptyDir), `sass-cache` (emptyDir), `media` (PVC — `meal-plan-analyzer-media-pvc`).
+
+#### Environments
+
+| Environment | Namespace | Image tag | Ingress |
+|---|---|---|---|
+| dev | `meal-plan-analyzer-dev` | `dev` | `mealplananalyzer-dev.saadeh.dev` (LetsEncrypt DNS TLS) |
+| prod | `meal-plan-analyzer` | `latest` | (not in repo) |
+
+Resource limits for dev: 500m CPU / 512 Mi memory.
+
+#### Secrets management
+
+- Secrets are stored in an **Ansible Vault** (`vault.yml`); decrypt with `vault-key-client`.
+- The bootstrap playbook renders them into `.env` files and passes them to `kustomize secretGenerator` (`disableNameSuffixHash: true`).
+- Three K8s Secrets are created: `meal-plan-analyzer-secret` (DATABASE_URL, SECRET_KEY), `meal-plan-analyzer-db-credentials` (CNPG credentials), `meal-plan-analyzer-superuser-secret`.
+- GitHub Actions secrets required: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `KUBECONFIG` (base64-encoded), optional `DOCKERHUB_REPO`.
+
+### CI/CD (GitHub Actions)
+
+Workflows live in `.github/workflows/`:
+
+| Workflow | Trigger | Purpose |
+|---|---|---|
+| `tests.yml` | PRs to `main` | Lint (Black) + Unit/Integration + API + Playwright frontend tests; JUnit XML reports via `dorny/test-reporter`; failure artifacts (screenshots + traces, 7-day retention) |
+| `deploy-dev.yml` | Push to `main` | Builds Docker image tagged `dev` with `APP_VERSION=dev-{branch}-{sha}`, pushes to DockerHub, applies dev K8s overlay, triggers rollout restart |
+| `release.yml` | Push to `v*` tags | Builds and pushes image tagged `{tag}` and `latest`; `APP_VERSION={tag}` |
+| `security-audit.yml` | PRs to `main`, weekly Monday 03:00 UTC, manual | `pip-audit` (CycloneDX SBOM + JSON) + `pnpm audit`; fails on high/critical JS vulns; uploads artifacts (90-day retention) |
+| `pages.yml` | Push/PR to `main` | Deploys `./docs/` to GitHub Pages |
+
+All test jobs install WeasyPrint system dependencies via apt before running tests. A **Test Summary** job writes a Markdown table to the workflow summary on every run.
 
 ---
 
