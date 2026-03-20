@@ -57,6 +57,37 @@ spec:
                 name: meal-plan-analyzer-config
             - secretRef:
                 name: meal-plan-analyzer-secret
+        - name: create-superuser
+          image: image_name
+          imagePullPolicy: Always
+          command:
+            - sh
+            - -c
+            - |
+              python manage.py shell -c "
+              from django.contrib.auth import get_user_model
+              import os
+              User = get_user_model()
+              u = os.environ['DJANGO_SUPERUSER_USERNAME']
+              if not User.objects.filter(username=u).exists():
+                  User.objects.create_superuser(u, '', os.environ['DJANGO_SUPERUSER_PASSWORD'])
+                  print('Superuser created.')
+              else:
+                  print('Superuser already exists, skipping.')
+              "
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: meal-plan-analyzer-db-credentials
+                  key: uri
+                  optional: true
+          envFrom:
+            - configMapRef:
+                name: meal-plan-analyzer-config
+            - secretRef:
+                name: meal-plan-analyzer-secret
+            - secretRef:
         - name: import-foods
           image: image_name
           imagePullPolicy: Always
