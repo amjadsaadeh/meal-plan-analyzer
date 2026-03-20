@@ -11,6 +11,12 @@ secretGenerator:
   - name: meal-plan-analyzer-secret
     envs:
       - secrets.env
+  - name: meal-plan-analyzer-db-credentials
+    envs:
+      - cnpg-credentials.env
+  - name: meal-plan-analyzer-superuser-secret
+    envs:
+      - superuser-credentials.env
 
 generatorOptions:
   disableNameSuffixHash: true

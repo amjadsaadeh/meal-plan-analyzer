@@ -18,3 +18,7 @@ patches:
     target:
       kind: Cluster
       name: meal-plan-analyzer-db
+  - path: superuser-patch.yaml
+    target:
+      kind: Deployment
+      name: meal-plan-analyzer

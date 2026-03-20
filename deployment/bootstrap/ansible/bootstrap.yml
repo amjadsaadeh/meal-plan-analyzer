@@ -1,24 +1,4 @@
 ---
-- name: Bootstrap Databases
-  hosts: localhost
-  gather_facts: false
-  vars_files:
-    - vars.yml
-    - ../../vault.yml
-  vars:
-    db_password: ""
-
-  tasks:
-
-    - name: Set dev db_password from vault
-      set_fact:
-        db_password: "{{ meal_plan_analyzer_dev_db_password }}"
-      when: env is not defined or env == 'dev'
-
-    - name: Include dev DB credentials secret creation
-      include_tasks: db-secret-dev.yml
-      when: env is not defined or env == 'dev'
-
 - name: Bootstrap Kubernetes Resources
   hosts: localhost
   gather_facts: false
@@ -32,14 +12,26 @@
       block:
         - name: Set dev secrets
           set_fact:
-            secret_key: "{{ meal_plan_analyzer_dev_secret_key }}"
-            db_password: "{{ meal_plan_analyzer_dev_db_password }}"
+            secret_key: "{{ meal_plan_analyzer_secret_key }}"
+            db_password: "{{ meal_plan_analyzer_db_password }}"
             env: "dev"
 
         - name: Render dev secrets.env
           ansible.builtin.template:
             src: secrets.env.j2
             dest: ../k8s/overlays/dev/secrets.env
+            mode: '0600'
+
+        - name: Render dev cnpg-credentials.env
+          ansible.builtin.template:
+            src: cnpg-credentials.env.j2
+            dest: ../k8s/overlays/dev/cnpg-credentials.env
+            mode: '0600'
+
+        - name: Render dev superuser-credentials.env
+          ansible.builtin.template:
+            src: superuser-credentials.env.j2
+            dest: ../k8s/overlays/dev/superuser-credentials.env
             mode: '0600'
 
         - name: Apply dev bootstrap kustomize
