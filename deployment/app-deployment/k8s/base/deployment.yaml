@@ -19,13 +19,6 @@ spec:
           image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "build_scss"]
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: meal-plan-analyzer-db-credentials
-                  key: uri
-                  optional: true
           envFrom:
             - configMapRef:
                 name: meal-plan-analyzer-config
@@ -38,13 +31,6 @@ spec:
           image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "collectstatic", "--noinput"]
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: meal-plan-analyzer-db-credentials
-                  key: uri
-                  optional: true
           envFrom:
             - configMapRef:
                 name: meal-plan-analyzer-config
