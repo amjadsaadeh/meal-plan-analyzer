@@ -6,12 +6,19 @@ namespace: meal-plan-analyzer-dev
 resources:
   - ingress.yaml
   - ../../base
+  - cnpg-cluster.yaml
 
 images:
   - name: image_name
     newName: "index.docker.io/amjadsaadeh/meal-plan-analyzer"
     newTag: "dev"
 
-
-# patches:
-#   - path: resource-patch.yaml
+patches:
+  - path: cnpg-cluster-patch.yaml
+    target:
+      kind: Cluster
+      name: meal-plan-analyzer-db
+  - path: superuser-patch.yaml
+    target:
+      kind: Deployment
+      name: meal-plan-analyzer
