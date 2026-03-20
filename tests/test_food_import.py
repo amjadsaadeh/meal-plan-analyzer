@@ -35,10 +35,12 @@ def test_food_import_from_xlsx():
     first_code = ws["A2"].value
     first_name = ws["B2"].value
     first_kcal = float(ws["G2"].value)
+    first_water = float(ws["J2"].value)
 
     food = Food.objects.get(bls_code=first_code)
     assert food.name == first_name
     assert pytest.approx(food.energy_in_kcal_per_100g) == first_kcal
+    assert pytest.approx(food.water_in_g_per_100g) == first_water
 
 
 @pytest.mark.django_db

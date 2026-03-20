@@ -21,6 +21,7 @@ def generate_test_data(output_path, num_rows=100):
         "B": "NAME",
         "D": "KJ",
         "G": "KCAL",
+        "J": "WATER",
         "M": "PROTEIN",
         "P": "FAT",
         "S": "CARBS",
@@ -46,6 +47,7 @@ def generate_test_data(output_path, num_rows=100):
         ws[f"B{row}"] = f"Food Item {row-1}"
         ws[f"D{row}"] = random.uniform(0, 3000)  # KJ
         ws[f"G{row}"] = random.uniform(0, 800)  # KCAL
+        ws[f"J{row}"] = random.uniform(0, 100)  # WATER
         ws[f"M{row}"] = random.uniform(0, 100)  # PROTEIN
         ws[f"P{row}"] = random.uniform(0, 100)  # FAT
         ws[f"S{row}"] = random.uniform(0, 100)  # CARBS

@@ -139,6 +139,7 @@ class Command(BaseCommand):
                 IDX_NAME = col_to_idx("B")
                 IDX_KJ = col_to_idx("D")
                 IDX_KCAL = col_to_idx("G")
+                IDX_WATER = col_to_idx("J")
                 IDX_PROTEIN = col_to_idx("M")
                 IDX_FAT = col_to_idx("P")
                 IDX_CARBS = col_to_idx("S")
@@ -184,6 +185,7 @@ class Command(BaseCommand):
 
                     energy_kj = parse_float(row[IDX_KJ])
                     energy_kcal = parse_float(row[IDX_KCAL])
+                    water = parse_float(row[IDX_WATER])
                     protein = parse_float(row[IDX_PROTEIN])
                     fat = parse_float(row[IDX_FAT])
                     carbs = parse_float(row[IDX_CARBS])
@@ -215,6 +217,7 @@ class Command(BaseCommand):
                             "name": name,
                             "energy_in_kj_per_100g": energy_kj,
                             "energy_in_kcal_per_100g": energy_kcal,
+                            "water_in_g_per_100g": water,
                             "protein_in_g_per_100g": protein,
                             "fat_in_g_per_100g": fat,
                             "carbohydrate_in_g_per_100g": carbs,
