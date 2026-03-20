@@ -20,8 +20,8 @@
       set_fact:
         db_password: "{{ meal_plan_analyzer_dev_db_password }}"
 
-    - name: Include dev database configuration
-      include_tasks: database-dev.yml
+    - name: Include dev DB credentials secret creation
+      include_tasks: db-secret-dev.yml
 
 - name: Bootstrap Kubernetes Resources
   hosts: localhost
