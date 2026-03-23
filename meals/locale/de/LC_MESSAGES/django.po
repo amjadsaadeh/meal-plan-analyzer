@@ -33,6 +33,10 @@ msgstr "Abendessen"
 msgid "Energy"
 msgstr "Energie"
 
+#: meals/nutrients.py:10
+msgid "Water"
+msgstr "Wasser"
+
 #: meals/nutrients.py:11
 msgid "Protein"
 msgstr "Protein"
