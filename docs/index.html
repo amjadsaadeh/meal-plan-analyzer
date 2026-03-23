@@ -165,6 +165,28 @@
     }
     .mock-day-list li:last-child { border-bottom: none; }
 
+    /* ── SHOWCASE ── */
+    .showcase-item {
+      display: flex; gap: 4rem; align-items: center; max-width: 1100px; margin: 0 auto 6rem;
+    }
+    .showcase-item:last-child { margin-bottom: 2rem; }
+    .showcase-item.reverse { flex-direction: row-reverse; }
+    .showcase-text { flex: 1; }
+    .showcase-text h3 { font-size: 1.6rem; font-weight: 800; margin-bottom: 1rem; color: var(--text); }
+    .showcase-text p { font-size: 1rem; color: var(--muted); line-height: 1.6; }
+    .showcase-image {
+      flex: 1.4; background: var(--bg); border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.08), 0 0 0 1px var(--border);
+      overflow: hidden;
+    }
+    .showcase-image img { width: 100%; display: block; height: auto; object-fit: cover; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+    .mock-browser-bar.slim { padding: .4rem .8rem; }
+    
+    @media (max-width: 900px) {
+      .showcase-item, .showcase-item.reverse { flex-direction: column; gap: 2rem; margin-bottom: 4rem; }
+      .showcase-image { width: 100%; }
+    }
+
     /* ── FEATURES ── */
     .section { padding: 80px 5%; }
     .section-label {
@@ -283,6 +305,7 @@
 <nav>
   <a class="nav-brand" href="#">Meal Plan Analyzer</a>
   <ul class="nav-links">
+    <li><a href="#showcase">Showcase</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#how-it-works">How it works</a></li>
     <li><a href="#nutrients">Nutrients</a></li>
@@ -309,51 +332,8 @@
       <div class="mock-dot"></div>
       <div class="mock-url">meal-plan-analyzer.example.com / plan / 1</div>
     </div>
-    <div class="mock-screen">
-      <!-- Day column -->
-      <div class="mock-card">
-        <div class="mock-card-title">Day 1 — Meals</div>
-        <ul class="mock-day-list">
-          <li><span>🌅 Oats with banana</span><span class="mock-badge">Breakfast</span></li>
-          <li><span>🥗 Chicken salad</span><span class="mock-badge">Lunch</span></li>
-          <li><span>🍝 Pasta bolognese</span><span class="mock-badge">Dinner</span></li>
-          <li><span>🍎 Apple</span><span class="mock-badge">Snack</span></li>
-        </ul>
-      </div>
-      <!-- Nutrients column -->
-      <div class="mock-card">
-        <div class="mock-card-title">Today's Totals</div>
-        <div class="mock-row"><span>Energy</span><span>1 840 kcal</span></div>
-        <div class="mock-row"><span>Protein</span><span>92 g</span></div>
-        <div class="mock-row"><span>Fat</span><span>61 g</span></div>
-        <div class="mock-row"><span>Carbs</span><span>228 g</span></div>
-        <div class="mock-row"><span>Fiber</span><span>24 g</span></div>
-        <div class="mock-row"><span>Vit. C</span><span>78 mg</span></div>
-      </div>
-      <!-- Progress column -->
-      <div class="mock-card">
-        <div class="mock-card-title">Daily Targets</div>
-        <div class="mock-progress-wrap">
-          <div class="mock-progress-label"><span>Protein</span><span>92 / 100 g</span></div>
-          <div class="mock-progress-bar"><div class="mock-fill" style="width:92%"></div></div>
-        </div>
-        <div class="mock-progress-wrap" style="margin-top:.75rem">
-          <div class="mock-progress-label"><span>Iron</span><span>10 / 15 mg</span></div>
-          <div class="mock-progress-bar"><div class="mock-fill" style="width:67%"></div></div>
-        </div>
-        <div class="mock-progress-wrap" style="margin-top:.75rem">
-          <div class="mock-progress-label"><span>Calcium</span><span>310 / 800 mg <span class="mock-badge warn">Low</span></span></div>
-          <div class="mock-progress-bar"><div class="mock-fill" style="width:39%; background:#f59e0b"></div></div>
-        </div>
-        <div class="mock-progress-wrap" style="margin-top:.75rem">
-          <div class="mock-progress-label"><span>Vit. D</span><span>8 / 20 µg <span class="mock-badge warn">Low</span></span></div>
-          <div class="mock-progress-bar"><div class="mock-fill" style="width:40%; background:#f59e0b"></div></div>
-        </div>
-        <div class="mock-progress-wrap" style="margin-top:.75rem">
-          <div class="mock-progress-label"><span>Energy</span><span>1840 / 2000 kcal</span></div>
-          <div class="mock-progress-bar"><div class="mock-fill" style="width:92%"></div></div>
-        </div>
-      </div>
+    <div class="mock-screen" style="padding: 0; display: block;">
+      <img src="assets/meal_plan_edit.png" alt="Meal Plan Editor" style="width: 100%; display: block;" loading="eager" />
     </div>
   </div>
 </section>
@@ -394,6 +374,52 @@
       <div class="feature-icon">⚙️</div>
       <h3>Preset Threshold Library</h3>
       <p>Save named threshold presets (e.g. "Athlete", "Senior") and apply them to any plan in one click.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SHOWCASE -->
+<section class="section showcase" id="showcase" style="padding-bottom: 20px;">
+  <p class="section-label">Showcase</p>
+  <h2 class="section-title">See it in action</h2>
+  <p class="section-sub">A quick look at the core interfaces of Meal Plan Analyzer.</p>
+  
+  <div class="showcase-item">
+    <div class="showcase-text">
+       <h3>Comprehensive Meal Planning</h3>
+       <p>The editor allows you to build multi-day plans effortlessly. Add different meals (Breakfast, Lunch, Dinner), search for any food from our 10,000+ item database, and specify exact gram amounts. Totals and goals are updated in real-time.</p>
+    </div>
+    <div class="showcase-image">
+       <div class="mock-browser-bar slim">
+         <div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div>
+       </div>
+       <img src="assets/meal_plan_edit.png" alt="Meal Plan Editor" loading="lazy">
+    </div>
+  </div>
+
+  <div class="showcase-item reverse">
+    <div class="showcase-text">
+       <h3>Clean, Data-rich Dashboard</h3>
+       <p>Keep track of all your dietary plans from a single, organized dashboard. Quickly copy, delete, or create new plans, and jump straight back into editing your weekly regimen.</p>
+    </div>
+    <div class="showcase-image">
+       <div class="mock-browser-bar slim">
+         <div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div>
+       </div>
+       <img src="assets/dashboard.png" alt="Dashboard" loading="lazy">
+    </div>
+  </div>
+
+  <div class="showcase-item">
+    <div class="showcase-text">
+       <h3>Print-ready PDF Export</h3>
+       <p>Take your meal plans anywhere. The dedicated preview and PDF export features generate a beautiful, printable document containing your daily routines alongside a full nutritional breakdown.</p>
+    </div>
+    <div class="showcase-image">
+       <div class="mock-browser-bar slim">
+         <div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div>
+       </div>
+       <img src="assets/meal_plan_preview.png" alt="PDF Export Preview" loading="lazy">
     </div>
   </div>
 </section>
