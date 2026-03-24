@@ -614,6 +614,62 @@ msgstr "Export fehlgeschlagen. Bitte erneut versuchen."
 msgid "Retry"
 msgstr "Erneut versuchen"
 
+#: meals/templates/meals/threshold_preset_list.html.j2
+msgid "Threshold Presets"
+msgstr "Referenzwert-Vorlagen"
+
+#: meals/templates/meals/threshold_preset_editor.html.j2
+msgid "Threshold Preset Editor"
+msgstr "Referenzwert-Vorlage bearbeiten"
+
+#: meals/views.py
+msgid "Search presets…"
+msgstr "Vorlagen suchen…"
+
+#: meals/views.py
+msgid "Create Preset"
+msgstr "Vorlage erstellen"
+
+#: meals/views.py
+msgid "No threshold presets found."
+msgstr "Keine Referenzwert-Vorlagen gefunden."
+
+#: meals/views.py
+msgid "New Preset"
+msgstr "Neue Vorlage"
+
+#: meals/views.py
+msgid "Error creating preset"
+msgstr "Fehler beim Erstellen der Vorlage"
+
+#: meals/views.py
+msgid "Show more nutrients"
+msgstr "Mehr Nährstoffe anzeigen"
+
+#: meals/views.py
+msgid "Show less"
+msgstr "Weniger anzeigen"
+
+#: meals/views.py
+msgid "Min"
+msgstr "Min"
+
+#: meals/views.py
+msgid "Max"
+msgstr "Max"
+
+#: meals/views.py
+msgid "Delete preset"
+msgstr "Vorlage löschen"
+
+#: meals/views.py
+msgid "Delete this preset?"
+msgstr "Diese Vorlage löschen?"
+
+#: meals/views.py
+msgid "Preset not found."
+msgstr "Vorlage nicht gefunden."
+
 #~ msgid "Do you really want to delete \"<span id=\"deleteDayName\"></span>\"?"
 #~ msgstr ""
 #~ "Möchtest du \"<span id=\"deleteDayName\"></span>\" wirklich löschen?"

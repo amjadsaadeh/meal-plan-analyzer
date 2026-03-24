@@ -52,7 +52,7 @@
       <div class="nutrient-card">
         <div class="nutrient-rows">
           <div
-            v-for="nutrient in defaultNutrients"
+            v-for="nutrient in nutrients"
             :key="nutrient.key"
             class="nutrient-row"
           >
@@ -82,56 +82,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Expand toggle -->
-        <button class="btn-expand-chevron expand-toggle" @click="expanded = !expanded">
-          <svg
-            width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round"
-            :style="{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-          {{ expanded ? i18n.showLess : i18n.showMore }}
-        </button>
-
-        <!-- Expanded nutrients -->
-        <div class="expanded-content" :class="{ open: expanded }">
-          <div class="editor-expanded-inner expanded-inner">
-            <div
-              v-for="nutrient in extendedNutrients"
-              :key="nutrient.key"
-              class="nutrient-row"
-              style="border-top: 1px solid var(--glass-border);"
-            >
-              <span class="nutrient-label">
-                {{ nutrient.label }}
-                <span class="nutrient-unit">({{ nutrient.unit }})</span>
-              </span>
-              <div class="nutrient-inputs">
-                <span class="input-label">{{ i18n.min }}</span>
-                <input
-                  class="nutrient-min-input threshold-input"
-                  type="number"
-                  step="any"
-                  :value="preset[nutrient.key + '_min'] ?? ''"
-                  @blur="saveField(nutrient.key + '_min', $event.target.value)"
-                  :placeholder="i18n.min"
-                />
-                <span class="input-label">{{ i18n.max }}</span>
-                <input
-                  class="nutrient-max-input threshold-input"
-                  type="number"
-                  step="any"
-                  :value="preset[nutrient.key + '_max'] ?? ''"
-                  @blur="saveField(nutrient.key + '_max', $event.target.value)"
-                  :placeholder="i18n.max"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Delete -->
@@ -145,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, onMounted, nextTick } from 'vue'
+import { ref, inject, onMounted, nextTick } from 'vue'
 
 const presetId = inject('presetId')
 const csrfToken = inject('csrfToken')
@@ -153,28 +103,12 @@ const nutrients = inject('nutrients')
 const i18n = inject('i18n')
 const presetListUrl = inject('presetListUrl')
 
-const DEFAULT_KEYS = [
-  'energy_in_kcal',
-  'water_in_g',
-  'carbohydrate_in_g',
-  'fat_in_g',
-  'protein_in_g',
-]
-
 const preset = ref(null)
 const notFound = ref(false)
 const saveStatus = ref('idle')
 const editingName = ref(false)
 const editName = ref('')
 const nameInputEl = ref(null)
-const expanded = ref(false)
-
-const defaultNutrients = computed(() =>
-  nutrients.filter((n) => DEFAULT_KEYS.includes(n.key))
-)
-const extendedNutrients = computed(() =>
-  nutrients.filter((n) => !DEFAULT_KEYS.includes(n.key))
-)
 
 async function loadPreset() {
   try {
