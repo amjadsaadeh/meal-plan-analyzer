@@ -1,0 +1,158 @@
+name: Kubernetes Manifest Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "deployment/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kustomize-build:
+    name: Kustomize Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Build app-deployment overlay (dev)
+        run: kustomize build deployment/app-deployment/k8s/overlays/dev
+
+      - name: Create placeholder secret env files for bootstrap overlay
+        run: |
+          printf 'SECRET_KEY=ci-placeholder\n' \
+            > deployment/bootstrap/k8s/overlays/dev/secrets.env
+          printf 'DATABASE_URL=postgres://ci:ci@localhost:5432/ci\n' \
+            > deployment/bootstrap/k8s/overlays/dev/cnpg-credentials.env
+          printf 'DJANGO_SUPERUSER_USERNAME=admin\nDJANGO_SUPERUSER_PASSWORD=ci-placeholder\n' \
+            > deployment/bootstrap/k8s/overlays/dev/superuser-credentials.env
+
+      - name: Build bootstrap overlay (dev)
+        run: kustomize build deployment/bootstrap/k8s/overlays/dev
+
+  kubeconform:
+    name: Schema Validation (kubeconform)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Install kubeconform
+        run: |
+          KUBECONFORM_VERSION="v0.6.7"
+          curl -sSLo /tmp/kubeconform.tar.gz \
+            "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz"
+          tar -xzf /tmp/kubeconform.tar.gz -C /tmp/
+          sudo mv /tmp/kubeconform /usr/local/bin/
+
+      - name: Validate app-deployment manifests
+        run: |
+          kustomize build deployment/app-deployment/k8s/overlays/dev \
+            | kubeconform \
+                -strict \
+                -summary \
+                -output pretty \
+                -kubernetes-version 1.30.0
+
+      - name: Create placeholder secret env files for bootstrap overlay
+        run: |
+          printf 'SECRET_KEY=ci-placeholder\n' \
+            > deployment/bootstrap/k8s/overlays/dev/secrets.env
+          printf 'DATABASE_URL=postgres://ci:ci@localhost:5432/ci\n' \
+            > deployment/bootstrap/k8s/overlays/dev/cnpg-credentials.env
+          printf 'DJANGO_SUPERUSER_USERNAME=admin\nDJANGO_SUPERUSER_PASSWORD=ci-placeholder\n' \
+            > deployment/bootstrap/k8s/overlays/dev/superuser-credentials.env
+
+      - name: Validate bootstrap manifests
+        # --ignore-missing-schemas: CNPG CRDs (e.g. Cluster) have no upstream schema
+        run: |
+          kustomize build deployment/bootstrap/k8s/overlays/dev \
+            | kubeconform \
+                -strict \
+                -summary \
+                -output pretty \
+                -kubernetes-version 1.30.0 \
+                -ignore-missing-schemas
+
+  kube-linter:
+    name: Best Practice Lint (kube-linter)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Install kube-linter
+        run: |
+          KUBE_LINTER_URL=$(curl -s \
+            https://api.github.com/repos/stackrox/kube-linter/releases/latest \
+            | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          assets = [
+              a['browser_download_url'] for a in data['assets']
+              if 'linux' in a['name'] and 'amd64' in a['name'] and a['name'].endswith('.tar.gz')
+          ]
+          print(assets[0] if assets else '')
+          ")
+          curl -sSLo /tmp/kube-linter.tar.gz "$KUBE_LINTER_URL"
+          tar -xzf /tmp/kube-linter.tar.gz -C /tmp/
+          sudo mv /tmp/kube-linter /usr/local/bin/
+
+      - name: Render app-deployment overlay
+        run: |
+          mkdir -p /tmp/rendered
+          kustomize build deployment/app-deployment/k8s/overlays/dev \
+            > /tmp/rendered/app-deployment.yaml
+
+      - name: Lint app-deployment manifests
+        run: kube-linter lint /tmp/rendered/app-deployment.yaml --config .kube-linter.yaml
+
+      - name: Create placeholder secret env files for bootstrap overlay
+        run: |
+          printf 'SECRET_KEY=ci-placeholder\n' \
+            > deployment/bootstrap/k8s/overlays/dev/secrets.env
+          printf 'DATABASE_URL=postgres://ci:ci@localhost:5432/ci\n' \
+            > deployment/bootstrap/k8s/overlays/dev/cnpg-credentials.env
+          printf 'DJANGO_SUPERUSER_USERNAME=admin\nDJANGO_SUPERUSER_PASSWORD=ci-placeholder\n' \
+            > deployment/bootstrap/k8s/overlays/dev/superuser-credentials.env
+
+      - name: Render bootstrap overlay
+        run: |
+          kustomize build deployment/bootstrap/k8s/overlays/dev \
+            > /tmp/rendered/bootstrap.yaml
+
+      - name: Lint bootstrap manifests
+        # ignore-unknown-types skips CNPG CRDs (Cluster) that kube-linter has no checks for
+        run: kube-linter lint /tmp/rendered/bootstrap.yaml --config .kube-linter.yaml --ignore-unknown-types
+
+  k8s-lint-summary:
+    name: K8s Lint Summary
+    runs-on: ubuntu-latest
+    needs: [kustomize-build, kubeconform, kube-linter]
+    if: always()
+
+    steps:
+      - name: Write job summary
+        run: |
+          echo "## Kubernetes Manifest Lint Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Kustomize Build | ${{ needs.kustomize-build.result == 'success' && '✅ passed' || needs.kustomize-build.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Schema Validation (kubeconform) | ${{ needs.kubeconform.result == 'success' && '✅ passed' || needs.kubeconform.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Best Practice Lint (kube-linter) | ${{ needs.kube-linter.result == 'success' && '✅ passed' || needs.kube-linter.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Triggered by changes under \`deployment/\`." >> $GITHUB_STEP_SUMMARY
