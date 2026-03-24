@@ -132,6 +132,7 @@ meal-plan-analyzer/
 │   │   ├── test_threshold_presets.py
 │   │   ├── test_food_search_semantics.py
 │   │   ├── test_export_name_auto_alias.py
+│   │   ├── test_export_jobs.py
 │   │   ├── test_food_energy_sync.py
 │   │   └── test_food_aliases.py
 │   ├── frontend/
@@ -192,6 +193,7 @@ Represents a food item from the BLS database.
 | `fat_in_g_per_100g` | FloatField | default 0.0 |
 | `carbohydrate_in_g_per_100g` | FloatField | default 0.0 |
 | `fibre_in_g_per_100g` | FloatField | default 0.0 |
+| `water_in_g_per_100g` | FloatField | default 0.0 |
 | `iron_in_mg_per_100g` | FloatField | default 0.0 |
 | `sugar_in_g_per_100g` | FloatField | default 0.0 |
 | `omega3_in_g_per_100g` | FloatField | default 0.0 |
@@ -287,6 +289,7 @@ All nutrient logic flows through the `NUTRIENTS` ordered dict. Each entry maps a
 | Nutrient key | Label (i18n) | Unit | Precision |
 |---|---|---|---|
 | `energy_in_kcal` | Energy | kcal | 1 |
+| `water_in_g` | Water | g | 1 |
 | `protein_in_g` | Protein | g | 1 |
 | `fat_in_g` | Fat | g | 1 |
 | `omega3_in_g` | n-3 | g | 2 |
@@ -437,6 +440,7 @@ Custom template filters (`meals/templatetags/meal_extras.py`):
 - `divide_by_100_mult(value, arg)` — `(value / 100) * arg` (nutrient calculation per amount)
 - `split_to_dict(value)` — splits `"key:val,key2:val2"` into list of pairs
 - `get_item(dictionary, key)` — safe dict lookup
+- `get_attr(obj, attr_name)` — safe attribute access on an object
 
 ---
 
@@ -634,7 +638,7 @@ The command uses `openpyxl` with hard-coded BLS column mappings (e.g. column A =
 - **BackgroundJob as task state**: `BackgroundJob` is the sole source of truth for Celery task progress/results. `CELERY_RESULT_BACKEND` is intentionally `None`. Poll via `/api/export-jobs/<id>/`.
 - **PDF worker URL resolution**: The Celery worker has no HTTP request context. Static and media files are resolved by `django_url_fetcher` using filesystem paths. Always set `SITE_BASE_URL` in production so the worker can build absolute URLs when needed.
 - **PDF footer**: `SiteSettings.pdf_footer_line_content` controls the footer text on every PDF page. Access the setting via `SiteSettings.get()`.
-- **Migrations**: When adding models or fields, always create and commit migrations. Latest are `0025_backgroundjob` and `0026_sitesettings_pdf_footer_line_content`.
+- **Migrations**: When adding models or fields, always create and commit migrations. Latest is `0027_food_water_in_g_per_100g`.
 
 ---
 
@@ -650,7 +654,6 @@ All models are registered in `meals/admin.py`:
 | `MealPlanDay` | `MealPlanDayAdmin` | Inline `MealPlanFood` |
 | `ThresholdPreset` | `ThresholdPresetAdmin` | Search on name |
 | `SiteSettings` | `SiteSettingsAdmin` | List view redirects to single instance; add/delete disabled |
-| `BackgroundJob` | `BackgroundJobAdmin` | Read-only status/progress view for async jobs |
 
 ---
 
