@@ -23,6 +23,12 @@ class TestMealPlanAPI:
         assert response.data["name"] == "Test Plan 1"
         assert MealPlan.objects.filter(name="Test Plan 1").exists()
 
+    def test_create_meal_plan_default_name(self, authenticated_client):
+        """A plan created without a name gets a default name."""
+        response = authenticated_client.post("/api/mealplans/", {}, format="json")
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["name"]  # non-empty default
+
     def test_list_meal_plans_unauthenticated(self, api_client):
         """Test listing meal plans without authentication."""
         response = api_client.get("/api/mealplans/")
@@ -37,6 +43,93 @@ class TestMealPlanAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] >= 2
 
+    def test_retrieve_meal_plan(self, authenticated_client):
+        """GET on a single plan returns its data."""
+        plan = MealPlan.objects.create(name="Retrieve Me")
+        response = authenticated_client.get(f"/api/mealplans/{plan.id}/")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["name"] == "Retrieve Me"
+
+    def test_patch_meal_plan_name(self, authenticated_client):
+        """PATCH updates only the provided fields."""
+        plan = MealPlan.objects.create(name="Original Name")
+        response = authenticated_client.patch(
+            f"/api/mealplans/{plan.id}/", {"name": "Updated Name"}, format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["name"] == "Updated Name"
+        plan.refresh_from_db()
+        assert plan.name == "Updated Name"
+
+    def test_patch_meal_plan_visible_nutrients(self, authenticated_client):
+        """PATCH can update visible_nutrients."""
+        plan = MealPlan.objects.create(name="Nutrient Plan")
+        response = authenticated_client.patch(
+            f"/api/mealplans/{plan.id}/",
+            {"visible_nutrients": ["energy_in_kcal", "fat_in_g"]},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert "fat_in_g" in response.data["visible_nutrients"]
+
+    def test_patch_meal_plan_unknown_visible_nutrients_stored(
+        self, authenticated_client
+    ):
+        """PATCH with an unknown nutrient key is accepted and stored as-is.
+        The model only migrates legacy key names; arbitrary keys are not rejected."""
+        plan = MealPlan.objects.create(name="Unknown Nutrient Plan")
+        response = authenticated_client.patch(
+            f"/api/mealplans/{plan.id}/",
+            {"visible_nutrients": ["not_a_real_nutrient"]},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert "not_a_real_nutrient" in response.data["visible_nutrients"]
+
+    def test_patch_meal_plan_thresholds(self, authenticated_client):
+        """PATCH can set valid thresholds."""
+        plan = MealPlan.objects.create(name="Threshold Plan")
+        payload = {"thresholds": {"energy_in_kcal": {"min": 1800, "max": 2200}}}
+        response = authenticated_client.patch(
+            f"/api/mealplans/{plan.id}/", payload, format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        plan.refresh_from_db()
+        assert plan.thresholds["energy_in_kcal"]["min"] == 1800
+
+    def test_patch_meal_plan_invalid_thresholds(self, authenticated_client):
+        """PATCH with a malformed thresholds structure is rejected."""
+        plan = MealPlan.objects.create(name="Bad Threshold Plan")
+        # 'min' must be a number or null, not a string
+        payload = {"thresholds": {"energy_in_kcal": {"min": "not-a-number"}}}
+        response = authenticated_client.patch(
+            f"/api/mealplans/{plan.id}/", payload, format="json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_patch_meal_plan_subtitle(self, authenticated_client):
+        """PATCH can set the subtitle field."""
+        plan = MealPlan.objects.create(name="Subtitle Plan")
+        response = authenticated_client.patch(
+            f"/api/mealplans/{plan.id}/", {"subtitle": "A nice subtitle"}, format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["subtitle"] == "A nice subtitle"
+
+    def test_delete_meal_plan(self, authenticated_client):
+        """DELETE removes the plan from the database."""
+        plan = MealPlan.objects.create(name="To Be Deleted")
+        response = authenticated_client.delete(f"/api/mealplans/{plan.id}/")
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert not MealPlan.objects.filter(id=plan.id).exists()
+
+    def test_delete_meal_plan_unauthenticated(self, api_client):
+        """DELETE without auth is rejected."""
+        plan = MealPlan.objects.create(name="Protected Plan")
+        response = api_client.delete(f"/api/mealplans/{plan.id}/")
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert MealPlan.objects.filter(id=plan.id).exists()
+
     def test_meal_plan_nested_days_filtering(self, authenticated_client):
         """Test that nested days in meal plan are filtered by removed=False."""
         plan = MealPlan.objects.create(name="Nested Test Plan")
@@ -50,3 +143,10 @@ class TestMealPlanAPI:
         days = response.data["days"]
         assert len(days) == 1
         assert days[0]["name"] == "Active Day"
+
+    def test_list_response_has_pagination_fields(self, authenticated_client):
+        """List response includes pagination envelope fields."""
+        response = authenticated_client.get("/api/mealplans/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "count" in response.data
+        assert "results" in response.data
