@@ -15,6 +15,8 @@ export default defineConfig({
         'mealplan-detail': 'frontend/src/mealplan-detail/main.js',
         'food-database': 'frontend/src/food-database/main.js',
         'food-editor': 'frontend/src/food-editor/main.js',
+        'threshold-preset-list':   'frontend/src/threshold-preset-list/main.js',
+        'threshold-preset-editor': 'frontend/src/threshold-preset-editor/main.js',
       },
     },
   },
