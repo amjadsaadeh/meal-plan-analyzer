@@ -27,6 +27,10 @@
                class="nav-link{% if request.resolver_match.url_name == 'food-database' or request.resolver_match.url_name == 'food-editor' %} active{% endif %}">
                 {% trans "Food Database" %}
             </a>
+            <a href="{% url 'threshold-preset-list' %}"
+               class="nav-link{% if request.resolver_match.url_name == 'threshold-preset-list' or request.resolver_match.url_name == 'threshold-preset-editor' %} active{% endif %}">
+                {% trans "Thresholds" %}
+            </a>
         </div>
         <div class="user-nav-container">
             <div class="user-info">
