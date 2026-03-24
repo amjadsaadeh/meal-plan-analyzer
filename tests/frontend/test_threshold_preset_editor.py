@@ -48,14 +48,11 @@ def test_nutrient_value_persisted_after_blur(logged_in_page, live_server):
     assert updated.energy_in_kcal_min == 2000.0
 
 
-def test_expand_chevron_reveals_extended_nutrients(logged_in_page, live_server):
+def test_all_nutrients_visible_from_start(logged_in_page, live_server):
     preset = ThresholdPresetFactory(name="Test")
     _goto_editor(logged_in_page, live_server, preset)
-    expanded = logged_in_page.locator(".expanded-content")
-    assert expanded.evaluate("el => el.clientHeight") == 0
-    logged_in_page.click(".btn-expand-chevron")
-    logged_in_page.wait_for_timeout(400)
-    assert expanded.evaluate("el => el.clientHeight") > 0
+    rows = logged_in_page.locator(".nutrient-row")
+    assert rows.count() == 26
 
 
 def test_delete_preset_redirects_to_list(logged_in_page, live_server):

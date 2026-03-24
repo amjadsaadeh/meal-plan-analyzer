@@ -12,6 +12,11 @@ def pytest_configure():
     settings.STORAGES["staticfiles"] = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     }
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        }
+    }
 
 
 @pytest.fixture(scope="session", autouse=True)
