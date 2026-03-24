@@ -1,0 +1,14 @@
+checks:
+  addAllBuiltIn: true
+  exclude:
+    # Init containers write to shared emptyDir volumes (SCSS compilation, collectstatic).
+    # A read-only root filesystem is therefore not enforced here.
+    - "no-read-only-root-fs"
+    # The Celery worker sidecar is a background process; liveness/readiness probes
+    # are not applicable in the same way as for a web server.
+    - "liveness-probe"
+    - "readiness-probe"
+    # Security hardening (runAsNonRoot, capability drops) is deferred; the base
+    # image does not yet configure a non-root user.
+    - "run-as-non-root"
+    - "no-capabilities-drop"
