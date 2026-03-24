@@ -17,6 +17,8 @@ from .views import (
     meal_plan_preview_content,
     food_database,
     food_editor,
+    threshold_preset_list,
+    threshold_preset_editor,
 )
 
 router = DefaultRouter()
@@ -50,5 +52,11 @@ urlpatterns = [
     path("search/", index, name="food-search"),
     path("foods/", food_database, name="food-database"),
     path("foods/<int:pk>/", food_editor, name="food-editor"),
+    path("threshold-presets/", threshold_preset_list, name="threshold-preset-list"),
+    path(
+        "threshold-presets/<int:pk>/",
+        threshold_preset_editor,
+        name="threshold-preset-editor",
+    ),
     path("api/", include(router.urls)),
 ]

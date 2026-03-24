@@ -1,0 +1,25 @@
+{% extends 'meals/base.html.j2' %}
+{% load static i18n sass_tags %}
+
+{% block title %}{% trans "Threshold Presets" %} | Meal Plan Analyzer{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% sass_src 'meals/scss/threshold_preset.scss' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 960px;">
+    <div
+        id="threshold-preset-list-app"
+        data-csrf-token="{{ csrf_token }}"
+        data-preset-editor-base-url="{{ preset_editor_base_url }}"
+        data-nutrients='{{ nutrients_json }}'
+        data-i18n='{{ i18n_json }}'
+    ></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load django_vite %}
+{% vite_asset 'frontend/src/threshold-preset-list/main.js' %}
+{% endblock %}
