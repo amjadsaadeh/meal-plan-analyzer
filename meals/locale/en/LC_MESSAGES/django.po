@@ -489,3 +489,7 @@ msgstr "Export failed. Please retry."
 #: meals/views.py
 msgid "Retry"
 msgstr "Retry"
+
+#: meals/templates/meals/base.html.j2
+msgid "Thresholds"
+msgstr "Thresholds"
