@@ -614,6 +614,10 @@ msgstr "Export fehlgeschlagen. Bitte erneut versuchen."
 msgid "Retry"
 msgstr "Erneut versuchen"
 
+#: meals/templates/meals/base.html.j2
+msgid "Thresholds"
+msgstr "Referenzwerte"
+
 #: meals/templates/meals/threshold_preset_list.html.j2
 msgid "Threshold Presets"
 msgstr "Referenzwert-Vorlagen"
