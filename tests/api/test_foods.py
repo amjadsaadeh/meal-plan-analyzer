@@ -792,3 +792,58 @@ def test_food_response_includes_water_field(authenticated_client):
     assert (
         "water_in_g_per_100g" in foods[0]
     ), "water_in_g_per_100g field missing from food API response"
+
+
+# ---------------------------------------------------------------------------
+# Paginated browse (no search query)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+class TestFoodBrowsePagination:
+    def test_no_search_returns_paginated_response(self, authenticated_client):
+        """GET /api/foods/ without search returns pagination envelope."""
+        response = authenticated_client.get("/api/foods/")
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert "count" in data
+        assert "results" in data
+        assert isinstance(data["results"], list)
+
+    def test_no_search_ordered_by_name(self, authenticated_client):
+        """Browse results are sorted alphabetically by name."""
+        response = authenticated_client.get("/api/foods/")
+        assert response.status_code == status.HTTP_200_OK
+        names = [f["name"] for f in response.json()["results"]]
+        assert names == sorted(names)
+
+    def test_no_search_matched_alias_is_null(self, authenticated_client):
+        """Browse results always have matched_alias=None."""
+        response = authenticated_client.get("/api/foods/")
+        assert response.status_code == status.HTTP_200_OK
+        for food in response.json()["results"]:
+            assert food["matched_alias"] is None
+
+    def test_single_char_search_returns_empty(self, authenticated_client):
+        """A one-character search term returns no results (too short)."""
+        response = authenticated_client.get("/api/foods/?search=a")
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data == []
+
+    def test_page_size_query_param(self, authenticated_client):
+        """page_size param is respected up to max_page_size."""
+        response = authenticated_client.get("/api/foods/?page_size=5")
+        assert response.status_code == status.HTTP_200_OK
+        results = response.json()["results"]
+        assert len(results) <= 5
+
+    def test_page_two_returns_different_foods(self, authenticated_client):
+        """Page 2 of browse results differs from page 1."""
+        r1 = authenticated_client.get("/api/foods/?page=1&page_size=2")
+        r2 = authenticated_client.get("/api/foods/?page=2&page_size=2")
+        assert r1.status_code == status.HTTP_200_OK
+        assert r2.status_code == status.HTTP_200_OK
+        ids1 = {f["id"] for f in r1.json()["results"]}
+        ids2 = {f["id"] for f in r2.json()["results"]}
+        # The two pages must not overlap
+        assert ids1.isdisjoint(ids2)
