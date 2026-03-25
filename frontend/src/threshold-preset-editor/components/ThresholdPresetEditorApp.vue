@@ -136,7 +136,10 @@ async function patch(data) {
       body: JSON.stringify(data),
     })
     if (!res.ok) throw new Error(res.status)
-    preset.value = await res.json()
+    const responseData = await res.json()
+    for (const key of Object.keys(data)) {
+      preset.value[key] = responseData[key]
+    }
     saveStatus.value = 'saved'
     setTimeout(() => {
       if (saveStatus.value === 'saved') saveStatus.value = 'idle'
