@@ -16,7 +16,7 @@
             :data-nut="nut.key"
             :placeholder="i18n.min"
             :value="thresholdVal(nut.key, 'min')"
-            @input="onThresholdChange(nut.key, 'min', $event.target.value)"
+            @change="onThresholdChange(nut.key, 'min', $event.target.value)"
           >
           <span
             class="summary-val"
@@ -30,7 +30,7 @@
             :data-nut="nut.key"
             :placeholder="i18n.max"
             :value="thresholdVal(nut.key, 'max')"
-            @input="onThresholdChange(nut.key, 'max', $event.target.value)"
+            @change="onThresholdChange(nut.key, 'max', $event.target.value)"
           >
         </div>
       </div>
