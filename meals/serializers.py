@@ -94,6 +94,25 @@ class ThresholdPresetSerializer(serializers.ModelSerializer):
         model = ThresholdPreset
         fields = "__all__"
 
+    def validate(self, data):
+        errors = {}
+        for field in ThresholdPreset._meta.get_fields():
+            if not field.name.endswith("_min"):
+                continue
+            base = field.name[:-4]  # strip "_min"
+            max_field = base + "_max"
+            if self.instance is not None:
+                min_val = data.get(field.name, getattr(self.instance, field.name))
+                max_val = data.get(max_field, getattr(self.instance, max_field))
+            else:
+                min_val = data.get(field.name)
+                max_val = data.get(max_field)
+            if min_val is not None and max_val is not None and min_val >= max_val:
+                errors[field.name] = f"Must be less than max ({max_val})."
+        if errors:
+            raise serializers.ValidationError(errors)
+        return data
+
 
 class MealPlanFoodSerializer(serializers.ModelSerializer):
     food_name = serializers.ReadOnlyField(source="food.name")
