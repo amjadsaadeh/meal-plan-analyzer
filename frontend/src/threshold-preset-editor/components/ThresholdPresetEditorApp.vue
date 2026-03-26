@@ -64,20 +64,24 @@
               <span class="input-label">{{ i18n.min }}</span>
               <input
                 class="nutrient-min-input threshold-input"
+                :class="{ 'input-error': fieldErrors[nutrient.key + '_min'] }"
                 type="number"
                 step="any"
                 :value="preset[nutrient.key + '_min'] ?? ''"
                 @blur="saveField(nutrient.key + '_min', $event.target.value)"
                 :placeholder="i18n.min"
+                :title="fieldErrors[nutrient.key + '_min'] || ''"
               />
               <span class="input-label">{{ i18n.max }}</span>
               <input
                 class="nutrient-max-input threshold-input"
+                :class="{ 'input-error': fieldErrors[nutrient.key + '_max'] }"
                 type="number"
                 step="any"
                 :value="preset[nutrient.key + '_max'] ?? ''"
                 @blur="saveField(nutrient.key + '_max', $event.target.value)"
                 :placeholder="i18n.max"
+                :title="fieldErrors[nutrient.key + '_max'] || ''"
               />
             </div>
           </div>
@@ -109,6 +113,7 @@ const saveStatus = ref('idle')
 const editingName = ref(false)
 const editName = ref('')
 const nameInputEl = ref(null)
+const fieldErrors = ref({})
 
 async function loadPreset() {
   try {
@@ -149,9 +154,59 @@ async function patch(data) {
   }
 }
 
+function validateField(fieldName, rawValue) {
+  if (rawValue === '' || rawValue === null || rawValue === undefined) {
+    return null
+  }
+  const val = parseFloat(rawValue)
+  if (isNaN(val)) {
+    return 'Must be a valid number.'
+  }
+  if (fieldName.endsWith('_min')) {
+    const maxField = fieldName.slice(0, -4) + '_max'
+    const maxVal = preset.value?.[maxField]
+    if (maxVal !== null && maxVal !== undefined && val >= maxVal) {
+      return `Must be less than max (${maxVal}).`
+    }
+  } else if (fieldName.endsWith('_max')) {
+    const minField = fieldName.slice(0, -4) + '_min'
+    const minVal = preset.value?.[minField]
+    if (minVal !== null && minVal !== undefined && val <= minVal) {
+      return `Must be greater than min (${minVal}).`
+    }
+  }
+  return null
+}
+
 async function saveField(fieldName, rawValue) {
+  const error = validateField(fieldName, rawValue)
+  if (error) {
+    fieldErrors.value = { ...fieldErrors.value, [fieldName]: error }
+    return
+  }
+
+  const newErrors = { ...fieldErrors.value }
+  delete newErrors[fieldName]
+  fieldErrors.value = newErrors
+
   const value = rawValue === '' ? null : parseFloat(rawValue)
   await patch({ [fieldName]: value })
+
+  // After a successful save, re-check the partner field to clear stale errors
+  const partnerSuffix = fieldName.endsWith('_min') ? '_max' : '_min'
+  const partnerField = fieldName.slice(0, -4) + partnerSuffix
+  if (fieldErrors.value[partnerField]) {
+    const partnerVal = preset.value?.[partnerField]
+    const partnerError =
+      partnerVal !== null && partnerVal !== undefined
+        ? validateField(partnerField, String(partnerVal))
+        : null
+    if (!partnerError) {
+      const cleared = { ...fieldErrors.value }
+      delete cleared[partnerField]
+      fieldErrors.value = cleared
+    }
+  }
 }
 
 function startEditName() {
@@ -188,3 +243,14 @@ async function deletePreset() {
 
 onMounted(loadPreset)
 </script>
+
+<style scoped>
+.input-error {
+  border-color: #dc3545 !important;
+  outline-color: #dc3545;
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+</style>

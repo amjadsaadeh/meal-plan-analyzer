@@ -139,3 +139,117 @@ class TestThresholdPresetConstraints:
         """__str__ returns the preset name."""
         preset = ThresholdPreset(name="My Preset")
         assert str(preset) == "My Preset"
+
+
+@pytest.mark.django_db
+class TestThresholdPresetValidation:
+    """Validation tests for min/max and type constraints."""
+
+    def test_non_float_value_rejected(self, authenticated_client):
+        """Sending a non-numeric string for a nutrient field returns 400."""
+        response = authenticated_client.post(
+            "/api/threshold-presets/",
+            {"name": "Bad", "energy_in_kcal_min": "not-a-number"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_min_greater_than_max_rejected_on_create(self, authenticated_client):
+        """Creating a preset where min >= max returns 400."""
+        response = authenticated_client.post(
+            "/api/threshold-presets/",
+            {
+                "name": "Invalid",
+                "energy_in_kcal_min": 3000.0,
+                "energy_in_kcal_max": 2000.0,
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "energy_in_kcal_min" in response.data
+
+    def test_min_equal_to_max_rejected(self, authenticated_client):
+        """Creating a preset where min == max returns 400."""
+        response = authenticated_client.post(
+            "/api/threshold-presets/",
+            {
+                "name": "EqualMinMax",
+                "protein_in_g_min": 50.0,
+                "protein_in_g_max": 50.0,
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "protein_in_g_min" in response.data
+
+    def test_min_less_than_max_accepted(self, authenticated_client):
+        """Creating a preset where min < max succeeds."""
+        response = authenticated_client.post(
+            "/api/threshold-presets/",
+            {
+                "name": "ValidRange",
+                "energy_in_kcal_min": 2000.0,
+                "energy_in_kcal_max": 3000.0,
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_only_min_set_accepted(self, authenticated_client):
+        """Setting only min (no max) is always valid."""
+        response = authenticated_client.post(
+            "/api/threshold-presets/",
+            {"name": "OnlyMin", "energy_in_kcal_min": 1500.0},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_only_max_set_accepted(self, authenticated_client):
+        """Setting only max (no min) is always valid."""
+        response = authenticated_client.post(
+            "/api/threshold-presets/",
+            {"name": "OnlyMax", "energy_in_kcal_max": 3000.0},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_patch_min_above_existing_max_rejected(self, authenticated_client):
+        """PATCH that sets min above the existing max returns 400."""
+        preset = ThresholdPreset.objects.create(
+            name="PatchTest", energy_in_kcal_min=1800.0, energy_in_kcal_max=2400.0
+        )
+        response = authenticated_client.patch(
+            f"/api/threshold-presets/{preset.id}/",
+            {"energy_in_kcal_min": 2500.0},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "energy_in_kcal_min" in response.data
+
+    def test_patch_max_below_existing_min_rejected(self, authenticated_client):
+        """PATCH that sets max below the existing min returns 400."""
+        preset = ThresholdPreset.objects.create(
+            name="PatchTest2", energy_in_kcal_min=1800.0, energy_in_kcal_max=2400.0
+        )
+        response = authenticated_client.patch(
+            f"/api/threshold-presets/{preset.id}/",
+            {"energy_in_kcal_max": 1500.0},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "energy_in_kcal_min" in response.data
+
+    def test_error_message_contains_max_value(self, authenticated_client):
+        """The error message references the conflicting max value."""
+        response = authenticated_client.post(
+            "/api/threshold-presets/",
+            {
+                "name": "ErrMsg",
+                "protein_in_g_min": 200.0,
+                "protein_in_g_max": 100.0,
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        error_text = str(response.data["protein_in_g_min"])
+        assert "100.0" in error_text
