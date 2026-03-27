@@ -1021,6 +1021,9 @@ def threshold_preset_editor(request, pk):
         "showMore": _("Show more nutrients"),
         "showLess": _("Show less"),
         "notFound": _("Preset not found."),
+        "mustBeValidNumber": _("Must be a valid number."),
+        "mustBeLessThanMax": _("Must be less than max ({max})."),
+        "mustBeGreaterThanMin": _("Must be greater than min ({min})."),
     }
     return render(
         request,
