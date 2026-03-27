@@ -179,19 +179,19 @@ function validateField(fieldName, rawValue) {
   }
   const val = parseFloat(rawValue)
   if (isNaN(val)) {
-    return 'Must be a valid number.'
+    return i18n.mustBeValidNumber
   }
   if (fieldName.endsWith('_min')) {
     const maxField = fieldName.slice(0, -4) + '_max'
     const maxVal = preset.value?.[maxField]
     if (maxVal !== null && maxVal !== undefined && val >= maxVal) {
-      return `Must be less than max (${maxVal}).`
+      return i18n.mustBeLessThanMax.replace('{max}', maxVal)
     }
   } else if (fieldName.endsWith('_max')) {
     const minField = fieldName.slice(0, -4) + '_min'
     const minVal = preset.value?.[minField]
     if (minVal !== null && minVal !== undefined && val <= minVal) {
-      return `Must be greater than min (${minVal}).`
+      return i18n.mustBeGreaterThanMin.replace('{min}', minVal)
     }
   }
   return null

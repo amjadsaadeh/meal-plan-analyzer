@@ -674,6 +674,18 @@ msgstr "Diese Vorlage löschen?"
 msgid "Preset not found."
 msgstr "Vorlage nicht gefunden."
 
+#: meals/views.py
+msgid "Must be a valid number."
+msgstr "Muss eine gültige Zahl sein."
+
+#: meals/views.py
+msgid "Must be less than max ({max})."
+msgstr "Muss kleiner als das Maximum ({max}) sein."
+
+#: meals/views.py
+msgid "Must be greater than min ({min})."
+msgstr "Muss größer als das Minimum ({min}) sein."
+
 #~ msgid "Do you really want to delete \"<span id=\"deleteDayName\"></span>\"?"
 #~ msgstr ""
 #~ "Möchtest du \"<span id=\"deleteDayName\"></span>\" wirklich löschen?"

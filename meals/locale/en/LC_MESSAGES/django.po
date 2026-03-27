@@ -490,6 +490,18 @@ msgstr "Export failed. Please retry."
 msgid "Retry"
 msgstr "Retry"
 
+#: meals/views.py
+msgid "Must be a valid number."
+msgstr "Must be a valid number."
+
+#: meals/views.py
+msgid "Must be less than max ({max})."
+msgstr "Must be less than max ({max})."
+
+#: meals/views.py
+msgid "Must be greater than min ({min})."
+msgstr "Must be greater than min ({min})."
+
 #: meals/templates/meals/base.html.j2
 msgid "Thresholds"
 msgstr "Thresholds"
