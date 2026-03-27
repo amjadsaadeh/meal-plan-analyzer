@@ -111,7 +111,7 @@ meal-plan-analyzer/
 │   ├── static/meals/
 │   │   ├── img/             # Static assets (logo, etc.)
 │   │   └── scss/            # SCSS source files
-│   ├── migrations/          # Django migrations (0001–0026)
+│   ├── migrations/          # Django migrations (0001–0027)
 │   ├── tasks.py             # Celery async tasks (PDF generation)
 │   └── management/commands/  # Django management commands
 │       ├── import_foods.py  # BLS Excel import command
@@ -411,6 +411,8 @@ PDF generation runs as a Celery background task. The frontend polls for completi
 | `/search/` | `index` | `food-search` |
 | `/foods/` | `food_database` | `food-database` |
 | `/foods/<pk>/` | `food_editor` | `food-editor` |
+| `/threshold-presets/` | `threshold_preset_list` | `threshold-preset-list` |
+| `/threshold-presets/<pk>/` | `threshold_preset_editor` | `threshold-preset-editor` |
 | `/login/` | Django auth | `login` |
 | `/logout/` | Django auth | `logout` |
 
@@ -435,6 +437,8 @@ Templates use the `.html.j2` extension and are processed by Django's standard te
 | `index.html.j2` | Food search page |
 | `food_database.html.j2` | Food database browser (list + search) |
 | `food_editor.html.j2` | Food editor for creating/editing custom foods |
+| `threshold_preset_list.html.j2` | Threshold preset list page |
+| `threshold_preset_editor.html.j2` | Threshold preset editor page |
 
 Custom template filters (`meals/templatetags/meal_extras.py`):
 - `divide_by_100_mult(value, arg)` — `(value / 100) * arg` (nutrient calculation per amount)
@@ -506,6 +510,20 @@ The meal plan detail page is a full Vue 3 SPA. Source lives in `frontend/src/mea
 
 i18n strings are passed via the `data-i18n` attribute on the mount element (Django renders translations server-side).
 
+### Vue Component Tree (`frontend/src/threshold-preset-list/`)
+
+- `main.js` — mounts `ThresholdPresetApp` on its mount element; provides csrfToken and API URL
+- `components/ThresholdPresetApp.vue` — lists all threshold presets with search and pagination; delegates to child components
+- `components/PresetSearchBar.vue` — debounced search input
+- `components/PresetTable.vue` — tabular preset listing
+- `components/PresetRow.vue` — individual preset row (links to preset editor)
+- `components/Pagination.vue` — page navigation
+
+### Vue Component Tree (`frontend/src/threshold-preset-editor/`)
+
+- `main.js` — mounts `ThresholdPresetEditorApp` for creating and editing a single threshold preset
+- `components/ThresholdPresetEditorApp.vue` — form with min/max fields for each nutrient; calls `POST`/`PUT` on `/api/threshold-presets/`
+
 ---
 
 ## SCSS / Static Assets
@@ -522,6 +540,7 @@ SCSS source files live in `meals/static/meals/scss/`. There are entry-point file
 | `food_search.scss` | Food search page styles |
 | `food_database.scss` | Food database browser styles |
 | `food_editor.scss` | Food editor page styles |
+| `threshold_preset.scss` | Threshold preset list and editor styles |
 | `login.scss` | Login page styles |
 | `_layout.scss` | Shared layout partials |
 | `_reset.scss` | CSS reset partial |
