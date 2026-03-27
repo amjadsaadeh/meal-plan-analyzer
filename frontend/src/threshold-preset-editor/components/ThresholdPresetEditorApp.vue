@@ -62,27 +62,45 @@
             </span>
             <div class="nutrient-inputs">
               <span class="input-label">{{ i18n.min }}</span>
-              <input
-                class="nutrient-min-input threshold-input"
-                :class="{ 'input-error': fieldErrors[nutrient.key + '_min'] }"
-                type="number"
-                step="any"
-                :value="preset[nutrient.key + '_min'] ?? ''"
-                @blur="saveField(nutrient.key + '_min', $event.target.value)"
-                :placeholder="i18n.min"
-                :title="fieldErrors[nutrient.key + '_min'] || ''"
-              />
+              <div class="input-wrapper">
+                <input
+                  class="nutrient-min-input threshold-input"
+                  :class="{ 'input-error': fieldErrors[nutrient.key + '_min'] }"
+                  type="number"
+                  step="any"
+                  :value="preset[nutrient.key + '_min'] ?? ''"
+                  @blur="saveField(nutrient.key + '_min', $event.target.value)"
+                  @mouseenter="hoveredField = nutrient.key + '_min'"
+                  @mouseleave="hoveredField = null"
+                  :placeholder="i18n.min"
+                />
+                <div
+                  v-if="hoveredField === nutrient.key + '_min' && fieldErrors[nutrient.key + '_min']"
+                  class="error-tooltip"
+                >
+                  {{ fieldErrors[nutrient.key + '_min'] }}
+                </div>
+              </div>
               <span class="input-label">{{ i18n.max }}</span>
-              <input
-                class="nutrient-max-input threshold-input"
-                :class="{ 'input-error': fieldErrors[nutrient.key + '_max'] }"
-                type="number"
-                step="any"
-                :value="preset[nutrient.key + '_max'] ?? ''"
-                @blur="saveField(nutrient.key + '_max', $event.target.value)"
-                :placeholder="i18n.max"
-                :title="fieldErrors[nutrient.key + '_max'] || ''"
-              />
+              <div class="input-wrapper">
+                <input
+                  class="nutrient-max-input threshold-input"
+                  :class="{ 'input-error': fieldErrors[nutrient.key + '_max'] }"
+                  type="number"
+                  step="any"
+                  :value="preset[nutrient.key + '_max'] ?? ''"
+                  @blur="saveField(nutrient.key + '_max', $event.target.value)"
+                  @mouseenter="hoveredField = nutrient.key + '_max'"
+                  @mouseleave="hoveredField = null"
+                  :placeholder="i18n.max"
+                />
+                <div
+                  v-if="hoveredField === nutrient.key + '_max' && fieldErrors[nutrient.key + '_max']"
+                  class="error-tooltip"
+                >
+                  {{ fieldErrors[nutrient.key + '_max'] }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -114,6 +132,7 @@ const editingName = ref(false)
 const editName = ref('')
 const nameInputEl = ref(null)
 const fieldErrors = ref({})
+const hoveredField = ref(null)
 
 async function loadPreset() {
   try {
@@ -245,6 +264,11 @@ onMounted(loadPreset)
 </script>
 
 <style scoped>
+.input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .input-error {
   border-color: #dc3545 !important;
   outline-color: #dc3545;
@@ -252,5 +276,32 @@ onMounted(loadPreset)
 
 .input-error:focus {
   box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+.error-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e1e1e;
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  padding: 5px 9px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.error-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1e1e1e;
 }
 </style>
