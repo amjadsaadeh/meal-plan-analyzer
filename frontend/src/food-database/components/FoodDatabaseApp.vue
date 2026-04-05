@@ -70,6 +70,7 @@ async function doSearch(query) {
   loading.value = true
   errorMsg.value = ''
   isSearchMode.value = true
+  currentPage.value = 1
   try {
     const res = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`)
     if (!res.ok) throw new Error(res.status)
@@ -115,8 +116,11 @@ watch(searchQuery, (q) => {
   clearTimeout(searchTimer)
   if (q.length >= 2) {
     searchTimer = setTimeout(() => doSearch(q), 0) // already debounced in FoodSearchBar
-  } else if (q.length === 0) {
-    fetchPage(1)
+  } else {
+    isSearchMode.value = false
+    if (q.length === 0) {
+      fetchPage(currentPage.value)
+    }
   }
 })
 
