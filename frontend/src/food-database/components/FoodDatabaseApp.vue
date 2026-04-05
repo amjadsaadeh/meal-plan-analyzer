@@ -14,9 +14,9 @@
     </div>
 
     <div class="table-card" :class="{ 'is-loading': loading }">
-      <FoodTable :foods="foods" :loading="loading" :search-query="searchQuery" />
+      <FoodTable :foods="visibleFoods" :loading="loading" :search-query="searchQuery" />
       <Pagination
-        v-if="!isSearchMode && totalPages > 1"
+        v-if="totalPages > 1"
         :current-page="currentPage"
         :total-pages="totalPages"
         @update:current-page="onPageChange"
@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { ref, inject, watch, onMounted } from 'vue'
+import { ref, computed, inject, watch, onMounted } from 'vue'
 import FoodSearchBar from './FoodSearchBar.vue'
 import FoodTable from './FoodTable.vue'
 import Pagination from './Pagination.vue'
@@ -37,27 +37,45 @@ const csrfToken = inject('csrfToken')
 const foodEditorBaseUrl = inject('foodEditorBaseUrl')
 const i18n = inject('i18n')
 
-const foods = ref([])
-const loading = ref(true)
-const searchQuery = ref('')
-const currentPage = ref(1)
-const totalPages = ref(1)
+// Browse-mode state
+const browseResults = ref([])
+const browseTotalPages = ref(1)
+
+// Search-mode state (all results fetched at once; paginated client-side)
+const searchResults = ref([])
 const isSearchMode = ref(false)
+
+const currentPage = ref(1)
+const loading = ref(true)
 const creating = ref(false)
 const errorMsg = ref('')
 
 const PAGE_SIZE = 100
 
+const totalPages = computed(() => {
+  if (isSearchMode.value) {
+    return Math.max(1, Math.ceil(searchResults.value.length / PAGE_SIZE))
+  }
+  return browseTotalPages.value
+})
+
+const visibleFoods = computed(() => {
+  if (isSearchMode.value) {
+    const start = (currentPage.value - 1) * PAGE_SIZE
+    return searchResults.value.slice(start, start + PAGE_SIZE)
+  }
+  return browseResults.value
+})
+
 async function fetchPage(page) {
   loading.value = true
   errorMsg.value = ''
-  isSearchMode.value = false
   try {
     const res = await fetch(`/api/foods/?page=${page}`)
     if (!res.ok) throw new Error(res.status)
     const data = await res.json()
-    foods.value = data.results ?? data
-    totalPages.value = data.count != null ? Math.max(1, Math.ceil(data.count / PAGE_SIZE)) : 1
+    browseResults.value = data.results ?? data
+    browseTotalPages.value = data.count != null ? Math.max(1, Math.ceil(data.count / PAGE_SIZE)) : 1
     currentPage.value = page
   } catch (e) {
     errorMsg.value = i18n.networkError ?? 'Network error'
@@ -75,8 +93,7 @@ async function doSearch(query) {
     const res = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`)
     if (!res.ok) throw new Error(res.status)
     const data = await res.json()
-    // search returns plain array (no pagination)
-    foods.value = Array.isArray(data) ? data : (data.results ?? [])
+    searchResults.value = Array.isArray(data) ? data : (data.results ?? [])
   } catch (e) {
     errorMsg.value = i18n.networkError ?? 'Network error'
   } finally {
@@ -108,7 +125,10 @@ async function createFood() {
 
 function onPageChange(page) {
   currentPage.value = page
-  fetchPage(page)
+  if (!isSearchMode.value) {
+    fetchPage(page)
+  }
+  // In search mode: visibleFoods is a computed slice — no network request needed
 }
 
 let searchTimer = null
@@ -118,8 +138,9 @@ watch(searchQuery, (q) => {
     searchTimer = setTimeout(() => doSearch(q), 0) // already debounced in FoodSearchBar
   } else {
     isSearchMode.value = false
+    searchResults.value = []
     if (q.length === 0) {
-      fetchPage(currentPage.value)
+      fetchPage(1)
     }
   }
 })
