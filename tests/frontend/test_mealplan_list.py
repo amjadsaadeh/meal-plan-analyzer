@@ -35,7 +35,7 @@ def test_mealplan_list_create_button(logged_in_page, live_server, test_user):
 
 
 # ---------------------------------------------------------------------------
-# Live search — client-side filter with 300 ms debounce
+# Live search — debounced, sends ?search= to backend
 # ---------------------------------------------------------------------------
 
 
@@ -48,11 +48,6 @@ def test_mealplan_list_search(logged_in_page, live_server, test_user):
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(2)
 
     logged_in_page.locator("#liveSearch").fill("Alpha")
-
-    # wait_for_function polls until the reactive filter settles
-    logged_in_page.wait_for_function(
-        "document.querySelectorAll('.meal-plan-row').length === 1"
-    )
 
     rows = logged_in_page.locator(".meal-plan-row")
     expect(rows).to_have_count(1)
@@ -67,10 +62,6 @@ def test_mealplan_list_search_no_results(logged_in_page, live_server, test_user)
 
     logged_in_page.locator("#liveSearch").fill("xyznonexistent")
 
-    logged_in_page.wait_for_function(
-        "document.querySelectorAll('.meal-plan-row').length === 0"
-    )
-
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(0)
     expect(logged_in_page.locator(".no-data")).to_be_visible()
 
@@ -83,9 +74,7 @@ def test_mealplan_list_search_updates_url(logged_in_page, live_server, test_user
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(2)
 
     logged_in_page.locator("#liveSearch").fill("Alpha")
-    logged_in_page.wait_for_function(
-        "document.querySelectorAll('.meal-plan-row').length === 1"
-    )
+    expect(logged_in_page.locator(".meal-plan-row")).to_have_count(1)
 
     # URL should be synced via history.pushState
     expect(logged_in_page).to_have_url(re.compile(r".*[?&]search=Alpha.*"))
@@ -308,7 +297,7 @@ def test_mealplan_list_pagination(logged_in_page, live_server, test_user):
     # Navigate to page 2 via the next (>>) button
     logged_in_page.locator(".pagination .page-link").last.click()
 
-    # Client-side navigation — expect auto-retries until count settles
+    # Backend navigation — expect auto-retries until API response settles
     expect(logged_in_page.locator(".meal-plan-row")).to_have_count(2)
 
 
