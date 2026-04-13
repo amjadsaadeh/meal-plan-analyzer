@@ -56,10 +56,11 @@
             :key="nutrient.key"
             class="nutrient-row"
           >
-            <span class="nutrient-label">
+            <div class="nutrient-row-main">
+            <div class="nutrient-label">
               {{ nutrient.label }}
               <span class="nutrient-unit">({{ nutrient.unit }})</span>
-            </span>
+            </div>
             <div class="nutrient-inputs">
               <span class="input-label">{{ i18n.min }}</span>
               <div class="input-wrapper">
@@ -68,11 +69,11 @@
                   :class="{ 'input-error': fieldErrors[nutrient.key + '_min'] }"
                   type="number"
                   step="any"
-                  :value="preset[nutrient.key + '_min'] ?? ''"
+                  :value="pendingValues[nutrient.key + '_min'] ?? preset[nutrient.key + '_min'] ?? ''"
+                  @input="onFieldInput(nutrient.key + '_min', $event.target.value)"
                   @blur="saveField(nutrient.key + '_min', $event.target.value)"
                   :placeholder="i18n.min"
                 />
-                <div class="field-error-msg">{{ fieldErrors[nutrient.key + '_min'] || '' }}</div>
               </div>
               <span class="input-label">{{ i18n.max }}</span>
               <div class="input-wrapper">
@@ -81,12 +82,16 @@
                   :class="{ 'input-error': fieldErrors[nutrient.key + '_max'] }"
                   type="number"
                   step="any"
-                  :value="preset[nutrient.key + '_max'] ?? ''"
+                  :value="pendingValues[nutrient.key + '_max'] ?? preset[nutrient.key + '_max'] ?? ''"
+                  @input="onFieldInput(nutrient.key + '_max', $event.target.value)"
                   @blur="saveField(nutrient.key + '_max', $event.target.value)"
                   :placeholder="i18n.max"
                 />
-                <div class="field-error-msg">{{ fieldErrors[nutrient.key + '_max'] || '' }}</div>
               </div>
+            </div>
+            </div><!-- nutrient-row-main -->
+            <div class="field-error-msg">
+              {{ fieldErrors[nutrient.key + '_min'] || fieldErrors[nutrient.key + '_max'] || '\u00a0' }}
             </div>
           </div>
         </div>
@@ -118,6 +123,7 @@ const editingName = ref(false)
 const editName = ref('')
 const nameInputEl = ref(null)
 const fieldErrors = ref({})
+const pendingValues = ref({})
 
 async function loadPreset() {
   try {
@@ -182,10 +188,22 @@ function validateField(fieldName, rawValue) {
   return null
 }
 
+function onFieldInput(fieldName, rawValue) {
+  // Track the pending value so the input is not reset while the user is typing
+  pendingValues.value = { ...pendingValues.value, [fieldName]: rawValue }
+}
+
+function clearPending(fieldName) {
+  const updated = { ...pendingValues.value }
+  delete updated[fieldName]
+  pendingValues.value = updated
+}
+
 async function saveField(fieldName, rawValue) {
   const error = validateField(fieldName, rawValue)
   if (error) {
     fieldErrors.value = { ...fieldErrors.value, [fieldName]: error }
+    // Keep pendingValues so the input retains the typed value on re-render
     return
   }
 
@@ -194,6 +212,18 @@ async function saveField(fieldName, rawValue) {
   fieldErrors.value = newErrors
 
   const value = rawValue === '' ? null : parseFloat(rawValue)
+
+  // Only patch if the value has actually changed from the saved state
+  const currentValue = preset.value?.[fieldName] ?? null
+  if (value === currentValue) {
+    // No change — just clear the pending value, no network request needed
+    clearPending(fieldName)
+    return
+  }
+
+  // Clear the pending value — the server value will take over after the patch
+  clearPending(fieldName)
+
   await patch({ [fieldName]: value })
 
   // After a successful save, re-check the partner field to clear stale errors
@@ -209,6 +239,7 @@ async function saveField(fieldName, rawValue) {
       const cleared = { ...fieldErrors.value }
       delete cleared[partnerField]
       fieldErrors.value = cleared
+      clearPending(partnerField)
     }
   }
 }
@@ -266,8 +297,6 @@ onMounted(loadPreset)
 .field-error-msg {
   font-size: 0.72rem;
   color: #dc3545;
-  min-height: 1.1em;
-  line-height: 1.1;
-  margin-top: 2px;
+  line-height: 1.2;
 }
 </style>
