@@ -16,7 +16,7 @@
     <div class="table-card" :class="{ 'is-loading': loading }">
       <FoodTable :foods="foods" :loading="loading" :search-query="searchQuery" />
       <Pagination
-        v-if="!isSearchMode && totalPages > 1"
+        v-if="totalPages > 1"
         :current-page="currentPage"
         :total-pages="totalPages"
         @update:current-page="onPageChange"
@@ -39,43 +39,26 @@ const i18n = inject('i18n')
 
 const foods = ref([])
 const loading = ref(true)
-const searchQuery = ref('')
 const currentPage = ref(1)
 const totalPages = ref(1)
-const isSearchMode = ref(false)
+const searchQuery = ref('')
 const creating = ref(false)
 const errorMsg = ref('')
 
 const PAGE_SIZE = 100
 
-async function fetchPage(page) {
+async function fetchFoods(page, search) {
   loading.value = true
   errorMsg.value = ''
-  isSearchMode.value = false
   try {
-    const res = await fetch(`/api/foods/?page=${page}`)
+    const params = new URLSearchParams({ page })
+    if (search) params.set('search', search)
+    const res = await fetch(`/api/foods/?${params}`)
     if (!res.ok) throw new Error(res.status)
     const data = await res.json()
     foods.value = data.results ?? data
     totalPages.value = data.count != null ? Math.max(1, Math.ceil(data.count / PAGE_SIZE)) : 1
     currentPage.value = page
-  } catch (e) {
-    errorMsg.value = i18n.networkError ?? 'Network error'
-  } finally {
-    loading.value = false
-  }
-}
-
-async function doSearch(query) {
-  loading.value = true
-  errorMsg.value = ''
-  isSearchMode.value = true
-  try {
-    const res = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`)
-    if (!res.ok) throw new Error(res.status)
-    const data = await res.json()
-    // search returns plain array (no pagination)
-    foods.value = Array.isArray(data) ? data : (data.results ?? [])
   } catch (e) {
     errorMsg.value = i18n.networkError ?? 'Network error'
   } finally {
@@ -106,21 +89,20 @@ async function createFood() {
 }
 
 function onPageChange(page) {
-  currentPage.value = page
-  fetchPage(page)
+  fetchFoods(page, searchQuery.value)
 }
 
 let searchTimer = null
 watch(searchQuery, (q) => {
   clearTimeout(searchTimer)
   if (q.length >= 2) {
-    searchTimer = setTimeout(() => doSearch(q), 0) // already debounced in FoodSearchBar
+    searchTimer = setTimeout(() => fetchFoods(1, q), 0) // already debounced in FoodSearchBar
   } else if (q.length === 0) {
-    fetchPage(1)
+    fetchFoods(1, '')
   }
 })
 
 onMounted(() => {
-  fetchPage(1)
+  fetchFoods(1, '')
 })
 </script>

@@ -40,7 +40,9 @@ class TestFoodSearchHighEnergyIntent:
 
         response = authenticated_client.get("/api/foods/?search=high energy")
         assert response.status_code == status.HTTP_200_OK
-        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
+        energies = [
+            item["energy_in_kcal_per_100g"] for item in response.data["results"]
+        ]
         assert energies == sorted(energies, reverse=True)
 
     def test_high_cal_intent_descending_order(self, authenticated_client):
@@ -49,7 +51,9 @@ class TestFoodSearchHighEnergyIntent:
 
         response = authenticated_client.get("/api/foods/?search=high cal")
         assert response.status_code == status.HTTP_200_OK
-        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
+        energies = [
+            item["energy_in_kcal_per_100g"] for item in response.data["results"]
+        ]
         assert energies == sorted(energies, reverse=True)
 
     def test_high_kcal_intent_descending_order(self, authenticated_client):
@@ -58,7 +62,9 @@ class TestFoodSearchHighEnergyIntent:
 
         response = authenticated_client.get("/api/foods/?search=high kcal")
         assert response.status_code == status.HTTP_200_OK
-        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
+        energies = [
+            item["energy_in_kcal_per_100g"] for item in response.data["results"]
+        ]
         assert energies == sorted(energies, reverse=True)
 
 
@@ -78,7 +84,7 @@ class TestFoodSearchQueryLength:
         """A 1-character query is below the 2-char threshold → empty result."""
         response = authenticated_client.get("/api/foods/?search=a")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data == []
+        assert response.data["results"] == []
 
     def test_two_char_query_is_accepted(self, authenticated_client):
         """Exactly 2 characters is above the threshold and triggers a real search."""
@@ -86,7 +92,7 @@ class TestFoodSearchQueryLength:
         response = authenticated_client.get("/api/foods/?search=Ap")
         assert response.status_code == status.HTTP_200_OK
         # Should return at least the food we just created
-        assert any("Apple" in item["name"] for item in response.data)
+        assert any("Apple" in item["name"] for item in response.data["results"])
 
 
 @pytest.mark.django_db
@@ -97,13 +103,17 @@ class TestFoodSearchBLSCode:
         _food("BLS_UNIQUE_XYZ", "Generic grain", 350)
         response = authenticated_client.get("/api/foods/?search=BLS_UNIQUE_XYZ")
         assert response.status_code == status.HTTP_200_OK
-        assert any(item["bls_code"] == "BLS_UNIQUE_XYZ" for item in response.data)
+        assert any(
+            item["bls_code"] == "BLS_UNIQUE_XYZ" for item in response.data["results"]
+        )
 
     def test_partial_bls_code_search(self, authenticated_client):
         _food("BLS_PARTIAL_999", "Mixed grain", 320)
         response = authenticated_client.get("/api/foods/?search=PARTIAL_999")
         assert response.status_code == status.HTTP_200_OK
-        assert any(item["bls_code"] == "BLS_PARTIAL_999" for item in response.data)
+        assert any(
+            item["bls_code"] == "BLS_PARTIAL_999" for item in response.data["results"]
+        )
 
 
 @pytest.mark.django_db
@@ -119,7 +129,7 @@ class TestFoodSearchRelevanceRanking:
         response = authenticated_client.get("/api/foods/?search=Milk")
         assert response.status_code == status.HTTP_200_OK
         # The exact match "Milk" should appear before partial matches
-        names = [item["name"] for item in response.data]
+        names = [item["name"] for item in response.data["results"]]
         milk_index = names.index("Milk")
         milk_choc_index = names.index("Milk chocolate")
         assert milk_index < milk_choc_index
@@ -132,7 +142,7 @@ class TestFoodSearchRelevanceRanking:
 
         response = authenticated_client.get("/api/foods/?search=Apple")
         assert response.status_code == status.HTTP_200_OK
-        names = [item["name"] for item in response.data]
+        names = [item["name"] for item in response.data["results"]]
         apple_idx = names.index("Apple")
         pineapple_idx = names.index("Pineapple")
         assert apple_idx < pineapple_idx
@@ -151,9 +161,11 @@ class TestFoodSearchCombinedIntentAndName:
         response = authenticated_client.get("/api/foods/?search=low energy chicken")
         assert response.status_code == status.HTTP_200_OK
 
-        names = [item["name"] for item in response.data]
+        names = [item["name"] for item in response.data["results"]]
         # Beef steak should not appear
         assert "Beef steak" not in names
         # The two chicken items should appear, sorted ascending by kcal
-        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
+        energies = [
+            item["energy_in_kcal_per_100g"] for item in response.data["results"]
+        ]
         assert energies == sorted(energies)

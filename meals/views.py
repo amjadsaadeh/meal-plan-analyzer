@@ -372,10 +372,9 @@ class FoodViewSet(viewsets.ModelViewSet):
         ``matched_alias`` attribute which the serializer exposes so the
         frontend can render an "alias" badge.
 
-        When no search query is provided the response is paginated (100/page)
-        using standard DRF page-number pagination.  When a search query is
-        given all matching results are returned without pagination (existing
-        behaviour, used by the meal-plan food-search dropdown).
+        Both browse (no search) and search responses use the same paginated
+        envelope: { count, next, previous, results }.  The page and page_size
+        query parameters work for both modes.
         """
         search_query = request.query_params.get("search", "").strip()
 
@@ -394,7 +393,7 @@ class FoodViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
 
-        # ── Search path (original behaviour) ──────────────────────────────
+        # ── Search path ───────────────────────────────────────────────────
         # Get name-based results via the regular queryset
         name_queryset = self.get_queryset()
         name_foods = list(name_queryset)
@@ -439,6 +438,12 @@ class FoodViewSet(viewsets.ModelViewSet):
             food.matched_alias = alias_matches[food.id]
 
         all_foods = name_foods + alias_only_foods
+
+        # Paginate the assembled list (DRF's paginator accepts any sequence)
+        page = self.paginate_queryset(all_foods)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(all_foods, many=True)
         return Response(serializer.data)
 

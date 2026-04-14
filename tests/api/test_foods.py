@@ -98,13 +98,15 @@ class TestFoodAPI:
         search_term = food.name[:10]
         response = authenticated_client.get(f"/api/foods/?search={search_term}")
         assert response.status_code == status.HTTP_200_OK
-        assert any(item["name"] == food.name for item in response.data)
+        assert any(item["name"] == food.name for item in response.data["results"])
 
     def test_search_foods_semantic_low_energy_authenticated(self, authenticated_client):
         """Test the 'low energy' semantic search intent with authentication."""
         response = authenticated_client.get("/api/foods/?search=low energy")
         assert response.status_code == status.HTTP_200_OK
-        energies = [item["energy_in_kcal_per_100g"] for item in response.data]
+        energies = [
+            item["energy_in_kcal_per_100g"] for item in response.data["results"]
+        ]
         assert energies == sorted(energies)
 
     # ------------------------------------------------------------------
@@ -131,7 +133,7 @@ class TestFoodAPI:
         food = Food.objects.get(pk=1)
         response = authenticated_client.get(f"/api/foods/?search={food.name[:6]}")
         assert response.status_code == status.HTTP_200_OK
-        for item in response.data:
+        for item in response.data["results"]:
             if item["id"] == food.id:
                 assert item["matched_alias"] is None
                 break
@@ -217,7 +219,7 @@ class TestFoodAliasSearch:
 
         response = authenticated_client.get("/api/foods/?search=Malum")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert food.id in ids
 
     def test_alias_match_has_matched_alias_set(self, authenticated_client):
@@ -228,7 +230,9 @@ class TestFoodAliasSearch:
 
         response = authenticated_client.get("/api/foods/?search=Pear")
         assert response.status_code == status.HTTP_200_OK
-        matched = next((item for item in response.data if item["id"] == food.id), None)
+        matched = next(
+            (item for item in response.data["results"] if item["id"] == food.id), None
+        )
         assert matched is not None
         assert matched["matched_alias"] == "Pear"
 
@@ -240,11 +244,11 @@ class TestFoodAliasSearch:
 
         response = authenticated_client.get("/api/foods/?search=tomato")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert food.id in ids
 
         response_upper = authenticated_client.get("/api/foods/?search=TOMATO")
-        assert food.id in [item["id"] for item in response_upper.data]
+        assert food.id in [item["id"] for item in response_upper.data["results"]]
 
     def test_alias_partial_match(self, authenticated_client):
         """A partial term contained in an alias still returns the food."""
@@ -255,7 +259,7 @@ class TestFoodAliasSearch:
         # "strawb" is a substring of "Strawberry"
         response = authenticated_client.get("/api/foods/?search=strawb")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert food.id in ids
 
     def test_name_match_does_not_get_alias_badge(self, authenticated_client):
@@ -267,7 +271,9 @@ class TestFoodAliasSearch:
         # Search by actual name
         response = authenticated_client.get("/api/foods/?search=Mango")
         assert response.status_code == status.HTTP_200_OK
-        matched = next((item for item in response.data if item["id"] == food.id), None)
+        matched = next(
+            (item for item in response.data["results"] if item["id"] == food.id), None
+        )
         assert matched is not None
         assert matched["matched_alias"] is None
 
@@ -280,7 +286,7 @@ class TestFoodAliasSearch:
 
         response = authenticated_client.get("/api/foods/?search=Zitrone")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert food_name.id in ids
         assert food_alias.id in ids
         # Name match comes first
@@ -294,7 +300,7 @@ class TestFoodAliasSearch:
 
         response = authenticated_client.get("/api/foods/?search=Banane")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert ids.count(food.id) == 1
 
     def test_short_query_below_threshold_returns_nothing(self, authenticated_client):
@@ -305,7 +311,7 @@ class TestFoodAliasSearch:
 
         response = authenticated_client.get("/api/foods/?search=E")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data == []
+        assert response.data["results"] == []
 
 
 # ---------------------------------------------------------------------------
@@ -355,33 +361,37 @@ class TestRealWorldAliases:
         """Searching 'Erdäpfel' (Austrian dialect) returns Kartoffeln."""
         response = authenticated_client.get("/api/foods/?search=Erdäpfel")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.kartoffeln.id in ids
 
     def test_kartoffeln_erdaepfel_sets_matched_alias(self, authenticated_client):
         """matched_alias is set to 'Erdäpfel' when found via that alias."""
         response = authenticated_client.get("/api/foods/?search=Erdäpfel")
-        item = next(i for i in response.data if i["id"] == self.kartoffeln.id)
+        item = next(
+            i for i in response.data["results"] if i["id"] == self.kartoffeln.id
+        )
         assert item["matched_alias"] == "Erdäpfel"
 
     def test_kartoffeln_found_by_krumbirnen(self, authenticated_client):
         """Searching 'Krumbirnen' (regional dialect) returns Kartoffeln."""
         response = authenticated_client.get("/api/foods/?search=Krumbirnen")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.kartoffeln.id in ids
 
     def test_kartoffeln_krumbirnen_sets_matched_alias(self, authenticated_client):
         """matched_alias is set to 'Krumbirnen' when found via that alias."""
         response = authenticated_client.get("/api/foods/?search=Krumbirnen")
-        item = next(i for i in response.data if i["id"] == self.kartoffeln.id)
+        item = next(
+            i for i in response.data["results"] if i["id"] == self.kartoffeln.id
+        )
         assert item["matched_alias"] == "Krumbirnen"
 
     def test_kartoffeln_partial_erdaepf(self, authenticated_client):
         """Partial term 'Erdäpf' is enough to match the alias 'Erdäpfel'."""
         response = authenticated_client.get("/api/foods/?search=Erdäpf")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.kartoffeln.id in ids
 
     def test_kartoffeln_index_has_both_aliases(self):
@@ -393,7 +403,9 @@ class TestRealWorldAliases:
     def test_kartoffeln_by_name_has_no_alias_badge(self, authenticated_client):
         """Searching the real name 'Kartoffeln' does not set matched_alias."""
         response = authenticated_client.get("/api/foods/?search=Kartoffeln")
-        item = next((i for i in response.data if i["id"] == self.kartoffeln.id), None)
+        item = next(
+            (i for i in response.data["results"] if i["id"] == self.kartoffeln.id), None
+        )
         assert item is not None
         assert item["matched_alias"] is None
 
@@ -405,27 +417,27 @@ class TestRealWorldAliases:
         """Searching 'Paradeisa' (Bavarian/Austrian word for tomato) returns Tomate."""
         response = authenticated_client.get("/api/foods/?search=Paradeisa")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.tomate.id in ids
 
     def test_tomate_paradeisa_sets_matched_alias(self, authenticated_client):
         """matched_alias is 'Paradeisa' when Tomate is found via that alias."""
         response = authenticated_client.get("/api/foods/?search=Paradeisa")
-        item = next(i for i in response.data if i["id"] == self.tomate.id)
+        item = next(i for i in response.data["results"] if i["id"] == self.tomate.id)
         assert item["matched_alias"] == "Paradeisa"
 
     def test_tomate_partial_paradeis(self, authenticated_client):
         """Partial term 'Paradeis' matches the alias 'Paradeisa'."""
         response = authenticated_client.get("/api/foods/?search=Paradeis")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.tomate.id in ids
 
     def test_tomate_paradeisa_case_insensitive(self, authenticated_client):
         """Alias search for 'paradeisa' (lowercase) still finds Tomate."""
         response = authenticated_client.get("/api/foods/?search=paradeisa")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.tomate.id in ids
 
     # ------------------------------------------------------------------
@@ -436,21 +448,21 @@ class TestRealWorldAliases:
         """Searching 'Suppe' returns both Gemüsebrühe and Knochenbrühe."""
         response = authenticated_client.get("/api/foods/?search=Suppe")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.gemuesebruehe.id in ids
         assert self.knochenbruehe.id in ids
 
     def test_suppe_both_foods_have_matched_alias_suppe(self, authenticated_client):
         """Both foods found via 'Suppe' carry matched_alias='Suppe'."""
         response = authenticated_client.get("/api/foods/?search=Suppe")
-        by_id = {item["id"]: item for item in response.data}
+        by_id = {item["id"]: item for item in response.data["results"]}
         assert by_id[self.gemuesebruehe.id]["matched_alias"] == "Suppe"
         assert by_id[self.knochenbruehe.id]["matched_alias"] == "Suppe"
 
     def test_suppe_each_food_appears_exactly_once(self, authenticated_client):
         """No duplicates: each brühe food appears exactly once in the results."""
         response = authenticated_client.get("/api/foods/?search=Suppe")
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert ids.count(self.gemuesebruehe.id) == 1
         assert ids.count(self.knochenbruehe.id) == 1
 
@@ -458,7 +470,7 @@ class TestRealWorldAliases:
         """Partial term 'Supp' is enough to match both brühe foods via alias."""
         response = authenticated_client.get("/api/foods/?search=Supp")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.gemuesebruehe.id in ids
         assert self.knochenbruehe.id in ids
 
@@ -472,7 +484,8 @@ class TestRealWorldAliases:
         """Searching 'Gemüsebrühe' by name gives matched_alias=None."""
         response = authenticated_client.get("/api/foods/?search=Gemüsebrühe")
         item = next(
-            (i for i in response.data if i["id"] == self.gemuesebruehe.id), None
+            (i for i in response.data["results"] if i["id"] == self.gemuesebruehe.id),
+            None,
         )
         assert item is not None
         assert item["matched_alias"] is None
@@ -481,7 +494,8 @@ class TestRealWorldAliases:
         """Searching 'Knochenbrühe' by name gives matched_alias=None."""
         response = authenticated_client.get("/api/foods/?search=Knochenbrühe")
         item = next(
-            (i for i in response.data if i["id"] == self.knochenbruehe.id), None
+            (i for i in response.data["results"] if i["id"] == self.knochenbruehe.id),
+            None,
         )
         assert item is not None
         assert item["matched_alias"] is None
@@ -494,7 +508,7 @@ class TestRealWorldAliases:
         """'Erdapfel' (no ä) matches alias 'Erdäpfel' via umlaut normalisation."""
         response = authenticated_client.get("/api/foods/?search=Erdapfel")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.kartoffeln.id in ids
 
     def test_kartoffeln_erdapfel_matched_alias_is_original_form(
@@ -502,14 +516,16 @@ class TestRealWorldAliases:
     ):
         """matched_alias contains the original alias string ('Erdäpfel'), not the normalised form."""
         response = authenticated_client.get("/api/foods/?search=Erdapfel")
-        item = next(i for i in response.data if i["id"] == self.kartoffeln.id)
+        item = next(
+            i for i in response.data["results"] if i["id"] == self.kartoffeln.id
+        )
         assert item["matched_alias"] == "Erdäpfel"
 
     def test_knochenbruehe_found_by_name_without_umlaut(self, authenticated_client):
         """'Knochenbruhe' (no ü) finds 'Knochenbrühe' by name via DB umlaut expansion."""
         response = authenticated_client.get("/api/foods/?search=Knochenbruhe")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.knochenbruehe.id in ids
 
     def test_gemuesebruehe_found_by_name_with_missing_second_umlaut(
@@ -518,21 +534,21 @@ class TestRealWorldAliases:
         """'Gemüsebruhe' (ü in first syllable, plain u in second) still finds 'Gemüsebrühe'."""
         response = authenticated_client.get("/api/foods/?search=Gemüsebruhe")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.gemuesebruehe.id in ids
 
     def test_gemuesebruehe_found_when_both_umlauts_omitted(self, authenticated_client):
         """'Gemusebruhe' (both ü → u) still finds 'Gemüsebrühe' via combinatorial expansion."""
         response = authenticated_client.get("/api/foods/?search=Gemusebruhe")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.gemuesebruehe.id in ids
 
     def test_knochenbruehe_found_when_umlaut_omitted(self, authenticated_client):
         """'Knochenbruhe' (ü → u) finds 'Knochenbrühe' via umlaut expansion."""
         response = authenticated_client.get("/api/foods/?search=Knochenbruhe")
         assert response.status_code == status.HTTP_200_OK
-        ids = [item["id"] for item in response.data]
+        ids = [item["id"] for item in response.data["results"]]
         assert self.knochenbruehe.id in ids
 
 
@@ -607,26 +623,26 @@ class TestUmlautNormalization:
         """'Bosel' (no ö) matches alias 'Bösel' → returns Rindfleisch."""
         response = authenticated_client.get("/api/foods/?search=Bosel")
         assert response.status_code == status.HTTP_200_OK
-        assert self.rind.id in [i["id"] for i in response.data]
+        assert self.rind.id in [i["id"] for i in response.data["results"]]
 
     def test_oe_alias_matched_alias_is_original(self, authenticated_client):
         """matched_alias is 'Bösel' (original with ö), not the normalised 'Bosel'."""
         response = authenticated_client.get("/api/foods/?search=Bosel")
-        item = next(i for i in response.data if i["id"] == self.rind.id)
+        item = next(i for i in response.data["results"] if i["id"] == self.rind.id)
         assert item["matched_alias"] == "Bösel"
 
     def test_ae_alias_found_without_umlaut(self, authenticated_client):
         """'Hahnchen' (no ä) matches alias 'Hähnchen' → returns Brathähnchen."""
         response = authenticated_client.get("/api/foods/?search=Hahnchen")
         assert response.status_code == status.HTTP_200_OK
-        assert self.haehnchen.id in [i["id"] for i in response.data]
+        assert self.haehnchen.id in [i["id"] for i in response.data["results"]]
 
     def test_ae_alias_matched_alias_is_original(self, authenticated_client):
         """matched_alias is 'Hähnchen' (with ä), not 'Hahnchen'."""
         response = authenticated_client.get("/api/foods/?search=Hahnchen")
         # self.haehnchen may appear as a NAME match (name contains "Hähnchen");
         # it should still have matched_alias=None in that case.
-        item = next(i for i in response.data if i["id"] == self.haehnchen.id)
+        item = next(i for i in response.data["results"] if i["id"] == self.haehnchen.id)
         # Name match takes priority → matched_alias is None
         assert item["matched_alias"] is None
 
@@ -634,25 +650,25 @@ class TestUmlautNormalization:
         """'Rubli' (no ü) matches alias 'Rübli' → returns Karotte."""
         response = authenticated_client.get("/api/foods/?search=Rubli")
         assert response.status_code == status.HTTP_200_OK
-        assert self.karotte.id in [i["id"] for i in response.data]
+        assert self.karotte.id in [i["id"] for i in response.data["results"]]
 
     def test_ue_alias_matched_alias_is_original(self, authenticated_client):
         """matched_alias is 'Rübli' (with ü), not 'Rubli'."""
         response = authenticated_client.get("/api/foods/?search=Rubli")
-        item = next(i for i in response.data if i["id"] == self.karotte.id)
+        item = next(i for i in response.data["results"] if i["id"] == self.karotte.id)
         assert item["matched_alias"] == "Rübli"
 
     def test_case_a_partial_without_umlaut(self, authenticated_client):
         """Partial term 'Bos' (no ö) still matches alias 'Bösel'."""
         response = authenticated_client.get("/api/foods/?search=Bos")
         assert response.status_code == status.HTTP_200_OK
-        assert self.rind.id in [i["id"] for i in response.data]
+        assert self.rind.id in [i["id"] for i in response.data["results"]]
 
     def test_case_a_uppercase_without_umlaut(self, authenticated_client):
         """Uppercase 'BOSEL' (no ö) still matches alias 'Bösel'."""
         response = authenticated_client.get("/api/foods/?search=BOSEL")
         assert response.status_code == status.HTTP_200_OK
-        assert self.rind.id in [i["id"] for i in response.data]
+        assert self.rind.id in [i["id"] for i in response.data["results"]]
 
     # ------------------------------------------------------------------
     # Case B – alias is plain ASCII, user types WITH the umlaut
@@ -662,30 +678,30 @@ class TestUmlautNormalization:
         """'Möhre' (with ö) matches plain alias 'Mohre' → returns Rettich."""
         response = authenticated_client.get("/api/foods/?search=Möhre")
         assert response.status_code == status.HTTP_200_OK
-        assert self.rettich.id in [i["id"] for i in response.data]
+        assert self.rettich.id in [i["id"] for i in response.data["results"]]
 
     def test_oe_search_plain_alias_matched_alias_set(self, authenticated_client):
         """matched_alias is 'Mohre' (plain) when found via 'Möhre' search."""
         response = authenticated_client.get("/api/foods/?search=Möhre")
-        item = next(i for i in response.data if i["id"] == self.rettich.id)
+        item = next(i for i in response.data["results"] if i["id"] == self.rettich.id)
         assert item["matched_alias"] == "Mohre"
 
     def test_ae_search_matches_plain_alias(self, authenticated_client):
         """'Hähnchen' (with ä) matches plain alias 'Hahnchen' → returns Geflügel."""
         response = authenticated_client.get("/api/foods/?search=Hähnchen")
         assert response.status_code == status.HTTP_200_OK
-        assert self.gefluegel.id in [i["id"] for i in response.data]
+        assert self.gefluegel.id in [i["id"] for i in response.data["results"]]
 
     def test_ue_search_matches_plain_alias(self, authenticated_client):
         """'Rübli' (with ü) matches plain alias 'Rubli' → returns Rotkohl."""
         response = authenticated_client.get("/api/foods/?search=Rübli")
         assert response.status_code == status.HTTP_200_OK
-        assert self.rotkohl.id in [i["id"] for i in response.data]
+        assert self.rotkohl.id in [i["id"] for i in response.data["results"]]
 
     def test_ue_search_plain_alias_matched_alias_set(self, authenticated_client):
         """matched_alias is 'Rubli' (plain) when found via 'Rübli' search."""
         response = authenticated_client.get("/api/foods/?search=Rübli")
-        item = next(i for i in response.data if i["id"] == self.rotkohl.id)
+        item = next(i for i in response.data["results"] if i["id"] == self.rotkohl.id)
         assert item["matched_alias"] == "Rubli"
 
     # ------------------------------------------------------------------
@@ -696,19 +712,21 @@ class TestUmlautNormalization:
         """'Mohre' (no ö) finds food named 'Möhre' via DB umlaut expansion."""
         response = authenticated_client.get("/api/foods/?search=Mohre")
         assert response.status_code == status.HTTP_200_OK
-        assert self.moehre.id in [i["id"] for i in response.data]
+        assert self.moehre.id in [i["id"] for i in response.data["results"]]
 
     def test_food_name_oe_found_with_umlaut(self, authenticated_client):
         """'Möhre' (with ö) finds food named 'Möhre' directly."""
         response = authenticated_client.get("/api/foods/?search=Möhre")
         assert response.status_code == status.HTTP_200_OK
-        assert self.moehre.id in [i["id"] for i in response.data]
+        assert self.moehre.id in [i["id"] for i in response.data["results"]]
 
     def test_food_name_oe_name_match_has_no_alias_badge(self, authenticated_client):
         """Name-matched 'Möhre' (with or without umlaut in query) has matched_alias=None."""
         for query in ("Mohre", "Möhre"):
             response = authenticated_client.get(f"/api/foods/?search={query}")
-            item = next((i for i in response.data if i["id"] == self.moehre.id), None)
+            item = next(
+                (i for i in response.data["results"] if i["id"] == self.moehre.id), None
+            )
             assert item is not None, f"'Möhre' not found for query '{query}'"
             assert item["matched_alias"] is None, f"Expected None for query '{query}'"
 
@@ -716,13 +734,13 @@ class TestUmlautNormalization:
         """'Grunkohl' (no ü) finds food named 'Grünkohl' via DB umlaut expansion."""
         response = authenticated_client.get("/api/foods/?search=Grunkohl")
         assert response.status_code == status.HTTP_200_OK
-        assert self.gruenkohl.id in [i["id"] for i in response.data]
+        assert self.gruenkohl.id in [i["id"] for i in response.data["results"]]
 
     def test_food_name_ae_found_without_umlaut(self, authenticated_client):
         """'Hasenbraten' (no ä) finds food named 'Häsenbraten' via DB umlaut expansion."""
         response = authenticated_client.get("/api/foods/?search=Hasenbraten")
         assert response.status_code == status.HTTP_200_OK
-        assert self.hasenbraten.id in [i["id"] for i in response.data]
+        assert self.hasenbraten.id in [i["id"] for i in response.data["results"]]
 
     # ------------------------------------------------------------------
     # Case D – food NAME has NO umlaut, user types WITH umlaut (wrong key)
@@ -733,18 +751,21 @@ class TestUmlautNormalization:
         """'Tomäte' (spurious ä) finds food named 'Tomate' (no umlaut in DB)."""
         response = authenticated_client.get("/api/foods/?search=Tomäte")
         assert response.status_code == status.HTTP_200_OK
-        assert self.tomate_plain.id in [i["id"] for i in response.data]
+        assert self.tomate_plain.id in [i["id"] for i in response.data["results"]]
 
     def test_plain_name_found_by_search_with_wrong_oe(self, authenticated_client):
         """'Tömäte' (spurious ö and ä) also finds 'Tomate' via normalisation."""
         response = authenticated_client.get("/api/foods/?search=Tömäte")
         assert response.status_code == status.HTTP_200_OK
-        assert self.tomate_plain.id in [i["id"] for i in response.data]
+        assert self.tomate_plain.id in [i["id"] for i in response.data["results"]]
 
     def test_plain_name_matched_alias_is_none(self, authenticated_client):
         """Finding 'Tomate' by a umlauted query still gives matched_alias=None (name match)."""
         response = authenticated_client.get("/api/foods/?search=Tomäte")
-        item = next((i for i in response.data if i["id"] == self.tomate_plain.id), None)
+        item = next(
+            (i for i in response.data["results"] if i["id"] == self.tomate_plain.id),
+            None,
+        )
         assert item is not None
         assert item["matched_alias"] is None
 
@@ -757,26 +778,31 @@ class TestUmlautNormalization:
         """'Huhnerbruhe' (both ü → u) finds 'Hühnerbrühe' via combinatorial expansion."""
         response = authenticated_client.get("/api/foods/?search=Huhnerbruhe")
         assert response.status_code == status.HTTP_200_OK
-        assert self.huhnerbruehe.id in [i["id"] for i in response.data]
+        assert self.huhnerbruehe.id in [i["id"] for i in response.data["results"]]
 
     def test_multi_umlaut_name_found_when_first_omitted(self, authenticated_client):
         """'Hühnerbruhe' (second ü → u) finds 'Hühnerbrühe' via expansion."""
         response = authenticated_client.get("/api/foods/?search=Hühnerbruhe")
         assert response.status_code == status.HTTP_200_OK
-        assert self.huhnerbruehe.id in [i["id"] for i in response.data]
+        assert self.huhnerbruehe.id in [i["id"] for i in response.data["results"]]
 
     def test_multi_umlaut_name_found_when_second_omitted(self, authenticated_client):
         """'Huhnerbrühe' (first ü → u) finds 'Hühnerbrühe' via expansion."""
         response = authenticated_client.get("/api/foods/?search=Huhnerbrühe")
         assert response.status_code == status.HTTP_200_OK
-        assert self.huhnerbruehe.id in [i["id"] for i in response.data]
+        assert self.huhnerbruehe.id in [i["id"] for i in response.data["results"]]
 
     def test_multi_umlaut_name_match_has_no_alias_badge(self, authenticated_client):
         """Name-matched 'Hühnerbrühe' (any umlaut variant) has matched_alias=None."""
         for query in ("Huhnerbruhe", "Hühnerbrühe", "Hühnerbruhe"):
             response = authenticated_client.get(f"/api/foods/?search={query}")
             item = next(
-                (i for i in response.data if i["id"] == self.huhnerbruehe.id), None
+                (
+                    i
+                    for i in response.data["results"]
+                    if i["id"] == self.huhnerbruehe.id
+                ),
+                None,
             )
             assert item is not None, f"'Hühnerbrühe' not found for query '{query}'"
             assert item["matched_alias"] is None, f"Expected None for query '{query}'"
@@ -828,7 +854,7 @@ class TestFoodBrowsePagination:
         """A one-character search term returns no results (too short)."""
         response = authenticated_client.get("/api/foods/?search=a")
         assert response.status_code == status.HTTP_200_OK
-        assert response.data == []
+        assert response.data["results"] == []
 
     def test_page_size_query_param(self, authenticated_client):
         """page_size param is respected up to max_page_size."""
@@ -847,3 +873,25 @@ class TestFoodBrowsePagination:
         ids2 = {f["id"] for f in r2.json()["results"]}
         # The two pages must not overlap
         assert ids1.isdisjoint(ids2)
+
+    def test_search_returns_paginated_envelope(self, authenticated_client):
+        """GET /api/foods/?search= also returns the pagination envelope."""
+        response = authenticated_client.get("/api/foods/?search=a")
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert "count" in data
+        assert "results" in data
+        assert isinstance(data["results"], list)
+
+    def test_search_with_page_returns_correct_slice(self, authenticated_client):
+        """Combining ?search= and ?page= returns the right page of results."""
+        # Use page_size=1 to force multiple pages with any non-empty result set
+        r1 = authenticated_client.get("/api/foods/?search=a&page=1&page_size=1")
+        r2 = authenticated_client.get("/api/foods/?search=a&page=2&page_size=1")
+        # Both must succeed; if total results < 2, page 2 may be empty but must not error
+        assert r1.status_code == status.HTTP_200_OK
+        assert r2.status_code in (status.HTTP_200_OK, status.HTTP_404_NOT_FOUND)
+        if r2.status_code == status.HTTP_200_OK:
+            ids1 = {f["id"] for f in r1.json()["results"]}
+            ids2 = {f["id"] for f in r2.json()["results"]}
+            assert ids1.isdisjoint(ids2)

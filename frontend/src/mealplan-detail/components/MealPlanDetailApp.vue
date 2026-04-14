@@ -217,7 +217,7 @@ provide('doFoodSearch', async (query, inputEl) => {
     try {
       const res = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`)
       const data = await res.json()
-      search.results = data
+      search.results = data.results ?? data
       search.visible = true
     } catch (e) {
       console.error(e)
