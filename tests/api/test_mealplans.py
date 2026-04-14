@@ -43,6 +43,42 @@ class TestMealPlanAPI:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] >= 2
 
+    def test_list_response_includes_num_pages_and_current_page(
+        self, authenticated_client
+    ):
+        """List response envelope includes num_pages and current_page."""
+        response = authenticated_client.get("/api/mealplans/")
+        assert response.status_code == status.HTTP_200_OK
+        assert "num_pages" in response.data
+        assert "current_page" in response.data
+        assert response.data["current_page"] == 1
+
+    def test_list_meal_plans_search_filter(self, authenticated_client):
+        """?search= filters plans by name (case-insensitive substring)."""
+        MealPlan.objects.create(name="Alpha Plan")
+        MealPlan.objects.create(name="Beta Plan")
+
+        response = authenticated_client.get("/api/mealplans/?search=alpha")
+        assert response.status_code == status.HTTP_200_OK
+        names = [p["name"] for p in response.data["results"]]
+        assert len(names) == 1
+        assert names[0] == "Alpha Plan"
+
+    def test_list_pagination_page_2(self, authenticated_client):
+        """?page=2 returns the second page of results with correct envelope fields."""
+        for i in range(12):
+            MealPlan.objects.create(name=f"Plan {i:02d}")
+
+        r1 = authenticated_client.get("/api/mealplans/?page=1")
+        r2 = authenticated_client.get("/api/mealplans/?page=2")
+        assert r1.status_code == status.HTTP_200_OK
+        assert r2.status_code == status.HTTP_200_OK
+        assert len(r1.data["results"]) == 10
+        assert len(r2.data["results"]) == 2
+        assert r1.data["num_pages"] == 2
+        assert r1.data["current_page"] == 1
+        assert r2.data["current_page"] == 2
+
     def test_retrieve_meal_plan(self, authenticated_client):
         """GET on a single plan returns its data."""
         plan = MealPlan.objects.create(name="Retrieve Me")

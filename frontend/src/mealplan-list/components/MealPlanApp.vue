@@ -26,7 +26,7 @@
 
     <div class="table-card">
       <MealPlanTable
-        :plans="paginatedPlans"
+        :plans="plans"
         :search-query="searchQuery"
         :loading="loading"
         :col-name="i18n.colName"
@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, provide, inject } from 'vue'
+import { ref, watch, onMounted, provide, inject } from 'vue'
 import SearchBar from './SearchBar.vue'
 import MealPlanTable from './MealPlanTable.vue'
 import Pagination from './Pagination.vue'
@@ -61,38 +61,36 @@ const plans = ref([])
 const loading = ref(true)
 const searchQuery = ref('')
 const currentPage = ref(1)
+const totalPages = ref(1)
 
 const modalOpen = ref(false)
 const pendingDeletePk = ref(null)
 const pendingDeleteName = ref('')
 
-const PAGE_SIZE = 10
+let abortController = null
 
-const filteredPlans = computed(() => {
-  if (!searchQuery.value) return plans.value
-  const q = searchQuery.value.toLowerCase()
-  return plans.value.filter(p => p.name.toLowerCase().includes(q))
-})
+async function fetchPlans() {
+  if (abortController) abortController.abort()
+  abortController = new AbortController()
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredPlans.value.length / PAGE_SIZE)))
-
-const paginatedPlans = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
-  return filteredPlans.value.slice(start, start + PAGE_SIZE)
-})
-
-async function fetchAllPlans() {
   loading.value = true
-  const all = []
-  let url = '/api/mealplans/'
-  while (url) {
-    const res = await fetch(url, { headers: { Accept: 'application/json' } })
+  const params = new URLSearchParams()
+  if (searchQuery.value) params.set('search', searchQuery.value)
+  if (currentPage.value > 1) params.set('page', currentPage.value)
+
+  try {
+    const res = await fetch(`/api/mealplans/?${params}`, {
+      headers: { Accept: 'application/json' },
+      signal: abortController.signal,
+    })
     const data = await res.json()
-    all.push(...data.results)
-    url = data.next
+    plans.value = data.results
+    totalPages.value = data.num_pages ?? 1
+  } catch (err) {
+    if (err.name !== 'AbortError') throw err
+  } finally {
+    loading.value = false
   }
-  plans.value = all
-  loading.value = false
 }
 
 function requestDelete(pk, name) {
@@ -109,9 +107,11 @@ async function doDelete() {
     headers: { 'X-CSRFToken': csrfToken },
   })
   if (res.ok) {
-    plans.value = plans.value.filter(p => p.id !== pk)
-    if (currentPage.value > totalPages.value) {
-      currentPage.value = totalPages.value
+    // If the deleted item was the last on this page, go back one page
+    if (plans.value.length === 1 && currentPage.value > 1) {
+      currentPage.value -= 1
+    } else {
+      await fetchPlans()
     }
   } else {
     alert(i18n.errorDelete)
@@ -142,10 +142,12 @@ function syncToUrl() {
 watch(searchQuery, () => {
   currentPage.value = 1
   syncToUrl()
+  fetchPlans()
 })
 
 watch(currentPage, () => {
   syncToUrl()
+  fetchPlans()
 })
 
 onMounted(async () => {
@@ -153,6 +155,6 @@ onMounted(async () => {
   searchQuery.value = params.get('search') || ''
   currentPage.value = parseInt(params.get('page') || '1', 10)
 
-  await fetchAllPlans()
+  await fetchPlans()
 })
 </script>

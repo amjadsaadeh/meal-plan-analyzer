@@ -537,17 +537,36 @@ class FoodAliasViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=201 if created else 200)
 
 
+class _MealPlanPagination(PageNumberPagination):
+    page_size = 10
+
+    def get_paginated_response(self, data):
+        return Response(
+            {
+                "count": self.page.paginator.count,
+                "num_pages": self.page.paginator.num_pages,
+                "current_page": self.page.number,
+                "next": self.get_next_link(),
+                "previous": self.get_previous_link(),
+                "results": data,
+            }
+        )
+
+
 class MealPlanViewSet(viewsets.ModelViewSet):
     queryset = MealPlan.objects.all()
     serializer_class = MealPlanSerializer
+    pagination_class = _MealPlanPagination
 
     def get_queryset(self):
         active_days = MealPlanDay.objects.filter(removed=False).order_by(
             "creation_date"
         )
-        return MealPlan.objects.prefetch_related(
-            Prefetch("days", queryset=active_days)
-        ).all()
+        qs = MealPlan.objects.prefetch_related(Prefetch("days", queryset=active_days))
+        search = self.request.query_params.get("search", "").strip()
+        if search:
+            qs = qs.filter(name__icontains=search)
+        return qs
 
 
 class MealPlanDayViewSet(viewsets.ModelViewSet):
