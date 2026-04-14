@@ -83,7 +83,7 @@ class TestExtendedMealPlanLogic:
         assert response.status_code == status.HTTP_200_OK
 
         # "Red Apple" should be first (exact match or most terms matching)
-        names = [item["name"] for item in response.data]
+        names = [item["name"] for item in response.data["results"]]
         assert names[0] == "Red Apple"
         assert "Green Apple" in names
         assert "Red Tomato" in names
