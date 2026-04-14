@@ -335,7 +335,9 @@ All endpoints require authentication (`IsAuthenticated`). The API uses DRF's `De
 | `/api/food-aliases/` | `FoodAliasViewSet` | GET/POST/DELETE for `FoodAlias` records; filter by food with `?food=<id>` |
 | `/api/export-jobs/` | `ExportJobViewSet` | POST to create async PDF export job; GET to poll status; GET `.../result/` to download PDF |
 
-Default page size is 100. `FoodViewSet` disables pagination (`pagination_class = None`).
+Default page size is 100. Both browse and search responses from `FoodViewSet` use the same paginated envelope: `{ count, next, previous, results }`. The `page` and `page_size` query parameters work for both modes.
+
+`MealPlanViewSet` uses a custom pagination class (`_MealPlanPagination`, page_size=10) that extends the standard envelope with `num_pages` and `current_page` fields: `{ count, num_pages, current_page, next, previous, results }`. It also accepts a `?search=` query parameter to filter plans by name (case-insensitive substring).
 
 ### Custom food management
 `FoodViewSet` supports full CRUD for user-created foods:
@@ -359,6 +361,8 @@ The food search (`?search=`) supports intent detection and multi-source matching
 3. **Umlaut-tolerant matching** — queries automatically generate all substitution variants for German umlauts (ä↔a, ö↔o, ü↔u). Handles both user-typed-with-umlaut and user-typed-without-umlaut cases. For up to 6 substitutable positions, all 2^n−1 combinations are searched; for more positions, single substitutions are used as a fallback.
 
 4. **Alias matching** — after name-based results are gathered, the cached `FoodAlias` index is checked. Foods that match only via alias appear after name-matched foods and carry a non-null `matched_alias` field in the serialized response.
+
+5. **Pagination** — the assembled result list (name matches + alias-only matches) is paginated using the standard DRF paginator. Both browse and search responses share the same envelope: `{ count, next, previous, results }`.
 
 ### Auto-alias creation
 When a `MealPlanFood` is created or updated with a non-empty `export_name`, the system checks whether that name is already findable via food search (name or alias). If not, it automatically creates a `FoodAlias` linking the `export_name` to the food and invalidates the alias cache.
@@ -467,8 +471,8 @@ pnpm build            # build to frontend/dist/
 ### Vue Component Tree (`frontend/src/mealplan-list/`)
 
 - `main.js` — mounts `MealPlanApp` on `#meal-plan-app`; provides csrfToken, i18n, createUrl
-- `MealPlanApp.vue` — fetches all plans via API (follows DRF `next` pagination); client-side filter + pagination (10/page); URL sync via `pushState`
-- `SearchBar.vue` — 300ms debounced search; `id="liveSearch"` for Playwright tests
+- `MealPlanApp.vue` — delegates search and pagination to the backend; sends `?search=` and `?page=` query params to `/api/mealplans/`; uses `AbortController` to cancel in-flight requests on rapid input; reads `num_pages` from the response envelope; URL sync via `pushState`
+- `SearchBar.vue` — 300ms debounced search; emits query to parent which sends `?search=` to the backend; `id="liveSearch"` for Playwright tests
 - `MealPlanTable.vue` — table of plans
 - `MealPlanRow.vue` — individual plan row
 - `DayBadge.vue` — day count badge
@@ -478,7 +482,7 @@ pnpm build            # build to frontend/dist/
 ### Vue Component Tree (`frontend/src/food-database/`)
 
 - `main.js` — mounts `FoodDatabaseApp` on its mount element; provides csrfToken and API URL
-- `FoodDatabaseApp.vue` — lists all foods with search and pagination; delegates to child components
+- `FoodDatabaseApp.vue` — lists all foods with server-side search and pagination via a unified `fetchFoods(page, search)` function; both browse and search modes use the paginated envelope; pagination widget always visible when `totalPages > 1`
 - `FoodSearchBar.vue` — debounced search input
 - `FoodTable.vue` — tabular food listing
 - `FoodRow.vue` — individual food row (links to food editor)
