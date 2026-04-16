@@ -3,7 +3,7 @@
     <div class="sticky-bar-inner">
       <div class="sticky-plan-name">{{ planName }}</div>
       <div class="sticky-controls">
-        <button class="col-select-btn sticky-col-btn" @click.stop="$emit('toggle-columns', $event.currentTarget)">
+        <button class="col-select-btn sticky-col-btn" @click.stop="$emit('toggle-columns', $event.currentTarget as Element)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7"></rect>
             <rect x="14" y="3" width="7" height="7"></rect>
@@ -21,20 +21,29 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, inject } from 'vue'
+import type { I18n, Nutrient } from '../../types/index'
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 
-const props = defineProps({
-  planName: { type: String, default: '' },
-  syncStatus: { type: String, default: 'saved' },
-  syncMessage: { type: String, default: '' },
-  visibleNutrients: { type: Array, default: () => [] },
-  nutrients: { type: Array, default: () => [] },
+const props = withDefaults(defineProps<{
+  planName?: string
+  syncStatus?: string
+  syncMessage?: string
+  visibleNutrients?: string[]
+  nutrients?: Nutrient[]
+}>(), {
+  planName: '',
+  syncStatus: 'saved',
+  syncMessage: '',
+  visibleNutrients: () => [],
+  nutrients: () => [],
 })
 
-defineEmits(['toggle-columns'])
+defineEmits<{
+  'toggle-columns': [btn: Element]
+}>()
 
 const statusText = computed(() => {
   if (props.syncStatus === 'saved') return i18n.saved

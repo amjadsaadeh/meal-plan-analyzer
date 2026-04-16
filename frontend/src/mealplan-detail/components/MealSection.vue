@@ -72,31 +72,44 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, inject } from 'vue'
 import IngredientRow from './IngredientRow.vue'
+import type { I18n, Nutrient, MealPlanFood, Food, ActivateSearchPayload } from '../../types/index'
 
-const i18n = inject('i18n')
-const csrfToken = inject('csrfToken')
+const i18n = inject<I18n>('i18n')!
+const csrfToken = inject<string>('csrfToken')!
 
-const props = defineProps({
-  dayId: { type: Number, required: true },
-  mealType: { type: String, required: true },
-  foods: { type: Array, default: () => [] },
-  nutrients: { type: Array, default: () => [] },
-  visibleNutrients: { type: Array, default: () => [] },
+const props = withDefaults(defineProps<{
+  dayId: number
+  mealType: string
+  foods?: MealPlanFood[]
+  nutrients?: Nutrient[]
+  visibleNutrients?: string[]
+}>(), {
+  foods: () => [],
+  nutrients: () => [],
+  visibleNutrients: () => [],
 })
 
-const emit = defineEmits(['food-saved', 'food-deleted', 'activate-search', 'deactivate-search', 'request-delete'])
+const emit = defineEmits<{
+  'food-saved': [mpf: MealPlanFood]
+  'food-deleted': [mpfId: number]
+  'activate-search': [payload: ActivateSearchPayload]
+  'deactivate-search': []
+  'request-delete': [row: MealPlanFood]
+}>()
 
 let uidCounter = 0
 function makeUid() { return ++uidCounter }
 
-// Draft row state (always one at the bottom)
-const draftRow = ref({ _uid: makeUid(), _isDraft: true, id: null, food: null, amount_in_g: '' })
+type DraftRow = { _uid: number; _isDraft: true; id: null; food: null; amount_in_g: string }
+type DisplayRow = (MealPlanFood & { _uid: number; _isDraft: false }) | DraftRow
 
-const allRows = computed(() => {
-  const saved = props.foods.map(f => ({ ...f, _uid: f.id, _isDraft: false }))
+const draftRow = ref<DraftRow>({ _uid: makeUid(), _isDraft: true, id: null, food: null, amount_in_g: '' })
+
+const allRows = computed<DisplayRow[]>(() => {
+  const saved: DisplayRow[] = props.foods.map(f => ({ ...f, _uid: f.id, _isDraft: false as const }))
   return [...saved, draftRow.value]
 })
 
@@ -107,31 +120,32 @@ const tableMinWidth = computed(() => {
   return 200 + 80 + 65 + (visCount * 65) + 50
 })
 
-const mealLabels = {
-  breakfast: computed(() => i18n.breakfast),
-  lunch: computed(() => i18n.lunch),
-  dinner: computed(() => i18n.dinner),
-}
 const mealLabel = computed(() => i18n[props.mealType] || props.mealType)
 
-const mealTotals = computed(() => {
-  const totals = {}
+const mealTotals = computed<Record<string, number>>(() => {
+  const totals: Record<string, number> = {}
   props.nutrients.forEach(n => { totals[n.key] = 0 })
   props.foods.forEach(f => {
     if (!f.food_data) return
     const factor = (f.amount_in_g || 0) / 100
     props.nutrients.forEach(n => {
-      totals[n.key] += (f.food_data[n.food_key] || 0) * factor
+      totals[n.key] += ((f.food_data![n.food_key] as number) || 0) * factor
     })
   })
   return totals
 })
 
-function fmt(val, precision) {
+function fmt(val: number, precision: number): string {
   return (val || 0).toFixed(precision ?? 1)
 }
 
-async function onSaveRow(rowData) {
+interface SaveRowData {
+  food: Food
+  amount_in_g: string
+  existingId: number | null
+}
+
+async function onSaveRow(rowData: SaveRowData) {
   const { food, amount_in_g, existingId } = rowData
   if (!food || amount_in_g === '' || amount_in_g === null || parseFloat(amount_in_g) < 0) return
 
@@ -152,12 +166,10 @@ async function onSaveRow(rowData) {
       body: JSON.stringify(body),
     })
     if (res.ok) {
-      const data = await res.json()
-      // Build the MPF with food_data for reactive nutrient totals
-      const mpf = { ...data, food_data: food }
+      const data: MealPlanFood = await res.json()
+      const mpf: MealPlanFood = { ...data, food_data: food }
       emit('food-saved', mpf)
 
-      // If this was the draft row, reset it
       if (!existingId) {
         draftRow.value = { _uid: makeUid(), _isDraft: true, id: null, food: null, amount_in_g: '' }
       }
@@ -167,12 +179,12 @@ async function onSaveRow(rowData) {
   }
 }
 
-async function onDeleteRow(row) {
+function onDeleteRow(row: DisplayRow) {
   if (row._isDraft) return
-  emit('request-delete', row)
+  emit('request-delete', row as MealPlanFood)
 }
 
-function onActivateSearch(payload) {
+function onActivateSearch(payload: ActivateSearchPayload) {
   emit('activate-search', payload)
 }
 </script>

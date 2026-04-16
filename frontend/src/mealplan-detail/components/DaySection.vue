@@ -6,9 +6,9 @@
         class="editable-day-title"
         contenteditable="true"
         @blur="onDayNameBlur"
-        @keydown.enter.prevent="dayTitleEl.blur()"
+        @keydown.enter.prevent="dayTitleEl?.blur()"
       ></h2>
-      <button class="edit-icon-btn" @click="dayTitleEl.focus()" :title="i18n.editDayName">
+      <button class="edit-icon-btn" @click="dayTitleEl?.focus()" :title="i18n.editDayName">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -19,8 +19,8 @@
         @click="emit('delete')"
         :title="i18n.deleteDay2"
         style="opacity: 0.3; transition: opacity 0.2s;"
-        @mouseenter="$event.currentTarget.style.opacity = 1"
-        @mouseleave="$event.currentTarget.style.opacity = 0.3"
+        @mouseenter="($event.currentTarget as HTMLElement).style.opacity = '1'"
+        @mouseleave="($event.currentTarget as HTMLElement).style.opacity = '0.3'"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"></polyline>
@@ -64,23 +64,38 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch, inject } from 'vue'
 import MealSection from './MealSection.vue'
 import DaySidePanel from './DaySidePanel.vue'
+import type { I18n, Nutrient, MealPlanDay, MealPlanFood, ThresholdMap, Food } from '../../types/index'
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 
-const props = defineProps({
-  day: { type: Object, required: true },
-  nutrients: { type: Array, default: () => [] },
-  visibleNutrients: { type: Array, default: () => [] },
-  thresholds: { type: Object, default: () => ({}) },
+const props = withDefaults(defineProps<{
+  day: MealPlanDay
+  nutrients?: Nutrient[]
+  visibleNutrients?: string[]
+  thresholds?: ThresholdMap
+}>(), {
+  nutrients: () => [],
+  visibleNutrients: () => [],
+  thresholds: () => ({}),
 })
 
-const emit = defineEmits(['update:name', 'delete', 'food-saved', 'food-deleted', 'open-save-preset', 'update-threshold', 'activate-search', 'deactivate-search', 'request-delete'])
+const emit = defineEmits<{
+  'update:name': [name: string]
+  'delete': []
+  'food-saved': [mpf: MealPlanFood]
+  'food-deleted': [mpfId: number]
+  'open-save-preset': []
+  'update-threshold': [key: string, type: string, value: string]
+  'activate-search': [el: HTMLInputElement | null, cb: (food: Food) => void]
+  'deactivate-search': []
+  'request-delete': [row: MealPlanFood]
+}>()
 
-const dayTitleEl = ref(null)
+const dayTitleEl = ref<HTMLHeadingElement | null>(null)
 
 onMounted(() => {
   if (dayTitleEl.value) dayTitleEl.value.textContent = props.day.name
@@ -92,10 +107,11 @@ watch(() => props.day.name, (name) => {
   }
 })
 
-function onDayNameBlur(e) {
-  const name = e.target.textContent.trim()
+function onDayNameBlur(e: Event) {
+  const el = e.target as HTMLElement
+  const name = el.textContent?.trim() ?? ''
   if (!name) {
-    e.target.textContent = props.day.name
+    el.textContent = props.day.name
     return
   }
   if (name !== props.day.name) {
@@ -103,7 +119,7 @@ function onDayNameBlur(e) {
   }
 }
 
-function dayFoods(mealType) {
+function dayFoods(mealType: string): MealPlanFood[] {
   return (props.day.foods || []).filter(f => f.meal_type === mealType)
 }
 </script>

@@ -22,15 +22,20 @@
   </table>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { inject } from 'vue'
 import FoodRow from './FoodRow.vue'
+import type { Food, I18n } from '../../types/index'
 
-defineProps({
-  foods: { type: Array, default: () => [] },
-  loading: { type: Boolean, default: false },
-  searchQuery: { type: String, default: '' },
+withDefaults(defineProps<{
+  foods?: Food[]
+  loading?: boolean
+  searchQuery?: string
+}>(), {
+  foods: () => [],
+  loading: false,
+  searchQuery: '',
 })
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 </script>

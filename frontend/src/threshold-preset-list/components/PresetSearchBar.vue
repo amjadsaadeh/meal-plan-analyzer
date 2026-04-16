@@ -10,19 +10,24 @@
   />
 </template>
 
-<script setup>
-const props = defineProps({
-  modelValue: { type: String, default: '' },
-  placeholder: { type: String, default: '' },
+<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  modelValue?: string
+  placeholder?: string
+}>(), {
+  modelValue: '',
+  placeholder: '',
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
 
-let timer = null
+let timer: ReturnType<typeof setTimeout> | null = null
 
-function onInput(e) {
-  clearTimeout(timer)
-  const value = e.target.value
+function onInput(e: Event) {
+  clearTimeout(timer ?? undefined)
+  const value = (e.target as HTMLInputElement).value
   timer = setTimeout(() => {
     emit('update:modelValue', value)
   }, 300)

@@ -42,7 +42,7 @@
             class="name-input"
             v-model="editName"
             @blur="saveName"
-            @keydown.enter="nameInputEl.blur()"
+            @keydown.enter="nameInputEl?.blur()"
             @keydown.escape="cancelEditName"
           />
         </template>
@@ -70,8 +70,8 @@
                   type="number"
                   step="any"
                   :value="pendingValues[nutrient.key + '_min'] ?? preset[nutrient.key + '_min'] ?? ''"
-                  @input="onFieldInput(nutrient.key + '_min', $event.target.value)"
-                  @blur="saveField(nutrient.key + '_min', $event.target.value)"
+                  @input="onFieldInput(nutrient.key + '_min', ($event.target as HTMLInputElement).value)"
+                  @blur="saveField(nutrient.key + '_min', ($event.target as HTMLInputElement).value)"
                   :placeholder="i18n.min"
                 />
               </div>
@@ -83,8 +83,8 @@
                   type="number"
                   step="any"
                   :value="pendingValues[nutrient.key + '_max'] ?? preset[nutrient.key + '_max'] ?? ''"
-                  @input="onFieldInput(nutrient.key + '_max', $event.target.value)"
-                  @blur="saveField(nutrient.key + '_max', $event.target.value)"
+                  @input="onFieldInput(nutrient.key + '_max', ($event.target as HTMLInputElement).value)"
+                  @blur="saveField(nutrient.key + '_max', ($event.target as HTMLInputElement).value)"
                   :placeholder="i18n.max"
                 />
               </div>
@@ -107,23 +107,24 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, inject, onMounted, nextTick } from 'vue'
+import type { ThresholdPreset, Nutrient, I18n } from '../../types/index'
 
-const presetId = inject('presetId')
-const csrfToken = inject('csrfToken')
-const nutrients = inject('nutrients')
-const i18n = inject('i18n')
-const presetListUrl = inject('presetListUrl')
+const presetId = inject<string>('presetId')!
+const csrfToken = inject<string>('csrfToken')!
+const nutrients = inject<Nutrient[]>('nutrients')!
+const i18n = inject<I18n>('i18n')!
+const presetListUrl = inject<string>('presetListUrl')!
 
-const preset = ref(null)
+const preset = ref<ThresholdPreset | null>(null)
 const notFound = ref(false)
-const saveStatus = ref('idle')
+const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
 const editingName = ref(false)
 const editName = ref('')
-const nameInputEl = ref(null)
-const fieldErrors = ref({})
-const pendingValues = ref({})
+const nameInputEl = ref<HTMLInputElement | null>(null)
+const fieldErrors = ref<Record<string, string>>({})
+const pendingValues = ref<Record<string, string>>({})
 
 async function loadPreset() {
   try {
@@ -132,14 +133,14 @@ async function loadPreset() {
       notFound.value = true
       return
     }
-    if (!res.ok) throw new Error(res.status)
+    if (!res.ok) throw new Error(String(res.status))
     preset.value = await res.json()
   } catch (e) {
     notFound.value = true
   }
 }
 
-async function patch(data) {
+async function patch(data: Record<string, unknown>) {
   saveStatus.value = 'saving'
   try {
     const res = await fetch(`/api/threshold-presets/${presetId}/`, {
@@ -150,10 +151,10 @@ async function patch(data) {
       },
       body: JSON.stringify(data),
     })
-    if (!res.ok) throw new Error(res.status)
-    const responseData = await res.json()
+    if (!res.ok) throw new Error(String(res.status))
+    const responseData: ThresholdPreset = await res.json()
     for (const key of Object.keys(data)) {
-      preset.value[key] = responseData[key]
+      preset.value![key] = responseData[key]
     }
     saveStatus.value = 'saved'
     setTimeout(() => {
@@ -164,7 +165,7 @@ async function patch(data) {
   }
 }
 
-function validateField(fieldName, rawValue) {
+function validateField(fieldName: string, rawValue: string | null | undefined): string | null {
   if (rawValue === '' || rawValue === null || rawValue === undefined) {
     return null
   }
@@ -174,32 +175,32 @@ function validateField(fieldName, rawValue) {
   }
   if (fieldName.endsWith('_min')) {
     const maxField = fieldName.slice(0, -4) + '_max'
-    const maxVal = preset.value?.[maxField]
+    const maxVal = preset.value?.[maxField] as number | null | undefined
     if (maxVal !== null && maxVal !== undefined && val >= maxVal) {
-      return i18n.mustBeLessThanMax.replace('{max}', maxVal)
+      return i18n.mustBeLessThanMax.replace('{max}', String(maxVal))
     }
   } else if (fieldName.endsWith('_max')) {
     const minField = fieldName.slice(0, -4) + '_min'
-    const minVal = preset.value?.[minField]
+    const minVal = preset.value?.[minField] as number | null | undefined
     if (minVal !== null && minVal !== undefined && val <= minVal) {
-      return i18n.mustBeGreaterThanMin.replace('{min}', minVal)
+      return i18n.mustBeGreaterThanMin.replace('{min}', String(minVal))
     }
   }
   return null
 }
 
-function onFieldInput(fieldName, rawValue) {
+function onFieldInput(fieldName: string, rawValue: string) {
   // Track the pending value so the input is not reset while the user is typing
   pendingValues.value = { ...pendingValues.value, [fieldName]: rawValue }
 }
 
-function clearPending(fieldName) {
+function clearPending(fieldName: string) {
   const updated = { ...pendingValues.value }
   delete updated[fieldName]
   pendingValues.value = updated
 }
 
-async function saveField(fieldName, rawValue) {
+async function saveField(fieldName: string, rawValue: string) {
   const error = validateField(fieldName, rawValue)
   if (error) {
     fieldErrors.value = { ...fieldErrors.value, [fieldName]: error }
@@ -214,7 +215,7 @@ async function saveField(fieldName, rawValue) {
   const value = rawValue === '' ? null : parseFloat(rawValue)
 
   // Only patch if the value has actually changed from the saved state
-  const currentValue = preset.value?.[fieldName] ?? null
+  const currentValue = (preset.value?.[fieldName] ?? null) as number | null
   if (value === currentValue) {
     // No change — just clear the pending value, no network request needed
     clearPending(fieldName)
@@ -230,7 +231,7 @@ async function saveField(fieldName, rawValue) {
   const partnerSuffix = fieldName.endsWith('_min') ? '_max' : '_min'
   const partnerField = fieldName.slice(0, -4) + partnerSuffix
   if (fieldErrors.value[partnerField]) {
-    const partnerVal = preset.value?.[partnerField]
+    const partnerVal = preset.value?.[partnerField] as number | null | undefined
     const partnerError =
       partnerVal !== null && partnerVal !== undefined
         ? validateField(partnerField, String(partnerVal))
@@ -245,7 +246,7 @@ async function saveField(fieldName, rawValue) {
 }
 
 function startEditName() {
-  editName.value = preset.value.name
+  editName.value = preset.value?.name ?? ''
   editingName.value = true
   nextTick(() => nameInputEl.value?.focus())
 }
@@ -257,7 +258,7 @@ function cancelEditName() {
 async function saveName() {
   const name = editName.value.trim()
   editingName.value = false
-  if (!name || name === preset.value.name) return
+  if (!name || name === preset.value?.name) return
   await patch({ name })
 }
 
@@ -269,7 +270,7 @@ async function deletePreset() {
       method: 'DELETE',
       headers: { 'X-CSRFToken': csrfToken },
     })
-    if (!res.ok) throw new Error(res.status)
+    if (!res.ok) throw new Error(String(res.status))
     window.location.href = presetListUrl
   } catch (e) {
     saveStatus.value = 'error'

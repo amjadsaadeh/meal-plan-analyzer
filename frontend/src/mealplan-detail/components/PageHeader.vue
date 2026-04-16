@@ -10,9 +10,9 @@
           :placeholder="i18n.editName"
           @input="onInput"
           @blur="onBlur"
-          @keydown.enter.prevent="titleEl.blur()"
+          @keydown.enter.prevent="titleEl?.blur()"
         ></h1>
-        <button class="edit-icon-btn" @click="titleEl.focus()" :title="i18n.editName">
+        <button class="edit-icon-btn" @click="titleEl?.focus()" :title="i18n.editName">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -33,22 +33,30 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, watch, inject } from 'vue'
+import type { MealPlan, I18n } from '../../types/index'
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 
-const props = defineProps({
-  plan: { type: Object, required: true },
-  syncStatus: { type: String, default: 'saved' },
-  syncMessage: { type: String, default: '' },
-  pdfUrl: { type: String, default: '' },
-  previewUrl: { type: String, default: '' },
+const props = withDefaults(defineProps<{
+  plan: MealPlan
+  syncStatus?: string
+  syncMessage?: string
+  pdfUrl?: string
+  previewUrl?: string
+}>(), {
+  syncStatus: 'saved',
+  syncMessage: '',
+  pdfUrl: '',
+  previewUrl: '',
 })
 
-const emit = defineEmits(['update:name'])
+const emit = defineEmits<{
+  'update:name': [name: string]
+}>()
 
-const titleEl = ref(null)
+const titleEl = ref<HTMLHeadingElement | null>(null)
 
 onMounted(() => {
   if (titleEl.value) titleEl.value.textContent = props.plan.name
@@ -60,14 +68,15 @@ watch(() => props.plan.name, (name) => {
   }
 })
 
-function onInput(e) {
-  emit('update:name', e.target.textContent.trim())
+function onInput(e: Event) {
+  emit('update:name', (e.target as HTMLElement).textContent?.trim() ?? '')
 }
 
-function onBlur(e) {
-  const name = e.target.textContent.trim()
+function onBlur(e: Event) {
+  const el = e.target as HTMLElement
+  const name = el.textContent?.trim() ?? ''
   if (!name) {
-    e.target.textContent = props.plan.name
+    el.textContent = props.plan.name
     return
   }
   emit('update:name', name)

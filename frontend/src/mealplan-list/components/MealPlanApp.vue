@@ -46,28 +46,29 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted, provide, inject } from 'vue'
 import SearchBar from './SearchBar.vue'
 import MealPlanTable from './MealPlanTable.vue'
 import Pagination from './Pagination.vue'
 import ConfirmDeleteModal from './ConfirmDeleteModal.vue'
+import type { MealPlan, I18n, PaginatedResponse } from '../../types/index'
 
-const csrfToken = inject('csrfToken')
-const createUrl = inject('createUrl')
-const i18n = inject('i18n')
+const csrfToken = inject<string>('csrfToken')!
+const createUrl = inject<string>('createUrl')!
+const i18n = inject<I18n>('i18n')!
 
-const plans = ref([])
+const plans = ref<MealPlan[]>([])
 const loading = ref(true)
 const searchQuery = ref('')
 const currentPage = ref(1)
 const totalPages = ref(1)
 
 const modalOpen = ref(false)
-const pendingDeletePk = ref(null)
+const pendingDeletePk = ref<number | null>(null)
 const pendingDeleteName = ref('')
 
-let abortController = null
+let abortController: AbortController | null = null
 
 async function fetchPlans() {
   if (abortController) abortController.abort()
@@ -76,24 +77,24 @@ async function fetchPlans() {
   loading.value = true
   const params = new URLSearchParams()
   if (searchQuery.value) params.set('search', searchQuery.value)
-  if (currentPage.value > 1) params.set('page', currentPage.value)
+  if (currentPage.value > 1) params.set('page', String(currentPage.value))
 
   try {
     const res = await fetch(`/api/mealplans/?${params}`, {
       headers: { Accept: 'application/json' },
       signal: abortController.signal,
     })
-    const data = await res.json()
+    const data: PaginatedResponse<MealPlan> = await res.json()
     plans.value = data.results
     totalPages.value = data.num_pages ?? 1
   } catch (err) {
-    if (err.name !== 'AbortError') throw err
+    if ((err as Error).name !== 'AbortError') throw err
   } finally {
     loading.value = false
   }
 }
 
-function requestDelete(pk, name) {
+function requestDelete(pk: number, name: string) {
   pendingDeletePk.value = pk
   pendingDeleteName.value = name
   modalOpen.value = true
@@ -120,7 +121,7 @@ async function doDelete() {
 
 provide('requestDelete', requestDelete)
 
-function onPageChange(page) {
+function onPageChange(page: number) {
   currentPage.value = page
 }
 
@@ -132,7 +133,7 @@ function syncToUrl() {
     url.searchParams.delete('search')
   }
   if (currentPage.value > 1) {
-    url.searchParams.set('page', currentPage.value)
+    url.searchParams.set('page', String(currentPage.value))
   } else {
     url.searchParams.delete('page')
   }

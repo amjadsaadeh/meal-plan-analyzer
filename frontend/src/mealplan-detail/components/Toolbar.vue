@@ -8,7 +8,7 @@
         </svg>
         {{ i18n.addDay }}
       </button>
-      <button id="colSelectBtn" class="col-select-btn" ref="colBtnRef" @click.stop="$emit('open-col-dropdown', $event.currentTarget)">
+      <button id="colSelectBtn" class="col-select-btn" ref="colBtnRef" @click.stop="$emit('open-col-dropdown', $event.currentTarget as Element)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="7"></rect>
           <rect x="14" y="3" width="7" height="7"></rect>
@@ -49,39 +49,46 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, inject } from 'vue'
+import type { I18n, Nutrient, ThresholdPreset, PaginatedResponse } from '../../types/index'
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 
-const props = defineProps({
-  nutrients: { type: Array, default: () => [] },
-  visibleNutrients: { type: Array, default: () => [] },
+withDefaults(defineProps<{
+  nutrients?: Nutrient[]
+  visibleNutrients?: string[]
+}>(), {
+  nutrients: () => [],
+  visibleNutrients: () => [],
 })
 
-const emit = defineEmits(['add-day', 'open-col-dropdown', 'apply-preset'])
+const emit = defineEmits<{
+  'add-day': []
+  'open-col-dropdown': [btn: Element]
+  'apply-preset': [preset: ThresholdPreset]
+}>()
 
 const presetQuery = ref('')
-const presetResults = ref([])
+const presetResults = ref<ThresholdPreset[]>([])
 const presetDropdownVisible = ref(false)
-let presetTimer = null
+let presetTimer: ReturnType<typeof setTimeout> | null = null
 
 function onPresetInput() {
   const q = presetQuery.value.trim()
-  clearTimeout(presetTimer)
-  // Fetch immediately if empty, otherwise debounce
+  clearTimeout(presetTimer ?? undefined)
   const delay = q.length === 0 ? 0 : 300
   presetTimer = setTimeout(() => fetchPresets(q), delay)
 }
 
-async function fetchPresets(query) {
+async function fetchPresets(query: string) {
   try {
-    const url = query 
-      ? `/api/threshold-presets/?search=${encodeURIComponent(query)}` 
+    const url = query
+      ? `/api/threshold-presets/?search=${encodeURIComponent(query)}`
       : '/api/threshold-presets/'
     const res = await fetch(url)
-    const data = await res.json()
-    presetResults.value = data.results || data
+    const data: PaginatedResponse<ThresholdPreset> | ThresholdPreset[] = await res.json()
+    presetResults.value = Array.isArray(data) ? data : (data.results ?? [])
     presetDropdownVisible.value = presetResults.value.length > 0
   } catch (e) {
     console.error(e)
@@ -92,13 +99,13 @@ function scheduleHidePresets() {
   setTimeout(() => { presetDropdownVisible.value = false }, 150)
 }
 
-function selectPreset(p) {
+function selectPreset(p: ThresholdPreset) {
   emit('apply-preset', p)
   presetQuery.value = ''
   presetDropdownVisible.value = false
 }
 
-function highlightMatch(text, query) {
+function highlightMatch(text: string, query: string): string {
   if (!query) return text
   const semanticKeywords = ['low', 'high', 'energy', 'cal', 'kcal', 'kj']
   const tokens = query.toLowerCase().split(/\s+/)

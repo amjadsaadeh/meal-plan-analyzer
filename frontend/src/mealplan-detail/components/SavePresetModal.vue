@@ -41,24 +41,31 @@
   </Teleport>
 </template>
 
-<script setup>
-import { ref, watch, nextTick, computed, inject } from 'vue'
+<script setup lang="ts">
+import { ref, watch, nextTick, inject } from 'vue'
+import type { I18n, ThresholdMap, Nutrient, ThresholdPreset } from '../../types/index'
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 
-const props = defineProps({
-  open: { type: Boolean, required: true },
-  thresholds: { type: Object, default: () => ({}) },
-  nutrients: { type: Array, default: () => [] },
+const props = withDefaults(defineProps<{
+  open: boolean
+  thresholds?: ThresholdMap
+  nutrients?: Nutrient[]
+}>(), {
+  thresholds: () => ({}),
+  nutrients: () => [],
 })
 
-const emit = defineEmits(['confirm', 'cancel'])
+const emit = defineEmits<{
+  confirm: [name: string]
+  cancel: []
+}>()
 
-const nameInputEl = ref(null)
+const nameInputEl = ref<HTMLInputElement | null>(null)
 const nameVal = ref('')
 const errorMsg = ref('')
 const saveDisabled = ref(true)
-let nameTimer = null
+let nameTimer: ReturnType<typeof setTimeout> | null = null
 
 watch(() => props.open, async (val) => {
   if (val) {
@@ -78,16 +85,16 @@ function onInput() {
     return
   }
   errorMsg.value = i18n.checkingAvailability
-  clearTimeout(nameTimer)
+  clearTimeout(nameTimer ?? undefined)
   nameTimer = setTimeout(() => validateName(val), 500)
 }
 
-async function validateName(name) {
+async function validateName(name: string) {
   try {
     const res = await fetch(`/api/threshold-presets/?search=${encodeURIComponent(name)}`)
-    const data = await res.json()
-    const presets = data.results || data
-    const exactMatch = presets.find(p => p.name.toLowerCase() === name.toLowerCase())
+    const data: { results?: ThresholdPreset[] } = await res.json()
+    const presets = data.results || []
+    const exactMatch = presets.find(p => (p.name as string).toLowerCase() === name.toLowerCase())
     if (exactMatch) {
       errorMsg.value = i18n.nameAlreadyTaken
       saveDisabled.value = true

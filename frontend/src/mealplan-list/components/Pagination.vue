@@ -34,18 +34,20 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  currentPage: { type: Number, required: true },
-  totalPages: { type: Number, required: true },
-})
+const props = defineProps<{
+  currentPage: number
+  totalPages: number
+}>()
 
-const emit = defineEmits(['update:currentPage'])
+const emit = defineEmits<{
+  'update:currentPage': [page: number]
+}>()
 
 const visiblePages = computed(() => {
-  const pages = []
+  const pages: number[] = []
   for (let i = 1; i <= props.totalPages; i++) {
     if (Math.abs(i - props.currentPage) <= 2) {
       pages.push(i)
