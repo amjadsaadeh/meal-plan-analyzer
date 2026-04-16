@@ -48,16 +48,19 @@
   </tr>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, inject } from 'vue'
+import type { ThresholdPreset, Nutrient } from '../../types/index'
 
-const props = defineProps({
-  preset: { type: Object, required: true },
-  searchQuery: { type: String, default: '' },
+const props = withDefaults(defineProps<{
+  preset: ThresholdPreset
+  searchQuery?: string
+}>(), {
+  searchQuery: '',
 })
 
-const nutrients = inject('nutrients')
-const presetEditorBaseUrl = inject('presetEditorBaseUrl')
+const nutrients = inject<Nutrient[]>('nutrients')!
+const presetEditorBaseUrl = inject<string>('presetEditorBaseUrl')!
 
 const DEFAULT_KEYS = ['energy_in_kcal', 'water_in_g', 'carbohydrate_in_g', 'fat_in_g', 'protein_in_g']
 
@@ -71,14 +74,14 @@ function navigate() {
   window.location.href = presetEditorBaseUrl + props.preset.id + '/'
 }
 
-function formatThreshold(min, max) {
+function formatThreshold(min: unknown, max: unknown): string {
   if (min == null && max == null) return '—'
   const minStr = min != null ? String(min) : '—'
   const maxStr = max != null ? String(max) : '—'
   return `${minStr} / ${maxStr}`
 }
 
-function highlightMatch(text, query) {
+function highlightMatch(text: string, query: string): string {
   if (!query) return text
   const tokens = query
     .toLowerCase()

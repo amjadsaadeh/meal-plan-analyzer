@@ -35,21 +35,29 @@
   </Teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { inject } from 'vue'
+import type { Food, I18n, SearchPosition } from '../../types/index'
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 
-defineProps({
-  visible: { type: Boolean, default: false },
-  position: { type: Object, default: () => ({ top: 0, left: 0, width: 300 }) },
-  results: { type: Array, default: () => [] },
-  query: { type: String, default: '' },
+const props = withDefaults(defineProps<{
+  visible?: boolean
+  position?: SearchPosition
+  results?: Food[]
+  query?: string
+}>(), {
+  visible: false,
+  position: () => ({ top: 0, left: 0, width: 300 }),
+  results: () => [],
+  query: '',
 })
 
-defineEmits(['select'])
+defineEmits<{
+  select: [food: Food]
+}>()
 
-function highlightMatch(text, query) {
+function highlightMatch(text: string, query: string): string {
   if (!query) return text
   const semanticKeywords = ['low', 'high', 'energy', 'cal', 'kcal', 'kj']
   const tokens = query.toLowerCase().split(/\s+/)

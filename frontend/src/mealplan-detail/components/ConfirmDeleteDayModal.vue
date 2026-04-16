@@ -32,20 +32,26 @@
   </Teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, nextTick, inject } from 'vue'
+import type { I18n } from '../../types/index'
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 
-const props = defineProps({
-  open: { type: Boolean, required: true },
-  dayName: { type: String, default: '' },
+const props = withDefaults(defineProps<{
+  open: boolean
+  dayName?: string
+}>(), {
+  dayName: '',
 })
 
-defineEmits(['confirm', 'cancel'])
+defineEmits<{
+  confirm: []
+  cancel: []
+}>()
 
-const cardRef = ref(null)
-const cancelBtnRef = ref(null)
+const cardRef = ref<HTMLDivElement | null>(null)
+const cancelBtnRef = ref<HTMLButtonElement | null>(null)
 
 watch(() => props.open, async (val) => {
   if (val) {

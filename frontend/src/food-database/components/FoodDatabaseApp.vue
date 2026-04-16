@@ -27,17 +27,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, inject, watch, onMounted } from 'vue'
 import FoodSearchBar from './FoodSearchBar.vue'
 import FoodTable from './FoodTable.vue'
 import Pagination from './Pagination.vue'
+import type { Food, I18n, PaginatedResponse } from '../../types/index'
 
-const csrfToken = inject('csrfToken')
-const foodEditorBaseUrl = inject('foodEditorBaseUrl')
-const i18n = inject('i18n')
+const csrfToken = inject<string>('csrfToken')!
+const foodEditorBaseUrl = inject<string>('foodEditorBaseUrl')!
+const i18n = inject<I18n>('i18n')!
 
-const foods = ref([])
+const foods = ref<Food[]>([])
 const loading = ref(true)
 const currentPage = ref(1)
 const totalPages = ref(1)
@@ -47,17 +48,18 @@ const errorMsg = ref('')
 
 const PAGE_SIZE = 100
 
-async function fetchFoods(page, search) {
+async function fetchFoods(page: number, search: string) {
   loading.value = true
   errorMsg.value = ''
   try {
-    const params = new URLSearchParams({ page })
+    const params = new URLSearchParams({ page: String(page) })
     if (search) params.set('search', search)
     const res = await fetch(`/api/foods/?${params}`)
-    if (!res.ok) throw new Error(res.status)
-    const data = await res.json()
-    foods.value = data.results ?? data
-    totalPages.value = data.count != null ? Math.max(1, Math.ceil(data.count / PAGE_SIZE)) : 1
+    if (!res.ok) throw new Error(String(res.status))
+    const data: PaginatedResponse<Food> | Food[] = await res.json()
+    foods.value = Array.isArray(data) ? data : (data.results ?? [])
+    const count = Array.isArray(data) ? null : data.count
+    totalPages.value = count != null ? Math.max(1, Math.ceil(count / PAGE_SIZE)) : 1
     currentPage.value = page
   } catch (e) {
     errorMsg.value = i18n.networkError ?? 'Network error'
@@ -78,8 +80,8 @@ async function createFood() {
       },
       body: JSON.stringify({ name: i18n.newFoodName }),
     })
-    if (!res.ok) throw new Error(res.status)
-    const food = await res.json()
+    if (!res.ok) throw new Error(String(res.status))
+    const food: Food = await res.json()
     window.location.href = foodEditorBaseUrl + food.id + '/'
   } catch (e) {
     errorMsg.value = i18n.errorCreate ?? 'Error creating food'
@@ -88,15 +90,15 @@ async function createFood() {
   }
 }
 
-function onPageChange(page) {
+function onPageChange(page: number) {
   fetchFoods(page, searchQuery.value)
 }
 
-let searchTimer = null
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 watch(searchQuery, (q) => {
-  clearTimeout(searchTimer)
+  clearTimeout(searchTimer ?? undefined)
   if (q.length >= 2) {
-    searchTimer = setTimeout(() => fetchFoods(1, q), 0) // already debounced in FoodSearchBar
+    searchTimer = setTimeout(() => fetchFoods(1, q), 0)
   } else if (q.length === 0) {
     fetchFoods(1, '')
   }

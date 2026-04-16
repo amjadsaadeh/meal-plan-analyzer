@@ -9,9 +9,11 @@
   </a>
 </template>
 
-<script setup>
-defineProps({
-  planId: { type: Number, required: true },
-  day: { type: Object, required: true },
-})
+<script setup lang="ts">
+import type { MealPlanDay } from '../../types/index'
+
+defineProps<{
+  planId: number
+  day: MealPlanDay
+}>()
 </script>

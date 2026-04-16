@@ -47,23 +47,33 @@
   </Teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 
-const props = defineProps({
-  open: { type: Boolean, required: true },
-  planName: { type: String, default: '' },
-  title: { type: String, default: 'Delete Meal Plan' },
-  message: { type: String, default: 'Are you sure you want to delete this meal plan?' },
-  hint: { type: String, default: 'This action cannot be undone.' },
-  cancelText: { type: String, default: 'Cancel' },
-  confirmText: { type: String, default: 'Delete' },
+const props = withDefaults(defineProps<{
+  open: boolean
+  planName?: string
+  title?: string
+  message?: string
+  hint?: string
+  cancelText?: string
+  confirmText?: string
+}>(), {
+  planName: '',
+  title: 'Delete Meal Plan',
+  message: 'Are you sure you want to delete this meal plan?',
+  hint: 'This action cannot be undone.',
+  cancelText: 'Cancel',
+  confirmText: 'Delete',
 })
 
-defineEmits(['confirm', 'cancel'])
+defineEmits<{
+  confirm: []
+  cancel: []
+}>()
 
-const cardRef = ref(null)
-const cancelBtnRef = ref(null)
+const cardRef = ref<HTMLDivElement | null>(null)
+const cancelBtnRef = ref<HTMLButtonElement | null>(null)
 
 watch(() => props.open, async (val) => {
   if (val) {

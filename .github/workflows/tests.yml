@@ -240,10 +240,23 @@ jobs:
           reporter: java-junit
           fail-on-error: false
 
+  typescript-check:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm and check types
+        run: |
+          npm install -g pnpm
+          pnpm install --frozen-lockfile
+          pnpm type-check
+
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests, api-tests, frontend-tests]
+    needs: [lint, typescript-check, unit-tests, api-tests, frontend-tests]
     if: always()
 
     steps:
@@ -254,6 +267,7 @@ jobs:
           echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Lint (Black) | ${{ needs.lint.result == 'success' && '✅ passed' || needs.lint.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| TypeScript Check | ${{ needs.typescript-check.result == 'success' && '✅ passed' || needs.typescript-check.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Unit & Integration Tests | ${{ needs.unit-tests.result == 'success' && '✅ passed' || needs.unit-tests.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| API Tests | ${{ needs.api-tests.result == 'success' && '✅ passed' || needs.api-tests.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Frontend Tests (Playwright) | ${{ needs.frontend-tests.result == 'success' && '✅ passed' || needs.frontend-tests.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY

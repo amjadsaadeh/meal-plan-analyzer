@@ -34,18 +34,29 @@
   </table>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import MealPlanRow from './MealPlanRow.vue'
+import type { MealPlan } from '../../types/index'
 
-defineProps({
-  plans: { type: Array, default: () => [] },
-  searchQuery: { type: String, default: '' },
-  loading: { type: Boolean, default: false },
-  colName: { type: String, default: 'Name' },
-  colDays: { type: String, default: 'Days' },
-  colCreated: { type: String, default: 'Created' },
-  colChanged: { type: String, default: 'Last Changed' },
-  noDataText: { type: String, default: 'No meal plans found.' },
-  noDaysText: { type: String, default: 'No days' },
+withDefaults(defineProps<{
+  plans?: MealPlan[]
+  searchQuery?: string
+  loading?: boolean
+  colName?: string
+  colDays?: string
+  colCreated?: string
+  colChanged?: string
+  noDataText?: string
+  noDaysText?: string
+}>(), {
+  plans: () => [],
+  searchQuery: '',
+  loading: false,
+  colName: 'Name',
+  colDays: 'Days',
+  colCreated: 'Created',
+  colChanged: 'Last Changed',
+  noDataText: 'No meal plans found.',
+  noDaysText: 'No days',
 })
 </script>

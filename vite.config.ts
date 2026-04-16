@@ -11,12 +11,12 @@ export default defineConfig({
     manifest: true,
     rollupOptions: {
       input: {
-        'mealplan-list': 'frontend/src/mealplan-list/main.js',
-        'mealplan-detail': 'frontend/src/mealplan-detail/main.js',
-        'food-database': 'frontend/src/food-database/main.js',
-        'food-editor': 'frontend/src/food-editor/main.js',
-        'threshold-preset-list':   'frontend/src/threshold-preset-list/main.js',
-        'threshold-preset-editor': 'frontend/src/threshold-preset-editor/main.js',
+        'mealplan-list': 'frontend/src/mealplan-list/main.ts',
+        'mealplan-detail': 'frontend/src/mealplan-detail/main.ts',
+        'food-database': 'frontend/src/food-database/main.ts',
+        'food-editor': 'frontend/src/food-editor/main.ts',
+        'threshold-preset-list':   'frontend/src/threshold-preset-list/main.ts',
+        'threshold-preset-editor': 'frontend/src/threshold-preset-editor/main.ts',
       },
     },
   },

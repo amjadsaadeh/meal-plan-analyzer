@@ -27,25 +27,28 @@
     >{{ i18n.next || '' }} &raquo;</a>
 
     <div class="page-info" v-if="totalPages > 0">
-      {{ i18n.pageInfo?.replace('{page}', currentPage).replace('{total}', totalPages) || `Page ${currentPage} of ${totalPages}` }}
+      {{ i18n.pageInfo?.replace('{page}', String(currentPage)).replace('{total}', String(totalPages)) || `Page ${currentPage} of ${totalPages}` }}
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, inject } from 'vue'
+import type { I18n } from '../../types/index'
 
-const i18n = inject('i18n', {})
+const i18n = inject<I18n>('i18n', {})
 
-const props = defineProps({
-  currentPage: { type: Number, required: true },
-  totalPages: { type: Number, required: true },
-})
+const props = defineProps<{
+  currentPage: number
+  totalPages: number
+}>()
 
-const emit = defineEmits(['update:currentPage'])
+const emit = defineEmits<{
+  'update:currentPage': [page: number]
+}>()
 
 const visiblePages = computed(() => {
-  const pages = []
+  const pages: number[] = []
   for (let i = 1; i <= props.totalPages; i++) {
     if (Math.abs(i - props.currentPage) <= 2) {
       pages.push(i)

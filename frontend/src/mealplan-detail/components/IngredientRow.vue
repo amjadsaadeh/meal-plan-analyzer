@@ -41,7 +41,7 @@
         @input="onAmountInput"
         @blur="onAmountBlur"
         @keydown.enter.prevent="onAmountEnter"
-        @keydown.esc.prevent="$event.target.blur()"
+        @keydown.esc.prevent="($event.target as HTMLInputElement).blur()"
         :placeholder="row._isDraft ? '0.0' : ''"
       >
     </td>
@@ -74,51 +74,62 @@
   </tr>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, nextTick, inject } from 'vue'
+import type { I18n, Nutrient, Food, MealPlanFood, ActivateSearchPayload } from '../../types/index'
 
-const i18n = inject('i18n')
-const doFoodSearch = inject('doFoodSearch')
-const searchCtx = inject('search')
+const i18n = inject<I18n>('i18n')!
+const doFoodSearch = inject<(query: string, inputEl: HTMLElement | null) => void>('doFoodSearch')!
 
-const props = defineProps({
-  row: { type: Object, required: true },
-  nutrients: { type: Array, default: () => [] },
-  visibleNutrients: { type: Array, default: () => [] },
-  dayId: { type: Number, required: true },
-  mealType: { type: String, required: true },
+type RowProp = (MealPlanFood & { _isDraft?: boolean }) | { _isDraft: true; id: null; food: null; amount_in_g: string; food_data?: undefined }
+
+const props = withDefaults(defineProps<{
+  row: RowProp
+  nutrients?: Nutrient[]
+  visibleNutrients?: string[]
+  dayId: number
+  mealType: string
+}>(), {
+  nutrients: () => [],
+  visibleNutrients: () => [],
 })
 
-const emit = defineEmits(['save', 'delete', 'activate-search', 'deactivate-search'])
+const emit = defineEmits<{
+  'save': [payload: { food: Food; amount_in_g: string; existingId: number | null }]
+  'delete': []
+  'activate-search': [payload: ActivateSearchPayload]
+  'deactivate-search': []
+}>()
 
 const isSearching = ref(false)
 const searchQuery = ref('')
-const searchInputEl = ref(null)
+const searchInputEl = ref<HTMLInputElement | null>(null)
 
-// Local amount mirrors the row amount; allows editing without immediately mutating the prop
-const localAmount = ref(props.row.amount_in_g !== null && props.row.amount_in_g !== undefined ? String(props.row.amount_in_g) : '')
+const localAmount = ref(
+  props.row.amount_in_g !== null && props.row.amount_in_g !== undefined
+    ? String(props.row.amount_in_g)
+    : ''
+)
 
 watch(() => props.row.amount_in_g, (val) => {
   if (val !== null && val !== undefined) localAmount.value = String(val)
 })
 
-// Local food: starts from row.food_data or row.food (search result)
-const localFood = ref(props.row.food_data || props.row.food || null)
+const localFood = ref<Food | null>(props.row.food_data ?? null)
 
 watch(() => props.row.food_data, (val) => { if (val) localFood.value = val })
 
 const nonEnergyNutrients = computed(() => props.nutrients.filter(n => n.key !== 'energy_in_kcal'))
 
-function nutVal(nutKey, precision) {
+function nutVal(nutKey: string, precision: number): string {
   const food = localFood.value
   if (!food) return (0).toFixed(precision ?? 1)
   const nut = props.nutrients.find(n => n.key === nutKey)
   if (!nut) return (0).toFixed(precision ?? 1)
   const amount = parseFloat(localAmount.value) || 0
-  return ((food[nut.food_key] || 0) * amount / 100).toFixed(precision ?? 1)
+  return (((food[nut.food_key] as number) || 0) * amount / 100).toFixed(precision ?? 1)
 }
 
-// ── Search ──────────────────────────────────────────────────────────────────
 async function onCellClick() {
   if (isSearching.value) return
   isSearching.value = true
@@ -130,9 +141,8 @@ async function onCellClick() {
     if (searchQuery.value) searchInputEl.value.select()
   }
 
-  // Activate the global search
   emit('activate-search', {
-    el: searchInputEl.value,
+    el: searchInputEl.value!,
     cb: onFoodSelected,
   })
 
@@ -141,22 +151,21 @@ async function onCellClick() {
   }
 }
 
-function onSearchInput(e) {
-  searchQuery.value = e.target.value
-  doFoodSearch(searchQuery.value, e.target)
+function onSearchInput(e: Event) {
+  const target = e.target as HTMLInputElement
+  searchQuery.value = target.value
+  doFoodSearch(searchQuery.value, target)
 }
 
-function onFoodSelected(food) {
+function onFoodSelected(food: Food) {
   localFood.value = food
   isSearching.value = false
   searchQuery.value = ''
-  // Trigger save once amount is known (or if already set)
   if (localAmount.value !== '') {
     emitSave()
   }
-  // Focus the amount input
   nextTick(() => {
-    const amountEl = searchInputEl.value?.closest('tr')?.querySelector('.amount-input')
+    const amountEl = searchInputEl.value?.closest('tr')?.querySelector<HTMLInputElement>('.amount-input')
     if (amountEl) { amountEl.focus(); amountEl.select() }
   })
 }
@@ -168,7 +177,6 @@ function cancelSearch() {
 }
 
 function onSearchBlur() {
-  // Small delay so mousedown on dropdown item can fire first
   setTimeout(() => {
     if (isSearching.value) {
       isSearching.value = false
@@ -177,9 +185,8 @@ function onSearchBlur() {
   }, 200)
 }
 
-// ── Amount ──────────────────────────────────────────────────────────────────
-function onAmountInput(e) {
-  localAmount.value = e.target.value
+function onAmountInput(e: Event) {
+  localAmount.value = (e.target as HTMLInputElement).value
 }
 
 function onAmountBlur() {
@@ -188,15 +195,15 @@ function onAmountBlur() {
   }
 }
 
-function onAmountEnter(e) {
-  e.target.blur()
+function onAmountEnter(e: Event) {
+  (e.target as HTMLInputElement).blur()
 }
 
 function emitSave() {
   emit('save', {
-    food: localFood.value,
+    food: localFood.value!,
     amount_in_g: localAmount.value,
-    existingId: props.row._isDraft ? null : props.row.id,
+    existingId: props.row._isDraft ? null : (props.row as MealPlanFood).id,
   })
 }
 </script>

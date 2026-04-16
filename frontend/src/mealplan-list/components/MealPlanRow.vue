@@ -34,17 +34,21 @@
   </tr>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, inject } from 'vue'
 import DayBadge from './DayBadge.vue'
+import type { MealPlan } from '../../types/index'
 
-const props = defineProps({
-  plan: { type: Object, required: true },
-  searchQuery: { type: String, default: '' },
-  noDaysText: { type: String, default: 'No days' },
+const props = withDefaults(defineProps<{
+  plan: MealPlan
+  searchQuery?: string
+  noDaysText?: string
+}>(), {
+  searchQuery: '',
+  noDaysText: 'No days',
 })
 
-const requestDelete = inject('requestDelete')
+const requestDelete = inject<(pk: number, name: string) => void>('requestDelete')!
 
 const activeDays = computed(() => (props.plan.days || []).filter(d => !d.removed))
 
@@ -58,7 +62,7 @@ function onDelete() {
 
 const SEMANTIC_KEYWORDS = new Set(['low', 'high', 'energy', 'cal', 'kcal', 'kj'])
 
-function highlightMatch(text, query) {
+function highlightMatch(text: string, query: string): string {
   if (!query) return text
   const tokens = query.toLowerCase().split(/\s+/)
     .filter(t => t.length >= 2 && !SEMANTIC_KEYWORDS.has(t))
@@ -69,13 +73,13 @@ function highlightMatch(text, query) {
   return text.replace(regex, '<strong>$1</strong>')
 }
 
-function formatDate(iso) {
+function formatDate(iso: string): string {
   if (!iso) return ''
   const d = new Date(iso)
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function formatDateTime(iso) {
+function formatDateTime(iso: string): string {
   if (!iso) return ''
   const d = new Date(iso)
   const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })

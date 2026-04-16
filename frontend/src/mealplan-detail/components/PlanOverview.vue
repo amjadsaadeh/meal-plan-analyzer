@@ -16,7 +16,7 @@
             :data-nut="nut.key"
             :placeholder="i18n.min"
             :value="thresholdVal(nut.key, 'min')"
-            @input="emit('update-threshold', nut.key, 'min', $event.target.value)"
+            @input="emit('update-threshold', nut.key, 'min', ($event.target as HTMLInputElement).value)"
           >
           <span
             class="summary-val"
@@ -30,7 +30,7 @@
             :data-nut="nut.key"
             :placeholder="i18n.max"
             :value="thresholdVal(nut.key, 'max')"
-            @input="emit('update-threshold', nut.key, 'max', $event.target.value)"
+            @input="emit('update-threshold', nut.key, 'max', ($event.target as HTMLInputElement).value)"
           >
         </div>
       </div>
@@ -46,54 +46,63 @@
   </div>
 </template>
 
-<script setup>
-import { computed, inject } from 'vue'
+<script setup lang="ts">
+import { inject } from 'vue'
+import type { I18n, Nutrient, MealPlanDay, ThresholdMap } from '../../types/index'
 
-const i18n = inject('i18n')
+const i18n = inject<I18n>('i18n')!
 
-const props = defineProps({
-  days: { type: Array, default: () => [] },
-  nutrients: { type: Array, default: () => [] },
-  visibleNutrients: { type: Array, default: () => [] },
-  thresholds: { type: Object, default: () => ({}) },
+const props = withDefaults(defineProps<{
+  days?: MealPlanDay[]
+  nutrients?: Nutrient[]
+  visibleNutrients?: string[]
+  thresholds?: ThresholdMap
+}>(), {
+  days: () => [],
+  nutrients: () => [],
+  visibleNutrients: () => [],
+  thresholds: () => ({}),
 })
 
-const emit = defineEmits(['open-save-preset', 'update-threshold'])
+const emit = defineEmits<{
+  'open-save-preset': []
+  'update-threshold': [key: string, type: string, value: string]
+}>()
 
-function dayTotal(day, nutKey) {
+function dayTotal(day: MealPlanDay, nutKey: string): number {
   const nut = props.nutrients.find(n => n.key === nutKey)
   if (!nut) return 0
   return (day.foods || []).reduce((sum, f) => {
     if (!f.food_data) return sum
-    return sum + (f.food_data[nut.food_key] || 0) * (f.amount_in_g || 0) / 100
+    return sum + ((f.food_data[nut.food_key] as number) || 0) * (f.amount_in_g || 0) / 100
   }, 0)
 }
 
-function planAvg(nutKey) {
+function planAvg(nutKey: string): number {
   const count = props.days.length
   if (count === 0) return 0
   const total = props.days.reduce((sum, d) => sum + dayTotal(d, nutKey), 0)
   return total / count
 }
 
-function thresholdVal(nutKey, type) {
+function thresholdVal(nutKey: string, type: string): number | string {
   const t = props.thresholds?.[nutKey]
   if (!t) return ''
-  const v = t[type]
+  const v = t[type as keyof typeof t]
   return v === null || v === undefined ? '' : v
 }
 
-function thresholdClass(nutKey) {
+function thresholdClass(nutKey: string): string {
   const val = planAvg(nutKey)
-  const t = props.thresholds?.[nutKey] || {}
-  const min = t.min !== null && t.min !== undefined ? parseFloat(t.min) : null
-  const max = t.max !== null && t.max !== undefined ? parseFloat(t.max) : null
+  const t = props.thresholds?.[nutKey] || { min: null, max: null }
+  const min = t.min !== null && t.min !== undefined ? parseFloat(String(t.min)) : null
+  const max = t.max !== null && t.max !== undefined ? parseFloat(String(t.max)) : null
   if (min !== null && val < min) return 'status-under'
   if (max !== null && val > max) return 'status-over'
   return ''
 }
 
-function fmt(val, precision) {
+function fmt(val: number, precision: number): string {
   return (val || 0).toFixed(precision ?? 1)
 }
 </script>

@@ -29,22 +29,27 @@
   </table>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { inject } from 'vue'
 import PresetRow from './PresetRow.vue'
+import type { ThresholdPreset, Nutrient, I18n } from '../../types/index'
 
-defineProps({
-  presets: { type: Array, default: () => [] },
-  loading: { type: Boolean, default: false },
-  searchQuery: { type: String, default: '' },
+withDefaults(defineProps<{
+  presets?: ThresholdPreset[]
+  loading?: boolean
+  searchQuery?: string
+}>(), {
+  presets: () => [],
+  loading: false,
+  searchQuery: '',
 })
 
-const i18n = inject('i18n')
-const nutrients = inject('nutrients')
+const i18n = inject<I18n>('i18n')!
+const nutrients = inject<Nutrient[]>('nutrients')!
 
 const DEFAULT_KEYS = ['energy_in_kcal', 'water_in_g', 'carbohydrate_in_g', 'fat_in_g', 'protein_in_g']
 
-function labelFor(key) {
+function labelFor(key: string): string {
   const n = nutrients.find((x) => x.key === key)
   return n ? `${n.label} (${n.unit})` : key
 }

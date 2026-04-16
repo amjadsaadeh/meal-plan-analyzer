@@ -29,16 +29,17 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted, inject } from 'vue'
 import PresetSearchBar from './PresetSearchBar.vue'
 import PresetTable from './PresetTable.vue'
+import type { ThresholdPreset, PaginatedResponse, I18n } from '../../types/index'
 
-const csrfToken = inject('csrfToken')
-const i18n = inject('i18n')
-const presetEditorBaseUrl = inject('presetEditorBaseUrl')
+const csrfToken = inject<string>('csrfToken')!
+const i18n = inject<I18n>('i18n')!
+const presetEditorBaseUrl = inject<string>('presetEditorBaseUrl')!
 
-const presets = ref([])
+const presets = ref<ThresholdPreset[]>([])
 const loading = ref(true)
 const searchQuery = ref('')
 const creating = ref(false)
@@ -49,9 +50,9 @@ async function fetchAll() {
   errorMsg.value = ''
   try {
     const res = await fetch('/api/threshold-presets/')
-    if (!res.ok) throw new Error(res.status)
-    const data = await res.json()
-    presets.value = data.results ?? (Array.isArray(data) ? data : [])
+    if (!res.ok) throw new Error(String(res.status))
+    const data: PaginatedResponse<ThresholdPreset> | ThresholdPreset[] = await res.json()
+    presets.value = Array.isArray(data) ? data : (data.results ?? [])
   } catch (e) {
     errorMsg.value = i18n.networkError ?? 'Network error'
   } finally {
@@ -59,16 +60,16 @@ async function fetchAll() {
   }
 }
 
-async function doSearch(query) {
+async function doSearch(query: string) {
   loading.value = true
   errorMsg.value = ''
   try {
     const res = await fetch(
       `/api/threshold-presets/?search=${encodeURIComponent(query)}`
     )
-    if (!res.ok) throw new Error(res.status)
-    const data = await res.json()
-    presets.value = data.results ?? (Array.isArray(data) ? data : [])
+    if (!res.ok) throw new Error(String(res.status))
+    const data: PaginatedResponse<ThresholdPreset> | ThresholdPreset[] = await res.json()
+    presets.value = Array.isArray(data) ? data : (data.results ?? [])
   } catch (e) {
     errorMsg.value = i18n.networkError ?? 'Network error'
   } finally {
@@ -88,8 +89,8 @@ async function createPreset() {
       },
       body: JSON.stringify({ name: i18n.newPresetName }),
     })
-    if (!res.ok) throw new Error(res.status)
-    const preset = await res.json()
+    if (!res.ok) throw new Error(String(res.status))
+    const preset: ThresholdPreset = await res.json()
     window.location.href = presetEditorBaseUrl + preset.id + '/'
   } catch (e) {
     errorMsg.value = i18n.errorCreate ?? 'Error creating preset'
@@ -98,9 +99,9 @@ async function createPreset() {
   }
 }
 
-let searchTimer = null
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 watch(searchQuery, (q) => {
-  clearTimeout(searchTimer)
+  clearTimeout(searchTimer ?? undefined)
   if (q.length >= 2) {
     searchTimer = setTimeout(() => doSearch(q), 0)
   } else if (q.length === 0) {

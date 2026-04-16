@@ -19,7 +19,7 @@
   <!-- Delete ingredient modal -->
   <ConfirmDeleteIngredientModal
     :open="deleteFoodModal.open"
-    :ingredient-name="deleteFoodModal.row?.food_data?.name || deleteFoodModal.row?.food?.name || ''"
+    :ingredient-name="deleteFoodModal.row?.food_data?.name || ''"
     @confirm="confirmDeleteFood"
     @cancel="deleteFoodModal.open = false"
   />
@@ -70,7 +70,7 @@
           type="checkbox"
           :data-col="nut.key"
           :checked="visibleNutrients.includes(nut.key)"
-          @change="toggleCol(nut.key, $event.target.checked)"
+          @change="toggleCol(nut.key, ($event.target as HTMLInputElement).checked)"
         >
         {{ nut.label }}
       </label>
@@ -141,7 +141,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted, inject, provide, watch, nextTick } from 'vue'
 import FoodSearchDropdown from './FoodSearchDropdown.vue'
 import ConfirmDeleteDayModal from './ConfirmDeleteDayModal.vue'
@@ -152,31 +152,33 @@ import PageHeader from './PageHeader.vue'
 import Toolbar from './Toolbar.vue'
 import DaySection from './DaySection.vue'
 import PlanOverview from './PlanOverview.vue'
+import type {
+  I18n, Nutrient, MealPlan, MealPlanDay, MealPlanFood, ThresholdPreset,
+  Food, SearchState, PaginatedResponse,
+} from '../../types/index'
 
-
-
-const planId = inject('planId')
-const csrfToken = inject('csrfToken')
-const nutrients = inject('nutrients')
-const i18n = inject('i18n')
-const pdfUrl = inject('pdfUrl')
-const previewUrl = inject('previewUrl')
-const planListUrl = inject('planListUrl')
+const planId = inject<string>('planId')!
+const csrfToken = inject<string>('csrfToken')!
+const nutrients = inject<Nutrient[]>('nutrients')!
+const i18n = inject<I18n>('i18n')!
+const pdfUrl = inject<string>('pdfUrl')!
+const previewUrl = inject<string>('previewUrl')!
+const planListUrl = inject<string>('planListUrl')!
 
 // ── State ──────────────────────────────────────────────────────────────────
-const plan = ref(null)
-const days = ref([])
+const plan = ref<MealPlan | null>(null)
+const days = ref<MealPlanDay[]>([])
 const syncStatus = ref('saved')
 const syncMessage = ref('')
 const stickyVisible = ref(false)
-const sentinelRef = ref(null)
+const sentinelRef = ref<HTMLElement | null>(null)
 
-const colDropdown = reactive({ open: false, top: 0, left: 0 })
-const deleteModal = reactive({ open: false, dayId: null, dayName: '' })
-const deleteFoodModal = reactive({ open: false, row: null })
-const presetModal = reactive({ open: false })
+const colDropdown = reactive<{ open: boolean; top: number; left: number }>({ open: false, top: 0, left: 0 })
+const deleteModal = reactive<{ open: boolean; dayId: number | null; dayName: string }>({ open: false, dayId: null, dayName: '' })
+const deleteFoodModal = reactive<{ open: boolean; row: MealPlanFood | null }>({ open: false, row: null })
+const presetModal = reactive<{ open: boolean }>({ open: false })
 
-const search = reactive({
+const search = reactive<SearchState>({
   visible: false,
   position: { top: 0, left: 0, width: 320 },
   results: [],
@@ -195,9 +197,9 @@ const visibleNutrients = computed(() => {
 })
 
 // ── Provide food search to children ───────────────────────────────────────
-let searchTimer = null
+let searchTimer: ReturnType<typeof setTimeout> | null = null
 
-provide('doFoodSearch', async (query, inputEl) => {
+provide('doFoodSearch', async (query: string, inputEl: HTMLElement | null) => {
   search.query = query
   if (inputEl) {
     const rect = inputEl.getBoundingClientRect()
@@ -212,12 +214,12 @@ provide('doFoodSearch', async (query, inputEl) => {
     search.results = []
     return
   }
-  clearTimeout(searchTimer)
+  clearTimeout(searchTimer ?? undefined)
   searchTimer = setTimeout(async () => {
     try {
       const res = await fetch(`/api/foods/?search=${encodeURIComponent(query)}`)
-      const data = await res.json()
-      search.results = data.results ?? data
+      const data: PaginatedResponse<Food> | Food[] = await res.json()
+      search.results = Array.isArray(data) ? data : (data.results ?? [])
       search.visible = true
     } catch (e) {
       console.error(e)
@@ -226,15 +228,15 @@ provide('doFoodSearch', async (query, inputEl) => {
 })
 
 // ── API ────────────────────────────────────────────────────────────────────
-let planNameTimer = null
-let thresholdTimer = null
+let planNameTimer: ReturnType<typeof setTimeout> | null = null
+let thresholdTimer: ReturnType<typeof setTimeout> | null = null
 
-function setSyncStatus(status, message = '') {
+function setSyncStatus(status: string, message = '') {
   syncStatus.value = status
   syncMessage.value = message
 }
 
-async function apiPatch(url, body) {
+async function apiPatch(url: string, body: Record<string, unknown>): Promise<unknown> {
   setSyncStatus('pending')
   try {
     const res = await fetch(url, {
@@ -259,7 +261,7 @@ async function loadPlan() {
   try {
     const res = await fetch(`/api/mealplans/${planId}/`)
     if (!res.ok) return
-    const data = await res.json()
+    const data: MealPlan = await res.json()
     plan.value = data
     days.value = (data.days || []).filter(d => !d.removed)
   } catch (e) {
@@ -268,15 +270,15 @@ async function loadPlan() {
 }
 
 // ── Plan name ──────────────────────────────────────────────────────────────
-function onPlanNameChange(name) {
-  plan.value.name = name
+function onPlanNameChange(name: string) {
+  if (plan.value) plan.value.name = name
   setSyncStatus('pending')
-  clearTimeout(planNameTimer)
+  clearTimeout(planNameTimer ?? undefined)
   planNameTimer = setTimeout(() => apiPatch(`/api/mealplans/${planId}/`, { name }), 800)
 }
 
 // ── Day name ───────────────────────────────────────────────────────────────
-async function onDayNameChange(dayId, name) {
+async function onDayNameChange(dayId: number, name: string) {
   const day = days.value.find(d => d.id === dayId)
   if (day) day.name = name
   await apiPatch(`/api/mealplan-days/${dayId}/`, { name })
@@ -293,7 +295,7 @@ async function addDay() {
       body: JSON.stringify({ meal_plan: parseInt(planId), name: `${i18n.dayPrefix} ${nextNum}` }),
     })
     if (res.ok) {
-      const newDay = await res.json()
+      const newDay: MealPlanDay = await res.json()
       newDay.foods = []
       days.value.push(newDay)
       setSyncStatus('saved')
@@ -306,7 +308,7 @@ async function addDay() {
 }
 
 // ── Delete day ─────────────────────────────────────────────────────────────
-function openDeleteDayModal(day) {
+function openDeleteDayModal(day: MealPlanDay) {
   deleteModal.dayId = day.id
   deleteModal.dayName = day.name
   deleteModal.open = true
@@ -334,7 +336,7 @@ async function confirmDeleteDay() {
 }
 
 // ── Delete food ───────────────────────────────────────────────────────────
-function openDeleteFoodModal(row) {
+function openDeleteFoodModal(row: MealPlanFood) {
   deleteFoodModal.row = row
   deleteFoodModal.open = true
 }
@@ -371,7 +373,7 @@ async function confirmDeleteFood() {
 }
 
 // ── Food saved/deleted ─────────────────────────────────────────────────────
-function onFoodSaved(dayId, mpf) {
+function onFoodSaved(dayId: number, mpf: MealPlanFood) {
   const day = days.value.find(d => d.id === dayId)
   if (!day) return
   const idx = day.foods.findIndex(f => f.id === mpf.id)
@@ -379,24 +381,26 @@ function onFoodSaved(dayId, mpf) {
   else day.foods.push(mpf)
 }
 
-function onFoodDeleted(dayId, mpfId) {
+function onFoodDeleted(dayId: number, mpfId: number) {
   const day = days.value.find(d => d.id === dayId)
   if (!day) return
   day.foods = day.foods.filter(f => f.id !== mpfId)
 }
 
 // ── Thresholds ─────────────────────────────────────────────────────────────
-function onUpdateThreshold(nutKey, type, value) {
+function onUpdateThreshold(nutKey: string, type: string, value: string) {
+  if (!plan.value) return
   if (!plan.value.thresholds) plan.value.thresholds = {}
-  if (!plan.value.thresholds[nutKey]) plan.value.thresholds[nutKey] = {}
-  plan.value.thresholds[nutKey][type] = value === '' ? null : (parseFloat(value) || null)
-  clearTimeout(thresholdTimer)
+  if (!plan.value.thresholds[nutKey]) plan.value.thresholds[nutKey] = { min: null, max: null }
+  plan.value.thresholds[nutKey][type as 'min' | 'max'] = value === '' ? null : (parseFloat(value) || null)
+  clearTimeout(thresholdTimer ?? undefined)
   setSyncStatus('pending')
-  thresholdTimer = setTimeout(() => apiPatch(`/api/mealplans/${planId}/`, { thresholds: plan.value.thresholds }), 800)
+  thresholdTimer = setTimeout(() => apiPatch(`/api/mealplans/${planId}/`, { thresholds: plan.value!.thresholds }), 800)
 }
 
 // ── Column visibility ──────────────────────────────────────────────────────
-function toggleCol(nutKey, show) {
+function toggleCol(nutKey: string, show: boolean) {
+  if (!plan.value) return
   const current = plan.value.visible_nutrients || []
   plan.value.visible_nutrients = show
     ? [...current.filter(k => k !== nutKey), nutKey]
@@ -404,7 +408,7 @@ function toggleCol(nutKey, show) {
   apiPatch(`/api/mealplans/${planId}/`, { visible_nutrients: plan.value.visible_nutrients })
 }
 
-function openColDropdown(btnEl) {
+function openColDropdown(btnEl: Element) {
   if (colDropdown.open) { colDropdown.open = false; return }
   const rect = btnEl.getBoundingClientRect()
   colDropdown.top = rect.bottom + 8
@@ -413,23 +417,24 @@ function openColDropdown(btnEl) {
 }
 
 // ── Presets ────────────────────────────────────────────────────────────────
-async function applyPreset(preset) {
-  if (!confirm(`${preset.name}: ${i18n.confirmApplyTemplate}`)) return
-  const newThresholds = {}
+async function applyPreset(preset: ThresholdPreset) {
+  if (!plan.value) return
+  if (!confirm(`${preset.name as string}: ${i18n.confirmApplyTemplate}`)) return
+  const newThresholds: Record<string, { min: number | null; max: number | null }> = {}
   nutrients.forEach(n => {
     newThresholds[n.key] = {
-      min: preset[`${n.key}_min`] ?? null,
-      max: preset[`${n.key}_max`] ?? null,
+      min: (preset[`${n.key}_min`] as number | null) ?? null,
+      max: (preset[`${n.key}_max`] as number | null) ?? null,
     }
   })
   plan.value.thresholds = newThresholds
   await apiPatch(`/api/mealplans/${planId}/`, { thresholds: newThresholds })
 }
 
-async function confirmSavePreset(name) {
-  const body = { name }
+async function confirmSavePreset(name: string) {
+  const body: Record<string, unknown> = { name }
   nutrients.forEach(n => {
-    const t = plan.value.thresholds?.[n.key] || {}
+    const t = plan.value?.thresholds?.[n.key] || { min: null, max: null }
     body[`${n.key}_min`] = t.min ?? null
     body[`${n.key}_max`] = t.max ?? null
   })
@@ -443,7 +448,7 @@ async function confirmSavePreset(name) {
       presetModal.open = false
       alert(`"${name}": ${i18n.templateSavedSuccess}`)
     } else {
-      const err = await res.json()
+      const err: Record<string, string[]> = await res.json()
       alert(err.name ? err.name[0] : i18n.savingError)
     }
   } catch (e) {
@@ -452,7 +457,7 @@ async function confirmSavePreset(name) {
 }
 
 // ── Food search ────────────────────────────────────────────────────────────
-function activateSearch(cellEl, onSelect) {
+function activateSearch(cellEl: HTMLInputElement | null, onSelect: (food: Food) => void) {
   search.onSelect = onSelect
   if (cellEl) {
     const rect = cellEl.getBoundingClientRect()
@@ -474,29 +479,29 @@ function closeSearch() {
   search.query = ''
 }
 
-function onFoodSelect(food) {
+function onFoodSelect(food: Food) {
   if (search.onSelect) search.onSelect(food)
   closeSearch()
 }
 
 // ── Global click handler ───────────────────────────────────────────────────
-function onDocumentClick(e) {
-  if (!e.target.closest?.('.col-dropdown') && colDropdown.open) {
+function onDocumentClick(e: MouseEvent) {
+  const target = e.target as Element | null
+  if (!target?.closest?.('.col-dropdown') && colDropdown.open) {
     colDropdown.open = false
   }
-  if (!e.target.closest?.('.search-dropdown') && !e.target.closest?.('.ingredient-name-cell')) {
+  if (!target?.closest?.('.search-dropdown') && !target?.closest?.('.ingredient-name-cell')) {
     closeSearch()
   }
 }
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
-let observer = null
+let observer: IntersectionObserver | null = null
 
 onMounted(async () => {
   await loadPlan()
   document.addEventListener('click', onDocumentClick)
 
-  // Set up IntersectionObserver after plan loads and sentinel renders
   await nextTick()
   if (sentinelRef.value) {
     observer = new IntersectionObserver(([entry]) => {
