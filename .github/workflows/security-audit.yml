@@ -119,11 +119,14 @@ jobs:
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run pnpm audit
+      - name: Generate package-lock.json for audit
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Run npm audit
         id: pnpm_audit
         run: |
-          pnpm audit --json > js-audit.json 2>&1 || true
-          pnpm audit 2>&1 | tee js-audit.txt || true
+          npm audit --json > js-audit.json 2>&1 || true
+          npm audit 2>&1 | tee js-audit.txt || true
 
       - name: Upload JS audit report
         uses: actions/upload-artifact@v4
@@ -137,7 +140,7 @@ jobs:
 
       - name: Fail on high/critical JS vulnerabilities
         run: |
-          pnpm audit --audit-level high
+          npm audit --audit-level high
 
       - name: Summarize JS audit results
         if: always()
