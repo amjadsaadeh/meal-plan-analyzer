@@ -8,7 +8,7 @@ RUN corepack enable pnpm
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-COPY vite.config.js ./
+COPY vite.config.ts ./
 COPY frontend/src/ frontend/src/
 
 RUN pnpm build
@@ -53,7 +53,7 @@ ENV APP_VERSION=${APP_VERSION}
 # Copy the application code
 COPY . .
 
-# Copy built JS assets from node builder
+# Copy built frontend assets from node builder
 COPY --from=node-builder /app/frontend/dist/ /app/frontend/dist/
 
 # Create directory for static files

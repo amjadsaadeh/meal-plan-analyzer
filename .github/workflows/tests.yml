@@ -73,7 +73,7 @@ jobs:
       - name: Install Python dependencies
         run: uv sync --frozen
 
-      - name: Install pnpm and build JS
+      - name: Install pnpm and build frontend
         run: |
           npm install -g pnpm
           pnpm install --frozen-lockfile
@@ -139,7 +139,7 @@ jobs:
       - name: Install Python dependencies
         run: uv sync --frozen
 
-      - name: Install pnpm and build JS
+      - name: Install pnpm and build frontend
         run: |
           npm install -g pnpm
           pnpm install --frozen-lockfile
@@ -202,7 +202,7 @@ jobs:
       - name: Install Python dependencies
         run: uv sync --frozen
 
-      - name: Install pnpm and build JS
+      - name: Install pnpm and build frontend
         run: |
           npm install -g pnpm
           pnpm install --frozen-lockfile
