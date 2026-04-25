@@ -2,7 +2,6 @@ import pytest
 from meals.views import (
     normalize_umlauts,
     _umlaut_search_variants,
-    parse_food_search,
     get_food_search_query,
     get_food_ids_by_alias,
 )
@@ -48,25 +47,6 @@ def test_umlaut_search_variants_permutations():
     # "Banane" has 'a' which can be 'ä' in German (though incorrect here, the algorithm allows it)
     variants = _umlaut_search_variants("Banane")
     assert "Bänäne" in variants
-
-
-def test_parse_food_search():
-    # Low energy
-    intent, high, clean = parse_food_search("low energy apple")
-    assert intent is True
-    assert high is False
-    assert clean == "apple"
-
-    # High kcal
-    intent, high, clean = parse_food_search("high kcal steak")
-    assert intent is False
-    assert high is True
-    assert clean == "steak"
-
-    # Multiple keywords - the current regex is not designed for multiple intents
-    # and might leave some parts behind. This test verifies current (albeit imperfect) behavior.
-    _, _, clean = parse_food_search("high energy low calorie chicken")
-    assert "chicken" in clean
 
 
 @pytest.mark.django_db

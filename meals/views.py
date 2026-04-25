@@ -1,4 +1,3 @@
-import re
 import os
 import json
 import secrets
@@ -261,22 +260,6 @@ def meal_plan_detail(request, pk=None):
     )
 
 
-def parse_food_search(search_query):
-    """Return (low_energy_intent, high_energy_intent, clean_search) for a raw query."""
-    low_energy_intent = bool(
-        re.search(r"\blow\b.*\b(energy|cal|kcal|kj)\b", search_query, re.I)
-    )
-    high_energy_intent = bool(
-        re.search(r"\bhigh\b.*\b(energy|cal|kcal|kj)\b", search_query, re.I)
-    )
-    clean_search = re.sub(
-        r"\b(low|high)\b.*\b(energy|cal|kcal|kj)\b", "", search_query, flags=re.I
-    ).strip()
-    if not clean_search and not (low_energy_intent or high_energy_intent):
-        clean_search = search_query
-    return low_energy_intent, high_energy_intent, clean_search
-
-
 def get_food_search_query(clean_search):
     """Return a Q object for filtering foods by name, bls_code, and umlaut variants."""
     if not clean_search:
@@ -334,36 +317,20 @@ class FoodViewSet(viewsets.ModelViewSet):
         if len(search_query) < 2:
             return queryset.none() if search_query else queryset
 
-        # 1. Semantic Extraction
-        low_energy_intent, high_energy_intent, clean_search = parse_food_search(
-            search_query
-        )
+        name_query = get_food_search_query(search_query)
+        queryset = queryset.filter(name_query)
 
-        # 2. Filtering by name / bls_code (with umlaut-tolerant variants)
-        if clean_search:
-            name_query = get_food_search_query(clean_search)
-            queryset = queryset.filter(name_query)
-
-        # 3. Weighted Relevance Ranking
         queryset = queryset.annotate(
             relevance=Case(
-                When(name__iexact=clean_search, then=Value(100)),
-                When(name__istartswith=clean_search, then=Value(50)),
-                When(name__icontains=f" {clean_search}", then=Value(40)),
+                When(name__iexact=search_query, then=Value(100)),
+                When(name__istartswith=search_query, then=Value(50)),
+                When(name__icontains=f" {search_query}", then=Value(40)),
                 default=Value(1),
                 output_field=IntegerField(),
             )
         )
 
-        # 4. Final Ordering
-        order_params = ["-relevance"]
-        if low_energy_intent:
-            order_params.insert(0, "energy_in_kcal_per_100g")
-        elif high_energy_intent:
-            order_params.insert(0, "-energy_in_kcal_per_100g")
-        order_params.append("name")
-
-        return queryset.order_by(*order_params)
+        return queryset.order_by("-relevance", "name")
 
     def list(self, request, *args, **kwargs):
         """Return foods matching the search query using semantic vector search.
@@ -404,51 +371,27 @@ class FoodViewSet(viewsets.ModelViewSet):
                 return self.get_paginated_response([])
             return Response([])
 
-        # ── Energy intent detection ───────────────────────────────────────
-        low_energy_intent, high_energy_intent, clean_search = parse_food_search(
-            search_query
-        )
-
-        # ── Energy-intent-only ("high energy" with no food name) ──────────
-        # Return all foods sorted by energy via SQL (unchanged behaviour).
-        if not clean_search:
-            queryset = Food.objects.all()
-            if low_energy_intent:
-                queryset = queryset.order_by("energy_in_kcal_per_100g", "name")
-            else:
-                queryset = queryset.order_by("-energy_in_kcal_per_100g", "name")
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                for food in page:
-                    food.matched_alias = None
-                serializer = self.get_serializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            for food in queryset:
-                food.matched_alias = None
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-
         # ── BLS code SQL search (exact / partial code lookup) ─────────────
-        bls_qs = Food.objects.filter(bls_code__icontains=clean_search)
+        bls_qs = Food.objects.filter(bls_code__icontains=search_query)
         bls_foods: list[Food] = list(bls_qs.order_by("name")) if bls_qs.exists() else []
         bls_food_bls_codes = {f.bls_code for f in bls_foods}
 
         # ── Vector search via ChromaDB ────────────────────────────────────
         vector_results = vector_search.search_foods(
-            clean_search, limit=vector_search.FOOD_SEARCH_VECTOR_LIMIT
+            search_query, limit=vector_search.FOOD_SEARCH_VECTOR_LIMIT
         )
 
         if not vector_results and not bls_foods:
-            # ChromaDB empty and no BLS match → full SQL fallback (original behaviour):
+            # ChromaDB empty and no BLS match → full SQL fallback:
             # name/bls_code SQL search + alias cache lookup.
             name_queryset = self.get_queryset()
             name_foods = list(name_queryset)
             name_food_ids = {f.id for f in name_foods}
 
-            search_norm = normalize_umlauts(clean_search.lower())
+            search_norm = normalize_umlauts(search_query.lower())
             terms_norm = [
                 normalize_umlauts(t.lower())
-                for t in clean_search.split()
+                for t in search_query.split()
                 if len(t) >= 2
             ]
             alias_index = get_alias_index()
@@ -475,11 +418,6 @@ class FoodViewSet(viewsets.ModelViewSet):
                 food.matched_alias = alias_matches[food.id]
 
             all_foods = name_foods + alias_only_foods
-
-            if low_energy_intent:
-                all_foods.sort(key=lambda f: f.energy_in_kcal_per_100g)
-            elif high_energy_intent:
-                all_foods.sort(key=lambda f: f.energy_in_kcal_per_100g, reverse=True)
 
             page = self.paginate_queryset(all_foods)
             if page is not None:
@@ -510,12 +448,6 @@ class FoodViewSet(viewsets.ModelViewSet):
             food.matched_alias = None
 
         all_foods = bls_foods + vector_foods
-
-        # ── Energy intent post-sort ───────────────────────────────────────
-        if low_energy_intent:
-            all_foods.sort(key=lambda f: f.energy_in_kcal_per_100g)
-        elif high_energy_intent:
-            all_foods.sort(key=lambda f: f.energy_in_kcal_per_100g, reverse=True)
 
         page = self.paginate_queryset(all_foods)
         if page is not None:
@@ -674,17 +606,13 @@ class MealPlanFoodViewSet(viewsets.ModelViewSet):
         if not export_name or len(export_name) < 2:
             return
 
-        _, _, clean_search = parse_food_search(export_name)
-        if not clean_search:
-            return
-
         # 1. check if the export name can be found by name/bls search
-        name_query = get_food_search_query(clean_search)
+        name_query = get_food_search_query(export_name)
         is_found = Food.objects.filter(name_query).filter(id=instance.food_id).exists()
 
         # 2. if not found, check alias search
         if not is_found:
-            alias_ids = get_food_ids_by_alias(clean_search)
+            alias_ids = get_food_ids_by_alias(export_name)
             if instance.food_id in alias_ids:
                 is_found = True
 

@@ -1,14 +1,5 @@
 """
-Extended food search tests covering semantic intent detection and relevance ranking.
-
-The existing test_foods.py covers "low energy" intent and basic name search.
-This file adds:
-  - "high energy" / "high cal" intent (descending sort)
-  - Short query (< 2 chars) returns empty
-  - 1-char query returns empty, no query returns all
-  - BLS code search
-  - Relevance ranking order (exact > startswith > contains)
-  - Combined intent + name filter
+Food search tests covering query-length behaviour, BLS code lookup, and relevance ranking.
 """
 
 import pytest
@@ -27,45 +18,6 @@ def _food(bls, name, kcal):
         energy_in_kj_per_100g=kcal * 4.184,
         energy_in_kcal_per_100g=kcal,
     )
-
-
-@pytest.mark.django_db
-class TestFoodSearchHighEnergyIntent:
-    """'high energy' / 'high cal' sorts results descending by kcal."""
-
-    def test_high_energy_intent_descending_order(self, authenticated_client):
-        _food("HE1", "Low cal item", 50)
-        _food("HE2", "Mid cal item", 300)
-        _food("HE3", "High cal item", 800)
-
-        response = authenticated_client.get("/api/foods/?search=high energy")
-        assert response.status_code == status.HTTP_200_OK
-        energies = [
-            item["energy_in_kcal_per_100g"] for item in response.data["results"]
-        ]
-        assert energies == sorted(energies, reverse=True)
-
-    def test_high_cal_intent_descending_order(self, authenticated_client):
-        _food("HC1", "Salad", 20)
-        _food("HC2", "Burger", 600)
-
-        response = authenticated_client.get("/api/foods/?search=high cal")
-        assert response.status_code == status.HTTP_200_OK
-        energies = [
-            item["energy_in_kcal_per_100g"] for item in response.data["results"]
-        ]
-        assert energies == sorted(energies, reverse=True)
-
-    def test_high_kcal_intent_descending_order(self, authenticated_client):
-        _food("HK1", "Light soup", 30)
-        _food("HK2", "Chocolate cake", 450)
-
-        response = authenticated_client.get("/api/foods/?search=high kcal")
-        assert response.status_code == status.HTTP_200_OK
-        energies = [
-            item["energy_in_kcal_per_100g"] for item in response.data["results"]
-        ]
-        assert energies == sorted(energies, reverse=True)
 
 
 @pytest.mark.django_db
@@ -146,32 +98,3 @@ class TestFoodSearchRelevanceRanking:
         apple_idx = names.index("Apple")
         pineapple_idx = names.index("Pineapple")
         assert apple_idx < pineapple_idx
-
-
-@pytest.mark.django_db
-class TestFoodSearchCombinedIntentAndName:
-    """Semantic intent strips the intent keywords and searches remaining terms."""
-
-    def test_low_energy_with_name_filters_and_sorts(self, authenticated_client):
-        """'low energy chicken' returns results sorted ascending by kcal.
-
-        With vector search, strict exclusion of unrelated foods is not guaranteed
-        on a small collection (all items may have similar embeddings). We verify
-        the energy sort and that chicken items rank before beef steak.
-        """
-        _food("CI1", "Chicken breast", 110)
-        _food("CI2", "Chicken skin", 450)
-        _food("CI3", "Beef steak", 250)
-
-        response = authenticated_client.get("/api/foods/?search=low energy chicken")
-        assert response.status_code == status.HTTP_200_OK
-
-        names = [item["name"] for item in response.data["results"]]
-        # Chicken items must appear
-        assert "Chicken breast" in names
-        assert "Chicken skin" in names
-        # Results must be sorted ascending by kcal (energy intent applied)
-        energies = [
-            item["energy_in_kcal_per_100g"] for item in response.data["results"]
-        ]
-        assert energies == sorted(energies)
