@@ -252,6 +252,12 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 100,
 }
 
+# --- Vector Search (ChromaDB + SBERT) ---
+CHROMA_DB_PATH = BASE_DIR / "chroma_db"
+SBERT_MODEL_NAME = env(
+    "SBERT_MODEL_NAME", default="paraphrase-multilingual-MiniLM-L12-v2"
+)
+
 # Logging configuration for production (DEBUG=False)
 LOGGING = {
     "version": 1,

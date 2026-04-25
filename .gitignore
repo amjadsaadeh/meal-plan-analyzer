@@ -19,3 +19,4 @@ superuser-credentials.env
 node_modules/
 frontend/dist/
 .vite/
+chroma_db/

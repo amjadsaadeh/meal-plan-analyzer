@@ -366,16 +366,21 @@ class FoodViewSet(viewsets.ModelViewSet):
         return queryset.order_by(*order_params)
 
     def list(self, request, *args, **kwargs):
-        """Return foods matching by name/bls_code and additionally by aliases.
+        """Return foods matching the search query using semantic vector search.
 
-        Foods that only appear due to an alias match carry a non-null
-        ``matched_alias`` attribute which the serializer exposes so the
-        frontend can render an "alias" badge.
+        Search uses SBERT embeddings queried against ChromaDB ordered by cosine
+        similarity (most semantically similar first). A SQL BLS-code fallback
+        runs in parallel to preserve exact-code lookup. When ChromaDB is empty
+        the view falls back to the SQL-based get_queryset() path transparently.
+
+        Foods that matched only via a FoodAlias embedding carry a non-null
+        ``matched_alias`` attribute so the frontend can render an "alias" badge.
 
         Both browse (no search) and search responses use the same paginated
-        envelope: { count, next, previous, results }.  The page and page_size
-        query parameters work for both modes.
+        envelope: { count, next, previous, results }.
         """
+        from . import vector_search  # lazy import — avoids loading SBERT at startup
+
         search_query = request.query_params.get("search", "").strip()
 
         if not search_query:
@@ -387,59 +392,131 @@ class FoodViewSet(viewsets.ModelViewSet):
                     food.matched_alias = None
                 serializer = self.get_serializer(page, many=True)
                 return self.get_paginated_response(serializer.data)
-            # Fallback (pagination disabled) — return everything
             for food in queryset:
                 food.matched_alias = None
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
 
-        # ── Search path ───────────────────────────────────────────────────
-        # Get name-based results via the regular queryset
-        name_queryset = self.get_queryset()
-        name_foods = list(name_queryset)
-        name_food_ids = {f.id for f in name_foods}
+        # ── Single-char guard ─────────────────────────────────────────────
+        if len(search_query) < 2:
+            page = self.paginate_queryset([])
+            if page is not None:
+                return self.get_paginated_response([])
+            return Response([])
 
-        # Alias search (Python-side, using the cached index)
-        # Both the search term and the stored alias are normalised (ä→a, ö→o,
-        # ü→u) before the substring check so that e.g. "Erdapfel" matches the
-        # alias "Erdäpfel" and "Möhre" matches the alias "Mohre".
-        alias_matches: dict[int, str] = {}  # food_id → best matching alias string
-        if len(search_query) >= 2:
-            _, _, clean_search = parse_food_search(search_query)
-            if clean_search:
-                search_norm = normalize_umlauts(clean_search.lower())
-                terms_norm = [
-                    normalize_umlauts(t.lower())
-                    for t in clean_search.split()
-                    if len(t) >= 2
-                ]
-                alias_index = get_alias_index()
-                for food_id, aliases in alias_index.items():
-                    for alias in aliases:
-                        alias_norm = normalize_umlauts(alias.lower())
-                        if search_norm in alias_norm or any(
-                            t in alias_norm for t in terms_norm
-                        ):
-                            alias_matches[food_id] = alias
-                            break
-
-        # Fetch foods that matched only via alias (not already in name results)
-        alias_only_ids = set(alias_matches.keys()) - name_food_ids
-        alias_only_foods = (
-            list(Food.objects.filter(id__in=alias_only_ids).order_by("name"))
-            if alias_only_ids
-            else []
+        # ── Energy intent detection ───────────────────────────────────────
+        low_energy_intent, high_energy_intent, clean_search = parse_food_search(
+            search_query
         )
 
-        # Annotate: name-matched foods get None, alias-only foods get the alias string
-        for food in name_foods:
+        # ── Energy-intent-only ("high energy" with no food name) ──────────
+        # Return all foods sorted by energy via SQL (unchanged behaviour).
+        if not clean_search:
+            queryset = Food.objects.all()
+            if low_energy_intent:
+                queryset = queryset.order_by("energy_in_kcal_per_100g", "name")
+            else:
+                queryset = queryset.order_by("-energy_in_kcal_per_100g", "name")
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                for food in page:
+                    food.matched_alias = None
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            for food in queryset:
+                food.matched_alias = None
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+
+        # ── BLS code SQL search (exact / partial code lookup) ─────────────
+        bls_qs = Food.objects.filter(bls_code__icontains=clean_search)
+        bls_foods: list[Food] = list(bls_qs.order_by("name")) if bls_qs.exists() else []
+        bls_food_bls_codes = {f.bls_code for f in bls_foods}
+
+        # ── Vector search via ChromaDB ────────────────────────────────────
+        vector_results = vector_search.search_foods(
+            clean_search, limit=vector_search.FOOD_SEARCH_VECTOR_LIMIT
+        )
+
+        if not vector_results and not bls_foods:
+            # ChromaDB empty and no BLS match → full SQL fallback (original behaviour):
+            # name/bls_code SQL search + alias cache lookup.
+            name_queryset = self.get_queryset()
+            name_foods = list(name_queryset)
+            name_food_ids = {f.id for f in name_foods}
+
+            search_norm = normalize_umlauts(clean_search.lower())
+            terms_norm = [
+                normalize_umlauts(t.lower())
+                for t in clean_search.split()
+                if len(t) >= 2
+            ]
+            alias_index = get_alias_index()
+            alias_matches: dict[int, str] = {}
+            for food_id, aliases in alias_index.items():
+                for alias in aliases:
+                    alias_norm = normalize_umlauts(alias.lower())
+                    if search_norm in alias_norm or any(
+                        t in alias_norm for t in terms_norm
+                    ):
+                        alias_matches[food_id] = alias
+                        break
+
+            alias_only_ids = set(alias_matches.keys()) - name_food_ids
+            alias_only_foods = (
+                list(Food.objects.filter(id__in=alias_only_ids).order_by("name"))
+                if alias_only_ids
+                else []
+            )
+
+            for food in name_foods:
+                food.matched_alias = None
+            for food in alias_only_foods:
+                food.matched_alias = alias_matches[food.id]
+
+            all_foods = name_foods + alias_only_foods
+
+            if low_energy_intent:
+                all_foods.sort(key=lambda f: f.energy_in_kcal_per_100g)
+            elif high_energy_intent:
+                all_foods.sort(key=lambda f: f.energy_in_kcal_per_100g, reverse=True)
+
+            page = self.paginate_queryset(all_foods)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(all_foods, many=True)
+            return Response(serializer.data)
+
+        # Fetch Food objects for vector results, preserving ChromaDB similarity order
+        alias_map: dict[str, str | None] = {bls: alias for bls, alias in vector_results}
+        bls_codes_ordered = [bls for bls, _ in vector_results]
+
+        food_by_bls: dict[str, Food] = {
+            f.bls_code: f for f in Food.objects.filter(bls_code__in=bls_codes_ordered)
+        }
+
+        vector_foods: list[Food] = []
+        for bls_code in bls_codes_ordered:
+            food = food_by_bls.get(bls_code)
+            if food is None or bls_code in bls_food_bls_codes:
+                # Skip stale ChromaDB entries and foods already in BLS results
+                continue
+            food.matched_alias = alias_map[bls_code]
+            vector_foods.append(food)
+
+        # BLS matches always first (highest priority), then vector similarity order
+        for food in bls_foods:
             food.matched_alias = None
-        for food in alias_only_foods:
-            food.matched_alias = alias_matches[food.id]
 
-        all_foods = name_foods + alias_only_foods
+        all_foods = bls_foods + vector_foods
 
-        # Paginate the assembled list (DRF's paginator accepts any sequence)
+        # ── Energy intent post-sort ───────────────────────────────────────
+        if low_energy_intent:
+            all_foods.sort(key=lambda f: f.energy_in_kcal_per_100g)
+        elif high_energy_intent:
+            all_foods.sort(key=lambda f: f.energy_in_kcal_per_100g, reverse=True)
+
         page = self.paginate_queryset(all_foods)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
