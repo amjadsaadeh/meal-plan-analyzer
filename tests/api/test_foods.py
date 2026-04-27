@@ -278,7 +278,7 @@ class TestFoodAliasSearch:
         assert matched["matched_alias"] is None
 
     def test_alias_only_result_appears_after_name_results(self, authenticated_client):
-        """Foods matched by alias come after name-matched results in the response."""
+        """An alias match with lower relevance than the name match still appears after it."""
         food_name = _make_food(bls_code="ALIAS015", name="Zitrone")
         food_alias = _make_food(bls_code="ALIAS016", name="Unrelated XYZ")
         FoodAlias.objects.create(food=food_alias, alias="Zitrone alias")
@@ -289,8 +289,23 @@ class TestFoodAliasSearch:
         ids = [item["id"] for item in response.data["results"]]
         assert food_name.id in ids
         assert food_alias.id in ids
-        # Name match comes first
+        # Name exact match (relevance 100) beats alias starts-with match (relevance 50)
         assert ids.index(food_name.id) < ids.index(food_alias.id)
+
+    def test_alias_match_ranks_above_weaker_name_match(self, authenticated_client):
+        """Alias exact match (relevance 100) ranks above a name substring match (relevance 1)."""
+        food_contains = _make_food(bls_code="ALIAS019", name="Zitronensaft XYZ")
+        food_exact_alias = _make_food(bls_code="ALIAS020", name="Unrelated ABC")
+        FoodAlias.objects.create(food=food_exact_alias, alias="Zitrone")
+        cache.delete(ALIAS_CACHE_KEY)
+
+        response = authenticated_client.get("/api/foods/?search=Zitrone")
+        assert response.status_code == status.HTTP_200_OK
+        ids = [item["id"] for item in response.data["results"]]
+        assert food_exact_alias.id in ids
+        assert food_contains.id in ids
+        # Alias exact match (100) should rank above name substring match (1)
+        assert ids.index(food_exact_alias.id) < ids.index(food_contains.id)
 
     def test_no_duplicate_when_both_name_and_alias_match(self, authenticated_client):
         """A food matching by both name and alias appears only once."""

@@ -153,6 +153,19 @@ def get_food_ids_by_alias(clean_search):
     return matched_ids
 
 
+def _alias_relevance(alias: str, clean_search: str) -> int:
+    """Return a relevance score for an alias match using the same 100/50/40/1 scale as name matches."""
+    alias_norm = normalize_umlauts(alias.lower())
+    search_norm = normalize_umlauts(clean_search.lower())
+    if alias_norm == search_norm:
+        return 100
+    if alias_norm.startswith(search_norm):
+        return 50
+    if f" {search_norm}" in alias_norm:
+        return 40
+    return 1
+
+
 # ---------------------------------------------------------------------------
 # ViewSets
 # ---------------------------------------------------------------------------
@@ -246,8 +259,12 @@ class FoodViewSet(viewsets.ModelViewSet):
         # ü→u) before the substring check so that e.g. "Erdapfel" matches the
         # alias "Erdäpfel" and "Möhre" matches the alias "Mohre".
         alias_matches: dict[int, str] = {}  # food_id → best matching alias string
+        low_energy_intent = high_energy_intent = False
+        clean_search = ""
         if len(search_query) >= 2:
-            _, _, clean_search = parse_food_search(search_query)
+            low_energy_intent, high_energy_intent, clean_search = parse_food_search(
+                search_query
+            )
             if clean_search:
                 search_norm = normalize_umlauts(clean_search.lower())
                 terms_norm = [
@@ -278,8 +295,19 @@ class FoodViewSet(viewsets.ModelViewSet):
             food.matched_alias = None
         for food in alias_only_foods:
             food.matched_alias = alias_matches[food.id]
+            food.relevance = _alias_relevance(alias_matches[food.id], clean_search)
 
         all_foods = name_foods + alias_only_foods
+        if low_energy_intent:
+            all_foods.sort(
+                key=lambda f: (f.energy_in_kcal_per_100g, -f.relevance, f.name)
+            )
+        elif high_energy_intent:
+            all_foods.sort(
+                key=lambda f: (-f.energy_in_kcal_per_100g, -f.relevance, f.name)
+            )
+        else:
+            all_foods.sort(key=lambda f: (-f.relevance, f.name))
 
         # Paginate the assembled list (DRF's paginator accepts any sequence)
         page = self.paginate_queryset(all_foods)
