@@ -343,8 +343,6 @@ class FoodAlias(models.Model):
         return f"{self.alias} → {self.food.name}"
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-
         self.alias = " ".join(self.alias.split())
         if not self.alias:
             raise ValidationError({"alias": "Alias cannot be blank."})
