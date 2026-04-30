@@ -8,6 +8,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 import jsonschema
 from .nutrients import THRESHOLD_SCHEMA, NUTRIENT_IDS
+from .storage import PrivateExportsStorage
 
 ALIAS_CACHE_KEY = "food_aliases_index"
 
@@ -314,7 +315,9 @@ class BackgroundJob(models.Model):
     )
     progress = models.PositiveSmallIntegerField(default=0)
     task_kwargs = models.JSONField(default=dict, blank=True)
-    result_file = models.FileField(upload_to="exports/", null=True, blank=True)
+    result_file = models.FileField(
+        storage=PrivateExportsStorage(), null=True, blank=True
+    )
     error_message = models.TextField(blank=True, default="")
     expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
