@@ -96,16 +96,16 @@ class TestMealPlanDetailView:
         assert response.status_code == 200
         assert response.context["plan_id"] == plan.pk
 
-    def test_create_redirect_via_meal_plan_create_url(self, django_client):
-        """GET /meal-plan/new/ creates a plan+day and redirects to the detail page."""
+    def test_create_via_post_meal_plan_url(self, django_client):
+        """POST /meal-plan/ creates a plan+day and returns JSON redirect URL."""
         before_count = MealPlan.objects.count()
-        response = django_client.get(reverse("meal-plan-create"))
-        assert response.status_code == 302
+        response = django_client.post(reverse("meal-plan-create"))
+        assert response.status_code == 201
         assert MealPlan.objects.count() == before_count + 1
         new_plan = MealPlan.objects.order_by("-creation_date").first()
-        # A default day was also created
         assert MealPlanDay.objects.filter(meal_plan=new_plan).count() == 1
-        assert str(new_plan.pk) in response["Location"]
+        data = response.json()
+        assert str(new_plan.pk) in data["redirect"]
 
     def test_detail_404_for_nonexistent_plan(self, django_client):
         response = django_client.get(reverse("meal-plan-detail", kwargs={"pk": 999999}))

@@ -12,13 +12,13 @@
       @cancel="modalOpen = false"
     />
     <div class="top-actions">
-      <a :href="createUrl" class="btn-create">
+      <button class="btn-create" :disabled="creating" @click="createPlan">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
         {{ i18n.createPlan }}
-      </a>
+      </button>
       <div class="search-wrapper">
         <SearchBar v-model="searchQuery" :placeholder="i18n.searchPlaceholder" />
       </div>
@@ -57,6 +57,29 @@ import type { MealPlan, I18n, PaginatedResponse } from '../../types/index'
 const csrfToken = inject<string>('csrfToken')!
 const createUrl = inject<string>('createUrl')!
 const i18n = inject<I18n>('i18n')!
+
+const creating = ref(false)
+
+async function createPlan() {
+  if (creating.value) return
+  creating.value = true
+  try {
+    const res = await fetch(createUrl, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+    })
+    if (!res.ok) {
+      alert(i18n.errorCreatePlan)
+      return
+    }
+    const data = await res.json()
+    window.location.href = data.redirect
+  } catch {
+    alert(i18n.errorCreatePlan)
+  } finally {
+    creating.value = false
+  }
+}
 
 const plans = ref<MealPlan[]>([])
 const loading = ref(true)

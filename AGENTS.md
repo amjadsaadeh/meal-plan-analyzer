@@ -54,6 +54,13 @@ Standard library → Third-party (Django, DRF) → Local imports.
 - **Constants**: `UPPER_SNAKE_CASE` (`ALIAS_CACHE_KEY`, `NUTRIENT_IDS`)
 - **Model fields**: Include units (`energy_in_kcal_per_100g`)
 
+### Formatting
+Always use `black` for formatting before committing:
+```bash
+uv run black .
+```
+
+
 ### Type Hints & Docstrings
 ```python
 def get_alias_index() -> dict[int, list[str]]:
@@ -102,6 +109,14 @@ MealPlanDay.objects.filter(removed=False)
 def invalidate_alias_cache(sender, **kwargs):
     cache.delete(ALIAS_CACHE_KEY)
 ```
+
+### Celery / Background Tasks
+Used for PDF generation and long-running exports.
+```bash
+uv run celery -A config worker -l info
+```
+Define tasks in `meals/tasks.py`.
+
 
 ---
 
@@ -157,10 +172,13 @@ def _make_food(**kwargs):
 | File | Purpose |
 |------|---------|
 | `meals/models.py` | Food, MealPlan, MealPlanDay, FoodAlias, signals |
-| `meals/views.py` | Template views + DRF ViewSets + search |
+| `meals/views/` | Submodules for food, mealplan, and threshold views |
 | `meals/serializers.py` | DRF serializers |
 | `meals/nutrients.py` | NUTRIENTS dict, THRESHOLD_SCHEMA |
+| `meals/tasks.py` | Celery tasks (PDF generation, exports) |
+| `meals/urls.py` | URL routing |
 | `tests/conftest.py` | Shared pytest fixtures |
+
 
 ---
 

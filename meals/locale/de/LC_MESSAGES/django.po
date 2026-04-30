@@ -270,6 +270,10 @@ msgid "Error deleting plan"
 msgstr "Fehler beim Löschen des Plans"
 
 #: meals/templates/meals/mealplan_list.html.j2:19
+msgid "Error creating plan"
+msgstr "Fehler beim Erstellen des Plans"
+
+#: meals/templates/meals/mealplan_list.html.j2:19
 msgid "No meal plans found."
 msgstr "Keine Mahlzeitenpläne gefunden."
 
