@@ -96,7 +96,11 @@ meal-plan-analyzer/
 │
 ├── meals/                   # The sole Django app
 │   ├── models.py            # Data models (see below)
-│   ├── views.py             # Template views + DRF ViewSets
+│   ├── views/               # Template views + DRF ViewSets (package)
+│   │   ├── __init__.py      # Re-exports public API
+│   │   ├── food.py          # FoodViewSet, FoodAliasViewSet, food search helpers, food_database/editor views
+│   │   ├── mealplan.py      # MealPlan*ViewSets, ExportJobViewSet, PDF generation, meal plan template views
+│   │   └── threshold.py     # ThresholdPresetViewSet + threshold preset template views
 │   ├── serializers.py       # DRF serializers
 │   ├── urls.py              # URL patterns for views and API router
 │   ├── nutrients.py         # NUTRIENTS dict, NUTRIENT_IDS, THRESHOLD_SCHEMA
@@ -394,7 +398,7 @@ PDF generation runs as a Celery background task. The frontend polls for completi
 - Resolves static/media file URLs via `django_url_fetcher` (no HTTP context in worker)
 - Saves PDF to `exports/` via `BackgroundJob.result_file`; status → DONE on success, FAILED on error
 
-**`django_url_fetcher(url, **kwargs)`** (in `meals/views.py`):
+**`django_url_fetcher(url, **kwargs)`** (in `meals/views/mealplan.py`):
 - Custom WeasyPrint URL fetcher used by both the sync view and the Celery task
 - Maps `STATIC_URL` → `STATIC_ROOT` / `finders.find()`; maps `MEDIA_URL` → `MEDIA_ROOT`; falls back to `weasyprint.default_url_fetcher`
 
@@ -454,7 +458,7 @@ Custom template filters (`meals/templatetags/meal_extras.py`):
 
 ## Vue Frontend
 
-The meal plan list page uses a Vue 3 / Vite SPA. Source lives in `frontend/src/mealplan-list/`.
+The Vue 3 / Vite SPA is written in **TypeScript** with `<script setup lang="ts">` SFCs. Source lives under `frontend/src/<page>/`. Each page has a `main.ts` entry point and a `components/` directory.
 
 **JS package manager**: `pnpm` (never `npm` or `yarn`). Lock file: `pnpm-lock.yaml` in repo root.
 
@@ -462,7 +466,10 @@ The meal plan list page uses a Vue 3 / Vite SPA. Source lives in `frontend/src/m
 pnpm install          # install dependencies
 pnpm dev              # start Vite dev server at :5173
 pnpm build            # build to frontend/dist/
+pnpm type-check       # vue-tsc --noEmit (TypeScript type checking)
 ```
+
+Build config: `vite.config.ts` (entry points reference `main.ts`); TypeScript config: `tsconfig.json` (strict mode, ES2020 target). Shared types live in `frontend/src/types/index.ts`. Note: there is no separate JS lint/type-check step in the CI test workflow — type errors only surface during `pnpm build` or an explicit `pnpm type-check`.
 
 `django-vite` 3.x bridges Vite and Django:
 - `DEBUG=True`: proxies asset requests to Vite dev server
@@ -470,7 +477,7 @@ pnpm build            # build to frontend/dist/
 
 ### Vue Component Tree (`frontend/src/mealplan-list/`)
 
-- `main.js` — mounts `MealPlanApp` on `#meal-plan-app`; provides csrfToken, i18n, createUrl
+- `main.ts` — mounts `MealPlanApp` on `#meal-plan-app`; provides csrfToken, i18n, createUrl
 - `MealPlanApp.vue` — delegates search and pagination to the backend; sends `?search=` and `?page=` query params to `/api/mealplans/`; uses `AbortController` to cancel in-flight requests on rapid input; reads `num_pages` from the response envelope; URL sync via `pushState`
 - `SearchBar.vue` — 300ms debounced search; emits query to parent which sends `?search=` to the backend; `id="liveSearch"` for Playwright tests
 - `MealPlanTable.vue` — table of plans
@@ -481,7 +488,7 @@ pnpm build            # build to frontend/dist/
 
 ### Vue Component Tree (`frontend/src/food-database/`)
 
-- `main.js` — mounts `FoodDatabaseApp` on its mount element; provides csrfToken and API URL
+- `main.ts` — mounts `FoodDatabaseApp` on its mount element; provides csrfToken and API URL
 - `FoodDatabaseApp.vue` — lists all foods with server-side search and pagination via a unified `fetchFoods(page, search)` function; both browse and search modes use the paginated envelope; pagination widget always visible when `totalPages > 1`
 - `FoodSearchBar.vue` — debounced search input
 - `FoodTable.vue` — tabular food listing
@@ -490,14 +497,14 @@ pnpm build            # build to frontend/dist/
 
 ### Vue Component Tree (`frontend/src/food-editor/`)
 
-- `main.js` — mounts `FoodEditorApp` for creating and editing a single custom food
+- `main.ts` — mounts `FoodEditorApp` for creating and editing a single custom food
 - `FoodEditorApp.vue` — form with all nutrient fields; calls `POST`/`PUT` on `/api/foods/`; enforces `data_source == 'custom'` edit rules; includes an **Aliases** section (available for all foods, BLS and custom) that calls `/api/food-aliases/` to list, add, and delete aliases
 
 ### Vue Component Tree (`frontend/src/mealplan-detail/`)
 
 The meal plan detail page is a full Vue 3 SPA. Source lives in `frontend/src/mealplan-detail/`.
 
-- `main.js` — mounts `MealPlanDetailApp` on `#meal-plan-detail-app`; provides `planId`, `csrfToken`, `nutrients`, `i18n`, `pdfUrl`, `previewUrl`, `planListUrl`
+- `main.ts` — mounts `MealPlanDetailApp` on `#meal-plan-detail-app`; provides `planId`, `csrfToken`, `nutrients`, `i18n`, `pdfUrl`, `previewUrl`, `planListUrl`
 - `components/MealPlanDetailApp.vue` — root component; orchestrates the detail page
 - `components/PageHeader.vue` — plan name/subtitle editing, navigation back to list
 - `components/Toolbar.vue` — top action bar (add day, export PDF, etc.)
@@ -516,7 +523,7 @@ i18n strings are passed via the `data-i18n` attribute on the mount element (Djan
 
 ### Vue Component Tree (`frontend/src/threshold-preset-list/`)
 
-- `main.js` — mounts `ThresholdPresetApp` on its mount element; provides csrfToken and API URL
+- `main.ts` — mounts `ThresholdPresetApp` on its mount element; provides csrfToken and API URL
 - `components/ThresholdPresetApp.vue` — lists all threshold presets with search and pagination; delegates to child components
 - `components/PresetSearchBar.vue` — debounced search input
 - `components/PresetTable.vue` — tabular preset listing
@@ -525,7 +532,7 @@ i18n strings are passed via the `data-i18n` attribute on the mount element (Djan
 
 ### Vue Component Tree (`frontend/src/threshold-preset-editor/`)
 
-- `main.js` — mounts `ThresholdPresetEditorApp` for creating and editing a single threshold preset
+- `main.ts` — mounts `ThresholdPresetEditorApp` for creating and editing a single threshold preset
 - `components/ThresholdPresetEditorApp.vue` — form with min/max fields for each nutrient; calls `POST`/`PUT` on `/api/threshold-presets/`
 
 ---
