@@ -59,16 +59,20 @@ const createUrl = inject<string>('createUrl')!
 const i18n = inject<I18n>('i18n')!
 
 async function createPlan() {
-  const res = await fetch(createUrl, {
-    method: 'POST',
-    headers: { 'X-CSRFToken': csrfToken },
-  })
-  if (!res.ok) {
-    alert(i18n.createPlan + ' failed')
-    return
+  try {
+    const res = await fetch(createUrl, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+    })
+    if (!res.ok) {
+      alert(i18n.errorCreatePlan)
+      return
+    }
+    const data = await res.json()
+    window.location.href = data.redirect
+  } catch {
+    alert(i18n.errorCreatePlan)
   }
-  const data = await res.json()
-  window.location.href = data.redirect
 }
 
 const plans = ref<MealPlan[]>([])
