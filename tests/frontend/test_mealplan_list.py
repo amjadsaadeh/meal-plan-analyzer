@@ -32,7 +32,9 @@ def test_mealplan_list_create_button(logged_in_page, live_server, test_user):
     btn = logged_in_page.locator(".btn-create")
     expect(btn).to_be_visible()
     btn.click()
-    logged_in_page.wait_for_url(lambda url: "/meal-plan/" in url and url != live_server.url + "/")
+    logged_in_page.wait_for_url(
+        lambda url: "/meal-plan/" in url and url != live_server.url + "/"
+    )
 
 
 # ---------------------------------------------------------------------------

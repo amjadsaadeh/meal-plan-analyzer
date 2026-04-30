@@ -414,9 +414,13 @@ def meal_plan_list(request):
 @require_http_methods(["POST"])
 def meal_plan_create(request):
     from django.urls import reverse
+
     parent_plan = MealPlan.objects.create(name=_("New Plan"))
     MealPlanDay.objects.create(name=_("Day 1"), meal_plan=parent_plan)
-    return JsonResponse({"redirect": reverse("meal-plan-detail", kwargs={"pk": parent_plan.pk})}, status=201)
+    return JsonResponse(
+        {"redirect": reverse("meal-plan-detail", kwargs={"pk": parent_plan.pk})},
+        status=201,
+    )
 
 
 @login_required
