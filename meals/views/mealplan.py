@@ -11,6 +11,7 @@ from django.core.cache import cache
 from django.db.models import Prefetch
 from django.http import HttpResponse, FileResponse, Http404, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -413,8 +414,6 @@ def meal_plan_list(request):
 @login_required
 @require_http_methods(["POST"])
 def meal_plan_create(request):
-    from django.urls import reverse
-
     parent_plan = MealPlan.objects.create(name=_("New Plan"))
     MealPlanDay.objects.create(name=_("Day 1"), meal_plan=parent_plan)
     return JsonResponse(
@@ -425,8 +424,6 @@ def meal_plan_create(request):
 
 @login_required
 def meal_plan_detail(request, pk):
-    from django.urls import reverse
-
     plan = get_object_or_404(MealPlan, pk=pk)
 
     nutrients_list = [
