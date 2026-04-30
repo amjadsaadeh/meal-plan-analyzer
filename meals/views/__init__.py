@@ -1,3 +1,4 @@
+from .auth import ThrottledLoginView
 from .food import (
     FoodViewSet,
     FoodAliasViewSet,
@@ -33,6 +34,8 @@ from .threshold import (
 )
 
 __all__ = [
+    # auth
+    "ThrottledLoginView",
     # food
     "FoodViewSet",
     "FoodAliasViewSet",
