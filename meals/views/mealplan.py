@@ -8,9 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.core.cache import cache
+from django.db import transaction
 from django.db.models import Prefetch
 from django.http import HttpResponse, FileResponse, Http404, JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from django.template.loader import render_to_string
@@ -414,8 +415,9 @@ def meal_plan_list(request):
 @login_required
 @require_http_methods(["POST"])
 def meal_plan_create(request):
-    parent_plan = MealPlan.objects.create(name=_("New Plan"))
-    MealPlanDay.objects.create(name=_("Day 1"), meal_plan=parent_plan)
+    with transaction.atomic():
+        parent_plan = MealPlan.objects.create(name=_("New Plan"))
+        MealPlanDay.objects.create(name=_("Day 1"), meal_plan=parent_plan)
     return JsonResponse(
         {"redirect": reverse("meal-plan-detail", kwargs={"pk": parent_plan.pk})},
         status=201,
