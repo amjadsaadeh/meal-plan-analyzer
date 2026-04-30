@@ -144,3 +144,21 @@ class TestExportNameAutoAlias:
         response = client.post(url, payload)
         assert response.status_code == status.HTTP_201_CREATED
         assert FoodAlias.objects.filter(food=food, alias="Special Fruit").count() == 1
+
+    def test_no_alias_if_case_insensitive_alias_already_exists(self, setup_data):
+        """export_name differing only in case from an existing alias must not create a duplicate."""
+        client, food, day = setup_data
+        FoodAlias.objects.create(food=food, alias="special fruit")
+
+        url = reverse("mealplanfood-list")
+        payload = {
+            "meal_plan_day": day.id,
+            "food": food.id,
+            "amount_in_g": 100,
+            "meal_type": "breakfast",
+            "export_name": "Special Fruit",
+        }
+
+        response = client.post(url, payload)
+        assert response.status_code == status.HTTP_201_CREATED
+        assert FoodAlias.objects.filter(food=food).count() == 1

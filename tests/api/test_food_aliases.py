@@ -178,3 +178,84 @@ class TestFoodAliasMethodRestrictions:
             format="json",
         )
         assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+
+
+@pytest.mark.django_db
+class TestFoodAliasDeduplication:
+    def test_case_insensitive_duplicate_returns_existing(self, authenticated_client):
+        food = _make_food("40")
+        existing = FoodAlias.objects.create(food=food, alias="Apple")
+
+        response = authenticated_client.post(
+            "/api/food-aliases/",
+            {"food": food.id, "alias": "apple"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == existing.id
+        assert FoodAlias.objects.filter(food=food).count() == 1
+
+    def test_case_insensitive_duplicate_uppercase_returns_existing(
+        self, authenticated_client
+    ):
+        food = _make_food("41")
+        existing = FoodAlias.objects.create(food=food, alias="mango juice")
+
+        response = authenticated_client.post(
+            "/api/food-aliases/",
+            {"food": food.id, "alias": "Mango Juice"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == existing.id
+        assert FoodAlias.objects.filter(food=food).count() == 1
+
+    def test_alias_matching_food_name_is_rejected(self, authenticated_client):
+        food = _make_food("42")
+        response = authenticated_client.post(
+            "/api/food-aliases/",
+            {"food": food.id, "alias": "Alias Test Food 42"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "alias" in response.data
+        assert not FoodAlias.objects.filter(food=food).exists()
+
+    def test_alias_matching_food_name_case_insensitive_is_rejected(
+        self, authenticated_client
+    ):
+        food = _make_food("43")
+        response = authenticated_client.post(
+            "/api/food-aliases/",
+            {"food": food.id, "alias": "alias test food 43"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "alias" in response.data
+        assert not FoodAlias.objects.filter(food=food).exists()
+
+    def test_whitespace_normalized_before_dedup(self, authenticated_client):
+        food = _make_food("44")
+        existing = FoodAlias.objects.create(food=food, alias="Fresh Juice")
+
+        response = authenticated_client.post(
+            "/api/food-aliases/",
+            {"food": food.id, "alias": "Fresh  Juice"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == existing.id
+        assert FoodAlias.objects.filter(food=food).count() == 1
+
+    def test_distinct_aliases_different_foods_are_allowed(self, authenticated_client):
+        food_a = _make_food("45")
+        food_b = _make_food("46")
+        FoodAlias.objects.create(food=food_a, alias="SharedName")
+
+        response = authenticated_client.post(
+            "/api/food-aliases/",
+            {"food": food_b.id, "alias": "sharedname"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert FoodAlias.objects.filter(food=food_b, alias="sharedname").exists()
