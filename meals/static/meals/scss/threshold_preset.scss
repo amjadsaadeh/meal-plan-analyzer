@@ -285,7 +285,7 @@ body {
     h1.preset-name-display {
         font-size: 2rem;
         font-weight: 400;
-        background: linear-gradient(135deg, #4180A6 0%, $text-dim 100%);
+        background: $gradient-title;
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;

@@ -41,7 +41,7 @@ body {
 h1.editable-title {
     font-size: 2.5rem;
     font-weight: 400;
-    background: linear-gradient(135deg, #4180A6 0%, $text-dim 100%);
+    background: $gradient-title;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -259,7 +259,7 @@ input.table-input {
 }
 
 input.table-input.amount-zero {
-    color: #e8880c;
+    color: var(--zero-amount);
 }
 
 // Nutrient value cells
@@ -320,7 +320,7 @@ input.table-input.amount-zero {
     display: inline-flex;
     align-items: center;
     background: rgba($primary, 0.15);
-    color: #4180A6;
+    color: var(--accent-blue);
     border: 1px solid rgba($primary, 0.45);
     border-radius: 4px;
     font-size: 0.68rem;
@@ -592,7 +592,7 @@ tfoot tr {
         box-shadow: 0 0 0 2px var(--primary-glow);
     }
 
-    &::placeholder { color: #cbd5e1; font-size: 0.65rem; }
+    &::placeholder { color: var(--placeholder); font-size: 0.65rem; }
 
     // Hide number input arrows
     &::-webkit-outer-spin-button,
@@ -846,10 +846,10 @@ tfoot tr {
 }
 
 .btn-modal-cancel {
-    background: #f1f5f9;
+    background: var(--btn-neutral-bg);
     color: var(--text-dim);
 
-    &:hover { background: #e2e8f0; }
+    &:hover { background: var(--btn-neutral-hover); }
 }
 
 .btn-modal-save {
@@ -861,7 +861,7 @@ tfoot tr {
 }
 
 .modal-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 20px;
     width: 90%;
     max-width: 400px;
@@ -892,7 +892,7 @@ tfoot tr {
     transition: all 0.2s;
 
     &:hover {
-        background: #dc2626;
+        background: var(--danger-hover);
         transform: translateY(-1px);
     }
 }

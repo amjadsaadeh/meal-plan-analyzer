@@ -204,10 +204,10 @@ watch(() => props.open, async (val) => {
 }
 
 .btn-modal-delete:hover {
-  background: #8a3436;
-  border-color: #8a3436;
+  background: var(--danger-hover);
+  border-color: var(--danger-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(166, 65, 67, 0.3);
+  box-shadow: 0 4px 12px var(--danger-glow);
 }
 
 /* Overlay fade */

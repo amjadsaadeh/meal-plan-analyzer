@@ -27,7 +27,7 @@ header {
 h1 {
     font-size: 3.5rem;
     font-weight: 400;
-    background: linear-gradient(135deg, #4180A6 0%, $text-dim 100%);
+    background: $gradient-title;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -109,7 +109,7 @@ p.subtitle {
 
     &:last-child { border-bottom: none; }
 
-    &:hover { background: rgba(255, 255, 255, 0.05); }
+    &:hover { background: var(--row-hover); }
 }
 
 .food-info {
