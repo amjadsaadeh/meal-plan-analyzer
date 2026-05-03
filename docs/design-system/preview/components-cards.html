@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: system-ui, sans-serif; padding: 20px; }
+  .section { margin-bottom: 24px; }
+  .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing:.09em; color: #666E73; margin-bottom: 10px; font-weight: 600; }
+
+  /* Card */
+  .card { background: rgba(255,255,255,0.9); backdrop-filter: blur(12px); border: 1px solid rgba(0,0,0,0.08); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
+
+  /* Mini table inside card */
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th { padding: .9rem 1.2rem; font-size: .78rem; font-weight: 600; color: #666E73; text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid rgba(0,0,0,.08); text-align: left; }
+  td { padding: .85rem 1.2rem; border-bottom: 1px solid rgba(0,0,0,.08); color: #2c3338; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(106,217,198,0.05); }
+
+  /* Side panel summary */
+  .summary-panel { background: white; border: 1px solid rgba(0,0,0,.08); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.05); padding: 1.2rem; width: 220px; }
+  .summary-title { font-size: .9rem; font-weight: 600; color: #2c3338; border-bottom: 1px solid rgba(0,0,0,.08); padding-bottom: .6rem; margin-bottom: .8rem; }
+  .summary-item { display: flex; justify-content: space-between; align-items: center; padding: .5rem .6rem; background: #f8fafc; border-radius: 8px; margin-bottom: 5px; }
+  .s-label { font-size: .75rem; color: #666E73; }
+  .s-val { font-size: .78rem; font-weight: 600; color: #4fada0; font-variant-numeric: tabular-nums; }
+  .s-val.over { color: #A64143; }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Table Card</div>
+    <div class="card" style="max-width:560px">
+      <table>
+        <thead><tr>
+          <th>Ingredient</th><th style="text-align:right">Amount (g)</th><th style="text-align:right">kcal</th><th style="text-align:right">Protein (g)</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Vollmilch 3,5% Fett</td><td style="text-align:right;color:#666E73">250</td><td style="text-align:right;color:#4fada0;font-variant-numeric:tabular-nums">161.3</td><td style="text-align:right;color:#666E73;font-variant-numeric:tabular-nums">8.1</td></tr>
+          <tr><td>Haferflocken</td><td style="text-align:right;color:#666E73">80</td><td style="text-align:right;color:#4fada0;font-variant-numeric:tabular-nums">296.0</td><td style="text-align:right;color:#666E73;font-variant-numeric:tabular-nums">10.2</td></tr>
+          <tr><td>Banane</td><td style="text-align:right;color:#e8880c">0</td><td style="text-align:right;color:#4fada0;font-variant-numeric:tabular-nums">0.0</td><td style="text-align:right;color:#666E73;font-variant-numeric:tabular-nums">0.0</td></tr>
+        </tbody>
+        <tfoot><tr style="background:rgba(106,217,198,0.03)">
+          <td colspan="2" style="text-align:right;font-size:.7rem;text-transform:uppercase;color:#666E73;letter-spacing:.05em">Subtotal</td>
+          <td style="text-align:right;font-weight:600;color:#6AD9C6;font-variant-numeric:tabular-nums">457.3</td>
+          <td style="text-align:right;font-weight:600;color:#6AD9C6;font-variant-numeric:tabular-nums">18.3</td>
+        </tr></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Day Summary Side Panel</div>
+    <div class="summary-panel">
+      <div class="summary-title">Day 1 — Overview</div>
+      <div class="summary-item"><span class="s-label">Energy (kcal)</span><span class="s-val">1 842.4</span></div>
+      <div class="summary-item"><span class="s-label">Protein (g)</span><span class="s-val">72.1</span></div>
+      <div class="summary-item"><span class="s-label">Fat (g)</span><span class="s-val">68.5</span></div>
+      <div class="summary-item"><span class="s-label">Carbs (g)</span><span class="s-val over">312.4</span></div>
+      <div class="summary-item"><span class="s-label">Fiber (g)</span><span class="s-val">24.8</span></div>
+    </div>
+  </div>
+</body>
+</html>

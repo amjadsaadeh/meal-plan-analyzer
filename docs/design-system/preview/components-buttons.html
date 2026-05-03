@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: system-ui, sans-serif; padding: 20px; }
+  :root {
+    --primary: #6AD9C6; --primary-hover: #4fada0; --primary-glow: rgba(106,217,198,0.2);
+    --text-dim: #666E73; --text-main: #2c3338; --glass-border: rgba(0,0,0,0.08);
+    --danger: #A64143;
+  }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: .09em; color: #666E73; margin-bottom: 10px; font-weight: 600; }
+  .section { margin-bottom: 20px; }
+
+  .btn { display:inline-flex;align-items:center;gap:6px;padding:.65rem 1.3rem;border-radius:12px;font-size:.9rem;font-weight:400;cursor:pointer;border:none;text-decoration:none;transition:all .25s; }
+  .btn-primary { background:#6AD9C6;color:white;box-shadow:0 4px 10px rgba(106,217,198,0.2); }
+  .btn-primary:hover { background:#4fada0;transform:translateY(-2px);box-shadow:0 6px 15px rgba(106,217,198,0.2); }
+  .btn-secondary { background:rgba(106,217,198,0.05);border:1px solid rgba(0,0,0,0.08);color:#4fada0; }
+  .btn-secondary:hover { background:#6AD9C6;color:white;border-color:#6AD9C6; }
+  .btn-ghost { background:transparent;border:1px solid rgba(0,0,0,0.08);color:#666E73;padding:.5rem 1rem; border-radius:10px;font-size:.85rem; }
+  .btn-ghost:hover { background:rgba(0,0,0,0.03);color:#2c3338; }
+  .btn-danger-outline { background:transparent;border:1px solid #A64143;color:#A64143;padding:.65rem 1.3rem;border-radius:10px;font-size:.9rem;cursor:pointer; }
+  .btn-danger-outline:hover { background:#A64143;color:white; }
+  .btn-icon { background:transparent;border:none;color:#666E73;padding:6px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center; }
+  .btn-icon:hover { background:rgba(106,217,198,0.1);color:#4fada0; }
+  .btn-sm { padding:.45rem .9rem;font-size:.82rem;border-radius:8px; }
+  .disabled { opacity:0.5;cursor:not-allowed;pointer-events:none; }
+  .btn-logout { background:transparent;border:1px solid rgba(0,0,0,0.08);color:#666E73;padding:.45rem .9rem;border-radius:10px;font-size:.82rem;cursor:pointer;transition:all .2s; }
+  .btn-logout:hover { background:rgba(166,65,67,0.05);color:#A64143;border-color:rgba(166,65,67,0.2); }
+  .btn-back { display:inline-flex;align-items:center;gap:4px;color:#666E73;text-decoration:none;font-size:.9rem;transition:color .2s; }
+  .btn-back:hover { color:#6AD9C6; }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Primary CTA</div>
+    <div class="row">
+      <button class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Plan
+      </button>
+      <button class="btn btn-primary disabled">New Plan</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Secondary</div>
+    <div class="row">
+      <button class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save as Template
+      </button>
+      <button class="btn btn-secondary btn-sm">Add Day</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Ghost / Nav / Utility</div>
+    <div class="row">
+      <button class="btn-ghost">Columns ▾</button>
+      <button class="btn-logout">Log out</button>
+      <a class="btn-back" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Back to Plans
+      </a>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Danger</div>
+    <div class="row">
+      <button class="btn-danger-outline">Delete Plan</button>
+      <button class="btn-icon" title="Delete">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A64143" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </div>
+  </div>
+</body>
+</html>

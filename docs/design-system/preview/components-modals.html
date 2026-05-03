@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: system-ui, sans-serif; padding: 20px; }
+  .section { margin-bottom: 24px; }
+  .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing:.09em; color: #666E73; margin-bottom: 10px; font-weight: 600; }
+
+  /* Modal card */
+  .modal-card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,.15); max-width: 380px; }
+  .modal-header h3 { font-size: 1.3rem; font-weight: 600; color: #2c3338; margin-bottom: .75rem; }
+  .modal-body p { font-size: .9rem; color: #666E73; margin-bottom: 1rem; }
+  .modal-warning { font-size: .85rem; color: #A64143; }
+  .modal-input { width: 100%; padding: 10px 12px; border: 1px solid rgba(0,0,0,.08); border-radius: 10px; outline: none; font-size: .95rem; transition: all .2s; }
+  .modal-input:focus { border-color: #6AD9C6; box-shadow: 0 0 0 3px rgba(106,217,198,.2); }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
+  .btn-cancel { background: #f1f5f9; color: #666E73; padding: 9px 18px; border-radius: 10px; border: none; cursor: pointer; font-size: .88rem; font-weight: 600; }
+  .btn-save { background: #6AD9C6; color: white; padding: 9px 18px; border-radius: 10px; border: none; cursor: pointer; font-size: .88rem; font-weight: 600; }
+  .btn-danger-modal { background: #A64143; color: white; padding: 9px 18px; border-radius: 10px; border: none; cursor: pointer; font-size: .88rem; font-weight: 400; }
+
+  /* Search dropdown */
+  .search-dropdown { background: white; border: 1px solid rgba(0,0,0,.08); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,.1); overflow: hidden; max-width: 340px; }
+  .search-item { padding: 10px 18px; border-bottom: 1px solid rgba(0,0,0,.07); display: flex; justify-content: space-between; align-items: center; font-size: .88rem; cursor: pointer; }
+  .search-item:hover { background: rgba(106,217,198,.05); }
+  .search-item:last-child { border-bottom: none; }
+  .item-name { font-weight: 400; color: #2c3338; }
+  .item-code { font-size: .72rem; color: #666E73; }
+  .item-kcal { font-size: .75rem; color: #666E73; }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Save Preset Modal</div>
+    <div class="modal-card">
+      <div class="modal-header"><h3>Save as Template</h3></div>
+      <div class="modal-body"><p>Enter a name for this threshold preset. It will be available for all meal plans.</p></div>
+      <input class="modal-input" type="text" placeholder="e.g. Adult Female 2000 kcal">
+      <div class="modal-footer">
+        <button class="btn-cancel">Cancel</button>
+        <button class="btn-save">Save</button>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Confirm Delete Modal</div>
+    <div class="modal-card">
+      <div class="modal-header"><h3>Delete Day?</h3></div>
+      <div class="modal-body">
+        <p>This will permanently remove <strong style="color:#2c3338">Day 2</strong> and all its meals.</p>
+        <p class="modal-warning">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel">Cancel</button>
+        <button class="btn-danger-modal">Delete</button>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Food Search Dropdown</div>
+    <div class="search-dropdown">
+      <div class="search-item">
+        <div><div class="item-name">Vollmilch 3,5% Fett</div><div class="item-code">M112</div></div>
+        <div class="item-kcal">61 kcal/100g</div>
+      </div>
+      <div class="search-item" style="background:rgba(106,217,198,.05)">
+        <div><div class="item-name">Vollmilch 1,5% Fett</div><div class="item-code">M113</div></div>
+        <div class="item-kcal">47 kcal/100g</div>
+      </div>
+      <div class="search-item">
+        <div><div class="item-name">Vollmilch-Joghurt</div><div class="item-code">M221</div></div>
+        <div class="item-kcal">63 kcal/100g</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
