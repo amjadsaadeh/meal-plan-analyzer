@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: system-ui, sans-serif; padding: 20px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .swatch { display: flex; flex-direction: column; gap: 5px; }
+  .chip { width: 96px; height: 56px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.07); }
+  .name { font-size: 0.67rem; font-weight: 600; color: #2c3338; }
+  .val  { font-size: 0.62rem; color: #666E73; }
+  .section { margin-bottom: 20px; }
+  .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: .09em; color: #666E73; margin-bottom: 10px; font-weight: 600; }
+  .demo { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .pill { padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Semantic States</div>
+    <div class="row">
+      <div class="swatch"><div class="chip" style="background:#41A66D"></div><div class="name">--success</div><div class="val">#41A66D</div></div>
+      <div class="swatch"><div class="chip" style="background:#DEACA4"></div><div class="name">--warning</div><div class="val">#DEACA4</div></div>
+      <div class="swatch"><div class="chip" style="background:#A64143"></div><div class="name">--danger</div><div class="val">#A64143</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Borders &amp; Overlays</div>
+    <div class="row">
+      <div class="swatch"><div class="chip" style="background:rgba(0,0,0,0.08);border:1px solid #ddd"></div><div class="name">--glass-border</div><div class="val">rgba(0,0,0,.08)</div></div>
+      <div class="swatch"><div class="chip" style="background:rgba(106,217,198,0.05);border:1px solid rgba(106,217,198,0.2)"></div><div class="name">--row-hover</div><div class="val">rgba(106,217,198,.05)</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Status in Context</div>
+    <div class="demo">
+      <span class="pill" style="background:rgba(65,166,109,0.12);color:#41A66D">Saved</span>
+      <span class="pill" style="background:rgba(222,172,164,0.2);color:#9a6a60">Pending</span>
+      <span class="pill" style="background:rgba(166,65,67,0.1);color:#A64143">Error</span>
+      <span class="pill" style="background:rgba(166,65,67,0.1);color:#A64143">Below min</span>
+      <span class="pill" style="background:rgba(166,65,67,0.1);color:#A64143">Above max</span>
+    </div>
+  </div>
+</body>
+</html>

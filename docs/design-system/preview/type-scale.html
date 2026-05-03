@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: system-ui, sans-serif; padding: 24px; }
+  .row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }
+  .specimen { color: #2c3338; }
+  .meta { font-size: 0.65rem; color: #666E73; white-space: nowrap; min-width: 120px; }
+  .gradient-text {
+    background: linear-gradient(135deg, #4180A6 0%, #666E73 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  hr { border: none; border-top: 1px solid rgba(0,0,0,0.07); margin: 8px 0 14px; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <span class="meta">3rem / 400 / gradient</span>
+    <div class="specimen gradient-text" style="font-size:3rem;font-weight:400;line-height:1.1">Meal Plan</div>
+  </div>
+  <div class="row">
+    <span class="meta">2.5rem / 400 / gradient</span>
+    <div class="specimen gradient-text" style="font-size:2.5rem;font-weight:400;line-height:1.1">Patient Plans</div>
+  </div>
+  <hr>
+  <div class="row">
+    <span class="meta">1.8rem / 400</span>
+    <div class="specimen" style="font-size:1.8rem;font-weight:400">Day 1</div>
+  </div>
+  <div class="row">
+    <span class="meta">1.4rem / 400 / dim</span>
+    <div class="specimen" style="font-size:1.4rem;font-weight:400;color:#666E73">Breakfast</div>
+  </div>
+  <hr>
+  <div class="row">
+    <span class="meta">1rem / 400</span>
+    <div class="specimen" style="font-size:1rem">Vollmilch 3,5% Fett</div>
+  </div>
+  <div class="row">
+    <span class="meta">0.9rem / 400 / dim</span>
+    <div class="specimen" style="font-size:0.9rem;color:#666E73">Created 12 Jan 2025</div>
+  </div>
+  <div class="row">
+    <span class="meta">0.82rem / 600 / CAPS</span>
+    <div class="specimen" style="font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#666E73">Nutrient</div>
+  </div>
+  <div class="row">
+    <span class="meta">0.75rem / 400 / dim</span>
+    <div class="specimen" style="font-size:0.75rem;color:#666E73;font-variant-numeric:tabular-nums">2 458.3 kcal</div>
+  </div>
+</body>
+</html>

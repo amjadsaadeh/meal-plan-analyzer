@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: system-ui, sans-serif; padding: 20px; }
+  .section { margin-bottom: 20px; }
+  .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: .09em; color: #666E73; margin-bottom: 10px; font-weight: 600; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .swatch { display: flex; flex-direction: column; gap: 5px; }
+  .chip { width: 96px; height: 56px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.07); }
+  .name { font-size: 0.67rem; font-weight: 600; color: #2c3338; }
+  .val  { font-size: 0.62rem; color: #666E73; }
+  .gradient-chip { height: 40px; border-radius: 10px; background: linear-gradient(135deg, #4180A6 0%, #666E73 100%); margin-bottom: 4px; }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Brand Primary</div>
+    <div class="row">
+      <div class="swatch"><div class="chip" style="background:#6AD9C6"></div><div class="name">--primary</div><div class="val">#6AD9C6</div></div>
+      <div class="swatch"><div class="chip" style="background:#4fada0"></div><div class="name">--primary-hover</div><div class="val">#4fada0</div></div>
+      <div class="swatch"><div class="chip" style="background:rgba(106,217,198,0.2);border:1px solid rgba(106,217,198,0.5)"></div><div class="name">--primary-glow</div><div class="val">rgba(106,217,198,.2)</div></div>
+      <div class="swatch"><div class="chip" style="background:#4180A6"></div><div class="name">accent-blue</div><div class="val">#4180A6</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Surfaces</div>
+    <div class="row">
+      <div class="swatch"><div class="chip" style="background:#f8fafc"></div><div class="name">--bg</div><div class="val">#f8fafc</div></div>
+      <div class="swatch"><div class="chip" style="background:rgba(255,255,255,0.9);border:1px solid rgba(0,0,0,0.08)"></div><div class="name">--card-bg</div><div class="val">rgba(255,255,255,.9)</div></div>
+      <div class="swatch"><div class="chip" style="background:#ffffff"></div><div class="name">white</div><div class="val">#ffffff</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Text</div>
+    <div class="row">
+      <div class="swatch"><div class="chip" style="background:#2c3338"></div><div class="name">--text-main</div><div class="val">#2c3338</div></div>
+      <div class="swatch"><div class="chip" style="background:#666E73"></div><div class="name">--text-dim</div><div class="val">#666E73</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Title Gradient</div>
+    <div class="swatch" style="width: 320px;">
+      <div class="gradient-chip"></div>
+      <div class="name">gradient-title: #4180A6 → #666E73</div>
+    </div>
+  </div>
+</body>
+</html>

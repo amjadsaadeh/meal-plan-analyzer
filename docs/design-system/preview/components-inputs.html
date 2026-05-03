@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: system-ui, sans-serif; padding: 20px; }
+  .section { margin-bottom: 20px; }
+  .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing:.09em; color: #666E73; margin-bottom: 10px; font-weight: 600; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: .78rem; color: #666E73; }
+
+  input[type=text], input[type=number], input[type=password] {
+    padding: .7rem 1rem; border: 1px solid rgba(0,0,0,.08); border-radius: 12px; font-size: .95rem;
+    color: #2c3338; background: #fff; outline: none; box-shadow: 0 4px 15px rgba(0,0,0,.03);
+    transition: all .25s;
+  }
+  input:focus { border-color: #6AD9C6; box-shadow: 0 0 15px rgba(106,217,198,.2); }
+  input.error { border-color: #A64143; box-shadow: 0 0 0 2px rgba(166,65,67,0.15); }
+
+  .threshold-input {
+    width: 80px; height: 28px; border: 1px solid rgba(0,0,0,.08); border-radius: 6px;
+    padding: 2px 6px; font-size: .72rem; text-align: center; background: white; outline: none;
+    transition: all .2s; color: #666E73;
+  }
+  .threshold-input:focus { border-color: #6AD9C6; box-shadow: 0 0 0 2px rgba(106,217,198,.2); }
+
+  .search-bar {
+    padding: .75rem 1.1rem; border: 1px solid rgba(0,0,0,.08); border-radius: 12px;
+    font-size: .95rem; color: #2c3338; background: #fff; outline: none; width: 240px;
+    box-shadow: 0 4px 15px rgba(0,0,0,.03); transition: all .25s;
+  }
+  .search-bar:focus { border-color: #6AD9C6; box-shadow: 0 0 15px rgba(106,217,198,.2); }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: .85rem; color: #666E73; font-weight: 400; }
+  .error-text { font-size: .78rem; color: #A64143; }
+
+  .name-input {
+    font-size: 2rem; font-weight: 400; border: none; border-bottom: 2px solid #6AD9C6;
+    outline: none; background: transparent; color: #2c3338; width: 280px;
+  }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Standard Input</div>
+    <div class="row">
+      <div class="field">
+        <span class="field-label">Default</span>
+        <input type="text" placeholder="Search meal plans..." style="width:220px">
+      </div>
+      <div class="field">
+        <span class="field-label">Focused</span>
+        <input type="text" value="Patient diet plan" style="width:220px;border-color:#6AD9C6;box-shadow:0 0 15px rgba(106,217,198,.2)">
+      </div>
+      <div class="field">
+        <span class="field-label">Error</span>
+        <input type="text" value="Bad input" class="error" style="width:220px">
+        <span class="error-text">This field is required</span>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Search Bar</div>
+    <input class="search-bar" type="text" placeholder="Search foods…">
+  </div>
+  <div class="section">
+    <div class="label">Login Form Fields</div>
+    <div class="row">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" placeholder="nutritionist@clinic.de" style="width:220px">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" placeholder="••••••••" style="width:220px">
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Threshold Min / Max Inputs</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <input type="number" class="threshold-input" placeholder="min">
+      <span style="font-size:.78rem;font-weight:600;color:#6AD9C6;min-width:50px;text-align:center">58.3 g</span>
+      <input type="number" class="threshold-input" placeholder="max">
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Inline Editable Name (borderless)</div>
+    <input class="name-input" type="text" value="Preset: Adult Female">
+  </div>
+</body>
+</html>

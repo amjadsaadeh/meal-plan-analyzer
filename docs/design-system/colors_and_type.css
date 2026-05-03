@@ -1,0 +1,296 @@
+/**
+ * Meal Plan Analyzer — Design Tokens
+ * Source: meals/static/meals/scss/_variables.scss
+ *
+ * Usage: import this file before any component styles.
+ * All tokens are CSS custom properties on :root.
+ */
+
+/* ============================================================
+   COLOR TOKENS
+   ============================================================ */
+:root {
+  /* Primary brand */
+  --primary:        #6AD9C6;
+  --primary-hover:  #4fada0;
+  --primary-glow:   rgba(106, 217, 198, 0.2);
+
+  /* Surfaces */
+  --bg:             #f8fafc;
+  --card-bg:        rgba(255, 255, 255, 0.9);
+
+  /* Text */
+  --text-main:      #2c3338;
+  --text-dim:       #666E73;
+
+  /* Borders & shadows */
+  --glass-border:   rgba(0, 0, 0, 0.08);
+  --shadow:         0 4px 15px rgba(0, 0, 0, 0.03);
+  --card-shadow:    0 10px 30px rgba(0, 0, 0, 0.05);
+
+  /* Interactive states */
+  --row-hover:      rgba(106, 217, 198, 0.05);
+
+  /* Semantic */
+  --success:        #41A66D;
+  --warning:        #DEACA4;
+  --danger:         #A64143;
+
+  /* Gradient accent (used for h1 title text) */
+  --gradient-title: linear-gradient(135deg, #4180A6 0%, #666E73 100%);
+
+  /* Layout */
+  --top-bar-height: 60px;
+  --container-max:  1200px;
+
+  /* Radii */
+  --radius-xl:   20px;
+  --radius-lg:   16px;
+  --radius-md:   12px;
+  --radius-sm:   10px;
+  --radius-xs:    8px;
+  --radius-pill: 9999px;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;   /*  4px */
+  --space-2: 0.5rem;    /*  8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+
+  /* Transitions */
+  --ease-default:  cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:   cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 0.15s;
+  --duration-base: 0.2s;
+  --duration-slow: 0.3s;
+}
+
+/* ============================================================
+   BASE RESET & TYPOGRAPHY
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+               Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-main);
+  background: var(--bg);
+}
+
+/* ============================================================
+   TYPOGRAPHY SCALE
+   ============================================================ */
+
+/* Gradient display heading — used on all page h1s */
+.display-title {
+  font-size: 3rem;
+  font-weight: 400;
+  background: var(--gradient-title);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+/* Slightly smaller variant (login card, detail page) */
+.display-title-sm {
+  font-size: 2.5rem;
+  font-weight: 400;
+  background: var(--gradient-title);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+/* Day/section title */
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--text-main);
+}
+
+/* Meal header (Breakfast / Lunch / Dinner) */
+.meal-title {
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+/* Card/panel heading */
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Body text */
+p {
+  font-size: 1rem;
+  color: var(--text-main);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+/* Dimmed / secondary text */
+.text-dim   { color: var(--text-dim); }
+.text-main  { color: var(--text-main); }
+.text-primary { color: var(--primary-hover); }
+
+/* Table column header style */
+.table-header {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Label above form field */
+.field-label {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+/* Micro / badge text */
+.text-micro {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+/* Tabular numbers (for nutrient values) */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   LAYOUT UTILITIES
+   ============================================================ */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 2rem 2.5%;
+}
+
+/* ============================================================
+   CARD PATTERN
+   ============================================================ */
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--card-shadow);
+}
+
+/* ============================================================
+   BUTTON BASE PATTERNS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 400;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all var(--duration-slow) var(--ease-default);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 10px var(--primary-glow);
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px var(--primary-glow);
+}
+
+.btn-secondary {
+  background: rgba(106, 217, 198, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--primary-hover);
+}
+.btn-secondary:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.btn-danger-outline {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius-sm);
+}
+.btn-danger-outline:hover {
+  background: var(--danger);
+  color: white;
+}
+
+/* ============================================================
+   INPUT BASE PATTERNS
+   ============================================================ */
+.input {
+  width: 100%;
+  padding: 0.8rem 1.2rem;
+  background: #ffffff;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 1rem;
+  outline: none;
+  transition: all var(--duration-slow) var(--ease-default);
+  box-shadow: var(--shadow);
+}
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+/* Compact table input */
+.input-table {
+  width: 100%;
+  height: 28px;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.82rem;
+  text-align: center;
+  background: white;
+  outline: none;
+  transition: all var(--duration-base) var(--ease-default);
+  color: var(--text-dim);
+}
+.input-table:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}

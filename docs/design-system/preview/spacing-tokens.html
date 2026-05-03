@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f8fafc; font-family: system-ui, sans-serif; padding: 20px; }
+  .section { margin-bottom: 22px; }
+  .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: .09em; color: #666E73; margin-bottom: 10px; font-weight: 600; }
+  .token-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .token { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .box { background: rgba(106,217,198,0.2); border: 1px solid rgba(106,217,198,0.4); }
+  .name { font-size: 0.62rem; color: #666E73; text-align: center; }
+  .radius-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .r-chip { width: 56px; height: 56px; background: #6AD9C6; border: none; }
+  .shadow-stack { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+  .shadow-card { width: 72px; height: 48px; background: white; border-radius: 12px; border: 1px solid rgba(0,0,0,0.07); }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Spacing Scale</div>
+    <div class="token-grid">
+      <div class="token"><div class="box" style="width:4px;height:24px"></div><div class="name">4px</div></div>
+      <div class="token"><div class="box" style="width:8px;height:24px"></div><div class="name">8px</div></div>
+      <div class="token"><div class="box" style="width:12px;height:24px"></div><div class="name">12px</div></div>
+      <div class="token"><div class="box" style="width:16px;height:24px"></div><div class="name">16px</div></div>
+      <div class="token"><div class="box" style="width:20px;height:24px"></div><div class="name">20px</div></div>
+      <div class="token"><div class="box" style="width:24px;height:24px"></div><div class="name">24px</div></div>
+      <div class="token"><div class="box" style="width:32px;height:24px"></div><div class="name">32px</div></div>
+      <div class="token"><div class="box" style="width:40px;height:24px"></div><div class="name">40px</div></div>
+      <div class="token"><div class="box" style="width:48px;height:24px"></div><div class="name">48px</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Border Radius</div>
+    <div class="radius-row">
+      <div class="token"><div class="r-chip" style="border-radius:6px"></div><div class="name">6px</div></div>
+      <div class="token"><div class="r-chip" style="border-radius:8px"></div><div class="name">8px xs</div></div>
+      <div class="token"><div class="r-chip" style="border-radius:10px"></div><div class="name">10px sm</div></div>
+      <div class="token"><div class="r-chip" style="border-radius:12px"></div><div class="name">12px md</div></div>
+      <div class="token"><div class="r-chip" style="border-radius:16px"></div><div class="name">16px lg</div></div>
+      <div class="token"><div class="r-chip" style="border-radius:20px"></div><div class="name">20px xl</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="label">Elevation / Shadow</div>
+    <div class="shadow-stack">
+      <div class="token"><div class="shadow-card" style="box-shadow:0 4px 15px rgba(0,0,0,0.03)"></div><div class="name">--shadow<br>0 4 15px</div></div>
+      <div class="token"><div class="shadow-card" style="box-shadow:0 10px 30px rgba(0,0,0,0.05)"></div><div class="name">--card-shadow<br>0 10 30px</div></div>
+      <div class="token"><div class="shadow-card" style="box-shadow:0 20px 50px rgba(0,0,0,0.15)"></div><div class="name">modal-shadow<br>0 20 50px</div></div>
+      <div class="token"><div class="shadow-card" style="box-shadow:0 0 0 3px rgba(106,217,198,0.2);border-color:#6AD9C6"></div><div class="name">focus-ring<br>primary-glow</div></div>
+    </div>
+  </div>
+</body>
+</html>
