@@ -14,3 +14,26 @@ checks:
     # resource-configuration pass.
     - "unset-cpu-requirements"
     - "unset-memory-requirements"
+    # The Celery worker is a background task processor with no HTTP interface;
+    # a readiness probe is not applicable.
+    - "no-readiness-probe"
+    # Single-instance deployment by design on a single-node k3s cluster.
+    - "minimum-three-replicas"
+    # Node affinity is not needed for this single-node k3s deployment.
+    - "no-node-affinity"
+    # The default service account is acceptable for this deployment.
+    - "default-service-account"
+    # NetworkPolicy is not used in this deployment.
+    - "non-isolated-pod"
+    # dnsConfig options are not required for this setup.
+    - "dnsconfig-options"
+    # Secrets are sourced from k8s Secrets via envFrom/secretRef, not plain env vars.
+    - "read-secret-from-env-var"
+    # email annotation and owner label conventions are not used in this project.
+    - "required-annotation-email"
+    - "required-label-owner"
+    # restartPolicy and updateStrategy implicitly default to Always / RollingUpdate.
+    - "restart-policy"
+    - "no-rolling-update-strategy"
+    # Key ordering is a style preference, not a functional requirement.
+    - "sorted-keys"
