@@ -23,8 +23,9 @@ class ThrottledLoginView(LoginView):
     def dispatch(self, request, *args, **kwargs):
         if cache.get(self._cache_key(), 0) >= _MAX_ATTEMPTS:
             return HttpResponse(
-                "Too many failed login attempts. Please try again in 5 minutes.",
+                _("Too many failed login attempts. Please try again in 5 minutes."),
                 status=429,
+
             )
         return super().dispatch(request, *args, **kwargs)
 
