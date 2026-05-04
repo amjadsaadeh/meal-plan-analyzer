@@ -128,6 +128,8 @@ spec:
               mountPath: /app/staticfiles
             - name: media
               mountPath: /app/media
+            - name: private-exports
+              mountPath: /app/private_exports
           livenessProbe:
             httpGet:
               path: /health/
@@ -178,6 +180,8 @@ spec:
               mountPath: /app/staticfiles
             - name: media
               mountPath: /app/media
+            - name: private-exports
+              mountPath: /app/private_exports
       volumes:
         - name: staticfiles
           emptyDir: {}
@@ -186,3 +190,5 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: meal-plan-analyzer-media-pvc
+        - name: private-exports
+          emptyDir: {}

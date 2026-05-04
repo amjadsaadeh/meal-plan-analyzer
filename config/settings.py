@@ -183,6 +183,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Private storage for generated PDF exports — not under MEDIA_ROOT so neither
+# Django's media-serve view nor a reverse-proxy alias can reach it directly.
+EXPORTS_ROOT = BASE_DIR / "private_exports"
+
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
