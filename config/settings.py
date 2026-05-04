@@ -49,6 +49,11 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 # Assumption: the app is ALWAYS deployed behind a trusted proxy that strips and
 # re-sets this header before forwarding requests.  Never expose Django directly
 # to the internet without a proxy, or an attacker could spoof HTTPS detection.
+#
+# X-Forwarded-For behavior: the proxy APPENDS the connecting client IP, so the
+# rightmost entry is the last trusted hop and is used for rate-limiting.  The
+# leftmost entries are client-supplied and must never be trusted for security
+# decisions (see OWASP guidance on X-Forwarded-For spoofing).
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True

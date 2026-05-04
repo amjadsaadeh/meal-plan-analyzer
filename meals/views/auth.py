@@ -13,7 +13,7 @@ class ThrottledLoginView(LoginView):
     def _client_ip(self):
         xff = self.request.META.get("HTTP_X_FORWARDED_FOR")
         return (
-            xff.split(",")[0].strip()
+            xff.split(",")[-1].strip()
             if xff
             else self.request.META.get("REMOTE_ADDR", "unknown")
         )
