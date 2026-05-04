@@ -505,3 +505,7 @@ msgstr "Must be greater than min ({min})."
 #: meals/templates/meals/base.html.j2
 msgid "Thresholds"
 msgstr "Thresholds"
+
+#: meals/views/auth.py
+msgid "Too many failed login attempts. Please try again in 5 minutes."
+msgstr "Too many failed login attempts. Please try again in 5 minutes."

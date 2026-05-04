@@ -45,10 +45,36 @@ DEBUG = (
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
-# Trust the X-Forwarded-Proto header from the proxy
+# Trust the X-Forwarded-Proto header set by the reverse proxy (nginx / k8s ingress).
+# Assumption: the app is ALWAYS deployed behind a trusted proxy that strips and
+# re-sets this header before forwarding requests.  Never expose Django directly
+# to the internet without a proxy, or an attacker could spoof HTTPS detection.
+#
+# X-Forwarded-For behavior: the proxy APPENDS the connecting client IP, so the
+# rightmost entry is the last trusted hop and is used for rate-limiting.  The
+# leftmost entries are client-supplied and must never be trusted for security
+# decisions (see OWASP guidance on X-Forwarded-For spoofing).
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
+
+# --- Security headers ---
+# X-Content-Type-Options: nosniff (already True by default in Django ≥ 3.0;
+# stated explicitly so the intent is clear in code review).
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+if not DEBUG:
+    # Secure cookies: only transmitted over HTTPS.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # HSTS: instruct browsers to use HTTPS for this domain for 1 year.
+    # Only enable after confirming TLS is permanently available.
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    # SECURE_SSL_REDIRECT is intentionally left False: TLS is terminated at the
+    # ingress and Django runs on plain HTTP behind it — redirecting here would
+    # cause an infinite redirect loop.
 
 
 # Application definition
@@ -245,11 +271,26 @@ CACHES = {
 SITE_BASE_URL = env("SITE_BASE_URL", default="http://localhost:8000")
 
 REST_FRAMEWORK = {
+    # Explicit: session-based auth for the browser SPA; CSRF is enforced by DRF
+    # for session-authenticated requests.  No token/JWT auth is needed today.
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 100,
+    # Throttle all API traffic to limit abuse.  Rates are enforced via the
+    # Django cache backend (Redis in production, LocMemCache in tests).
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "20/hour",
+        "user": "1000/day",
+    },
 }
 
 # Logging configuration for production (DEBUG=False)

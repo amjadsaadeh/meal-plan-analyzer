@@ -690,6 +690,10 @@ msgstr "Muss kleiner als das Maximum ({max}) sein."
 msgid "Must be greater than min ({min})."
 msgstr "Muss größer als das Minimum ({min}) sein."
 
+#: meals/views/auth.py
+msgid "Too many failed login attempts. Please try again in 5 minutes."
+msgstr "Zu viele fehlgeschlagene Anmeldeversuche. Bitte versuche es in 5 Minuten erneut."
+
 #~ msgid "Do you really want to delete \"<span id=\"deleteDayName\"></span>\"?"
 #~ msgstr ""
 #~ "Möchtest du \"<span id=\"deleteDayName\"></span>\" wirklich löschen?"
