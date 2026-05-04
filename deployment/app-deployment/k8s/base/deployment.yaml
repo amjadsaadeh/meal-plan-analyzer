@@ -130,13 +130,13 @@ spec:
               mountPath: /app/media
           livenessProbe:
             httpGet:
-              path: /
+              path: /health/
               port: 8000
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /health/
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
@@ -163,6 +163,16 @@ spec:
                 name: meal-plan-analyzer-config
             - secretRef:
                 name: meal-plan-analyzer-secret
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "celery -A config inspect ping -d celery@$HOSTNAME -t 5"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
           volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles

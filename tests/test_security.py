@@ -2,6 +2,7 @@
 Security regression tests.
 
 Covers:
+  - Health check endpoint: returns 200 without authentication, not affected by throttling.
   - Login rate limiting (ThrottledLoginView): blocks after MAX_ATTEMPTS failures,
     clears counter on successful login, GET requests are never counted.
   - DRF throttle configuration: both throttle classes and rates are present.
@@ -29,6 +30,36 @@ def _clear_cache():
 @pytest.fixture
 def login_user(db):
     return User.objects.create_user(username="logintest", password="correct-pass")
+
+
+# ---------------------------------------------------------------------------
+# Health check endpoint
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+class TestHealthCheck:
+    def test_returns_200_without_authentication(self):
+        client = Client()
+        resp = client.get("/health/")
+        assert resp.status_code == 200
+
+    def test_returns_json_ok(self):
+        client = Client()
+        resp = client.get("/health/")
+        assert resp.json() == {"status": "ok"}
+
+    def test_not_affected_by_login_rate_limiting(self, login_user):
+        """Health check must remain accessible even from an IP that has been locked out."""
+        client = Client()
+        for _ in range(6):
+            client.post(
+                "/login/",
+                {"username": "logintest", "password": "wrong"},
+                REMOTE_ADDR="1.2.3.4",
+            )
+        resp = client.get("/health/", REMOTE_ADDR="1.2.3.4")
+        assert resp.status_code == 200
 
 
 # ---------------------------------------------------------------------------
