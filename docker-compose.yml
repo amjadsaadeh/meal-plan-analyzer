@@ -34,6 +34,7 @@ services:
       - .:/app
       - /app/.venv
       - media_files:/app/media
+      - private_exports:/app/private_exports
     ports:
       - "8000:8000"
     environment:
@@ -59,6 +60,7 @@ services:
         --max-tasks-per-child=50
     volumes:
       - media_files:/app/media
+      - private_exports:/app/private_exports
     environment:
       - SECRET_KEY=${SECRET_KEY:-change-me-generate-a-real-key-for-production}
       - DEBUG=True
@@ -75,3 +77,4 @@ services:
 volumes:
   postgres_data:
   media_files:
+  private_exports:
