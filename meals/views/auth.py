@@ -30,7 +30,11 @@ class ThrottledLoginView(LoginView):
 
     def form_invalid(self, form):
         key = self._cache_key()
-        cache.set(key, cache.get(key, 0) + 1, _LOCKOUT_SECONDS)
+        # cache.add() is a no-op if the key exists, so this only initialises the
+        # counter on the first failure.  cache.incr() is atomic on both Redis and
+        # LocMemCache, avoiding the lost-increment race in the old get/set pattern.
+        cache.add(key, 0, _LOCKOUT_SECONDS)
+        cache.incr(key)
         return super().form_invalid(form)
 
     def form_valid(self, form):
