@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from rest_framework.routers import DefaultRouter
 from .views import (
     ThrottledLoginView,
+    health_check,
     FoodViewSet,
     FoodAliasViewSet,
     MealPlanViewSet,
@@ -35,6 +36,7 @@ router.register(
 router.register(r"export-jobs", ExportJobViewSet, basename="exportjob")
 
 urlpatterns = [
+    path("health/", health_check, name="health-check"),
     path(
         "login/",
         ThrottledLoginView.as_view(template_name="meals/login.html.j2"),
