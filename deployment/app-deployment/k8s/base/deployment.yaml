@@ -163,6 +163,16 @@ spec:
                 name: meal-plan-analyzer-config
             - secretRef:
                 name: meal-plan-analyzer-secret
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "celery -A config inspect ping -d celery@$HOSTNAME -t 5"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
           volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles
