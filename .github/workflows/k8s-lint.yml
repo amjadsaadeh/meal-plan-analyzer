@@ -96,18 +96,9 @@ jobs:
 
       - name: Install kube-linter
         run: |
-          KUBE_LINTER_URL=$(curl -s \
-            https://api.github.com/repos/stackrox/kube-linter/releases/latest \
-            | python3 -c "
-          import json, sys
-          data = json.load(sys.stdin)
-          assets = [
-              a['browser_download_url'] for a in data['assets']
-              if 'linux' in a['name'] and 'amd64' in a['name'] and a['name'].endswith('.tar.gz')
-          ]
-          print(assets[0] if assets else '')
-          ")
-          curl -sSLo /tmp/kube-linter.tar.gz "$KUBE_LINTER_URL"
+          KUBE_LINTER_VERSION="v0.7.2"
+          curl -sSLo /tmp/kube-linter.tar.gz \
+            "https://github.com/stackrox/kube-linter/releases/download/${KUBE_LINTER_VERSION}/kube-linter-linux.tar.gz"
           tar -xzf /tmp/kube-linter.tar.gz -C /tmp/
           sudo mv /tmp/kube-linter /usr/local/bin/
 
