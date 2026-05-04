@@ -35,7 +35,11 @@ class ThrottledLoginView(LoginView):
         # counter on the first failure.  cache.incr() is atomic on both Redis and
         # LocMemCache, avoiding the lost-increment race in the old get/set pattern.
         cache.add(key, 0, _LOCKOUT_SECONDS)
-        cache.incr(key)
+        try:
+            cache.incr(key)
+        except ValueError:
+            pass
+        cache.touch(key, _LOCKOUT_SECONDS)
         return super().form_invalid(form)
 
     def form_valid(self, form):
