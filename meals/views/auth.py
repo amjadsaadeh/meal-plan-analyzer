@@ -1,6 +1,7 @@
 from django.contrib.auth.views import LoginView
 from django.core.cache import cache
 from django.http import HttpResponse
+from django.utils.translation import gettext as _
 
 _MAX_ATTEMPTS = 5
 _LOCKOUT_SECONDS = 300  # 5 minutes
@@ -23,7 +24,7 @@ class ThrottledLoginView(LoginView):
     def dispatch(self, request, *args, **kwargs):
         if cache.get(self._cache_key(), 0) >= _MAX_ATTEMPTS:
             return HttpResponse(
-                "Too many failed login attempts. Please try again in 5 minutes.",
+                _("Too many failed login attempts. Please try again in 5 minutes."),
                 status=429,
             )
         return super().dispatch(request, *args, **kwargs)
