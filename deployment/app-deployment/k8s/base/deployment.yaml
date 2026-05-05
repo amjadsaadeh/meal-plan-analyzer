@@ -273,6 +273,8 @@ spec:
                   name: meal-plan-analyzer-db-credentials
                   key: uri
                   optional: true
+            - name: XDG_CACHE_HOME
+              value: /tmp/cache
           envFrom:
             - configMapRef:
                 name: meal-plan-analyzer-config
