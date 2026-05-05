@@ -316,12 +316,14 @@ class MealPlanFoodViewSet(viewsets.ModelViewSet):
                     food=instance.food,
                     alias=FoodAlias.objects.filter(
                         food=instance.food, alias__iexact=export_name
-                    ).values_list("alias", flat=True).first() or export_name,
+                    )
+                    .values_list("alias", flat=True)
+                    .first()
+                    or export_name,
                 )
             except Exception:
                 pass
             cache.delete(ALIAS_CACHE_KEY)
-
 
 
 class ExportJobViewSet(viewsets.ViewSet):
