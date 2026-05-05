@@ -291,6 +291,8 @@ spec:
           volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles
+            - name: sass-cache
+              mountPath: /app/sass_cache
             - name: media
               mountPath: /app/media
             - name: private-exports
