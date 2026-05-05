@@ -342,6 +342,34 @@ class FoodAlias(models.Model):
     def __str__(self):
         return f"{self.alias} → {self.food.name}"
 
+    def clean(self):
+        self.alias = " ".join(self.alias.split())
+        if not self.alias:
+            raise ValidationError({"alias": "Alias cannot be blank."})
+
+        if self.food_id is not None:
+            food_name = (
+                Food.objects.filter(pk=self.food_id)
+                .values_list("name", flat=True)
+                .first()
+            )
+            if food_name and self.alias.lower() == food_name.lower():
+                raise ValidationError(
+                    {"alias": "Alias is identical to the food's own name."}
+                )
+
+            qs = FoodAlias.objects.filter(
+                food_id=self.food_id, alias__iexact=self.alias
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError(
+                    {
+                        "alias": "An alias with this name already exists for this food (case-insensitive match)."
+                    }
+                )
+
 
 # ---------------------------------------------------------------------------
 # Cache invalidation signals

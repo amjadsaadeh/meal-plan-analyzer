@@ -311,7 +311,18 @@ class MealPlanFoodViewSet(viewsets.ModelViewSet):
                 is_found = True
 
         if not is_found:
-            FoodAlias.objects.get_or_create(food=instance.food, alias=export_name)
+            try:
+                FoodAlias.objects.get_or_create(
+                    food=instance.food,
+                    alias=FoodAlias.objects.filter(
+                        food=instance.food, alias__iexact=export_name
+                    )
+                    .values_list("alias", flat=True)
+                    .first()
+                    or export_name,
+                )
+            except Exception:
+                pass
             cache.delete(ALIAS_CACHE_KEY)
 
 

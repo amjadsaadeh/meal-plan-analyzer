@@ -3,6 +3,7 @@ import json
 import secrets
 
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.db.models import Q, Case, When, Value, IntegerField
 from django.shortcuts import render
 from django.urls import reverse
@@ -391,17 +392,41 @@ class FoodAliasViewSet(viewsets.ModelViewSet):
         return qs.order_by("alias")
 
     def create(self, request, *args, **kwargs):
-        alias_text = (request.data.get("alias") or "").strip()
+        alias_text = " ".join((request.data.get("alias") or "").split())
         food_id = request.data.get("food")
         if not alias_text:
             return Response({"alias": "This field is required."}, status=400)
         if not food_id:
             return Response({"food": "This field is required."}, status=400)
-        obj, created = FoodAlias.objects.get_or_create(
-            food_id=food_id, alias=alias_text
-        )
+
+        food = Food.objects.filter(pk=food_id).first()
+        if not food:
+            return Response({"food": "Food not found."}, status=400)
+
+        if alias_text.lower() == food.name.lower():
+            return Response(
+                {"alias": "Alias is identical to the food's own name."}, status=400
+            )
+
+        existing = FoodAlias.objects.filter(
+            food_id=food_id, alias__iexact=alias_text
+        ).first()
+        if existing:
+            serializer = self.get_serializer(existing)
+            return Response(serializer.data, status=200)
+
+        try:
+            obj = FoodAlias.objects.create(food=food, alias=alias_text)
+        except IntegrityError:
+            existing = FoodAlias.objects.filter(
+                food_id=food_id, alias__iexact=alias_text
+            ).first()
+            if existing:
+                serializer = self.get_serializer(existing)
+                return Response(serializer.data, status=200)
+            raise
         serializer = self.get_serializer(obj)
-        return Response(serializer.data, status=201 if created else 200)
+        return Response(serializer.data, status=201)
 
 
 # ---------------------------------------------------------------------------
