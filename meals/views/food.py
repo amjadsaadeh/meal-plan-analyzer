@@ -3,6 +3,7 @@ import json
 import secrets
 
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.db.models import Q, Case, When, Value, IntegerField
 from django.shortcuts import render
 from django.urls import reverse
@@ -414,7 +415,16 @@ class FoodAliasViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(existing)
             return Response(serializer.data, status=200)
 
-        obj = FoodAlias.objects.create(food=food, alias=alias_text)
+        try:
+            obj = FoodAlias.objects.create(food=food, alias=alias_text)
+        except IntegrityError:
+            existing = FoodAlias.objects.filter(
+                food_id=food_id, alias__iexact=alias_text
+            ).first()
+            if existing:
+                serializer = self.get_serializer(existing)
+                return Response(serializer.data, status=200)
+            raise
         serializer = self.get_serializer(obj)
         return Response(serializer.data, status=201)
 
