@@ -40,24 +40,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangocairo-1.0-0 \
     libcairo2 \
     libgdk-pixbuf2.0-0 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1000 appuser \
+    && useradd --uid 1000 --gid 1000 --no-create-home --shell /sbin/nologin appuser
 
 # Copy the Python virtualenv from the builder
 COPY --from=builder /app/.venv /app/.venv
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
 
 ARG APP_VERSION=unknown
 ENV APP_VERSION=${APP_VERSION}
 
-# Copy the application code
+# Copy the application code (deployment/ and docs/ are excluded via .dockerignore)
 COPY . .
 
 # Copy built frontend assets from node builder
 COPY --from=node-builder /app/frontend/dist/ /app/frontend/dist/
 
-# Create directory for static files
-RUN mkdir -p /app/staticfiles
+# Create directory for static files and set ownership
+RUN mkdir -p /app/staticfiles && chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 

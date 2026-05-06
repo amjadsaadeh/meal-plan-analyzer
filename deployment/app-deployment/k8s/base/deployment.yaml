@@ -14,11 +14,29 @@ spec:
     spec:
       imagePullSecrets:
         - name: regcred
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       initContainers:
         - name: build-scss
           image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "build_scss"]
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           envFrom:
             - configMapRef:
                 name: meal-plan-analyzer-config
@@ -27,10 +45,25 @@ spec:
           volumeMounts:
             - name: sass-cache
               mountPath: /app/sass_cache
+            - name: tmp
+              mountPath: /tmp
         - name: collect-static
           image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "collectstatic", "--noinput"]
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           envFrom:
             - configMapRef:
                 name: meal-plan-analyzer-config
@@ -41,10 +74,25 @@ spec:
               mountPath: /app/staticfiles
             - name: sass-cache
               mountPath: /app/sass_cache
+            - name: tmp
+              mountPath: /tmp
         - name: migrate
           image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "migrate"]
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -57,6 +105,9 @@ spec:
                 name: meal-plan-analyzer-config
             - secretRef:
                 name: meal-plan-analyzer-secret
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
         - name: create-superuser
           image: image_name
           imagePullPolicy: Always
@@ -75,6 +126,19 @@ spec:
               else:
                   print('Superuser already exists, skipping.')
               "
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -89,28 +153,26 @@ spec:
                 name: meal-plan-analyzer-secret
             - secretRef:
                 name: meal-plan-analyzer-superuser-secret
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
         - name: import-foods
           image: image_name
           imagePullPolicy: Always
           command: ["python", "manage.py", "import_foods", "https://blsdb.de/assets/uploads/BLS_4_0_2025_DE.zip"]
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: meal-plan-analyzer-db-credentials
-                  key: uri
-                  optional: true
-          envFrom:
-            - configMapRef:
-                name: meal-plan-analyzer-config
-            - secretRef:
-                name: meal-plan-analyzer-secret
-      containers:
-        - name: meal-plan-analyzer
-          image: image_name
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8000
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -124,12 +186,52 @@ spec:
             - secretRef:
                 name: meal-plan-analyzer-secret
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: meal-plan-analyzer
+          image: image_name
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: meal-plan-analyzer-db-credentials
+                  key: uri
+                  optional: true
+            - name: XDG_CACHE_HOME
+              value: /tmp/cache
+          envFrom:
+            - configMapRef:
+                name: meal-plan-analyzer-config
+            - secretRef:
+                name: meal-plan-analyzer-secret
+          volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles
+            - name: sass-cache
+              mountPath: /app/sass_cache
             - name: media
               mountPath: /app/media
             - name: private-exports
               mountPath: /app/private_exports
+            - name: tmp
+              mountPath: /tmp
           livenessProbe:
             httpGet:
               path: /health/
@@ -153,6 +255,19 @@ spec:
             - --loglevel=info
             - --concurrency=2
             - --max-tasks-per-child=50
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
           env:
             - name: DATABASE_URL
               valueFrom:
@@ -160,6 +275,8 @@ spec:
                   name: meal-plan-analyzer-db-credentials
                   key: uri
                   optional: true
+            - name: XDG_CACHE_HOME
+              value: /tmp/cache
           envFrom:
             - configMapRef:
                 name: meal-plan-analyzer-config
@@ -178,10 +295,14 @@ spec:
           volumeMounts:
             - name: staticfiles
               mountPath: /app/staticfiles
+            - name: sass-cache
+              mountPath: /app/sass_cache
             - name: media
               mountPath: /app/media
             - name: private-exports
               mountPath: /app/private_exports
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: staticfiles
           emptyDir: {}
@@ -192,3 +313,6 @@ spec:
             claimName: meal-plan-analyzer-media-pvc
         - name: private-exports
           emptyDir: {}
+        - name: tmp
+          emptyDir:
+            medium: Memory

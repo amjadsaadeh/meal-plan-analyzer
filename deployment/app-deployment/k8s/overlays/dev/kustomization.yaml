@@ -7,6 +7,9 @@ resources:
   - ingress.yaml
   - ../../base
 
+patches:
+  - path: resource-patch.yaml
+
 images:
   - name: image_name
     newName: "index.docker.io/amjadsaadeh/meal-plan-analyzer"
