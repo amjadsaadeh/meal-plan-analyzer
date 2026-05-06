@@ -287,17 +287,17 @@ onMounted(loadPreset)
 }
 
 .input-error {
-  border-color: #dc3545 !important;
-  outline-color: #dc3545;
+  border-color: var(--danger) !important;
+  outline-color: var(--danger);
 }
 
 .input-error:focus {
-  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+  box-shadow: 0 0 0 2px var(--danger-glow);
 }
 
 .field-error-msg {
   font-size: 0.72rem;
-  color: #dc3545;
+  color: var(--danger);
   line-height: 1.2;
 }
 </style>
