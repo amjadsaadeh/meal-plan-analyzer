@@ -11,6 +11,9 @@ uv run python manage.py …  # run Django commands
 uv run pytest              # run tests
 ```
 
+`uv.lock` must stay in sync with `pyproject.toml`; commit both when dependencies change.
+
+
 ---
 
 ## Build / Run Commands
@@ -40,6 +43,8 @@ uv run playwright install --with-deps chromium               # first-time setup
 ```
 
 Test DB is reused by default. Use `--create-db` after migration changes.
+Frontend tests use `live_server` fixture; ensure system libs (WeasyPrint) are installed.
+
 
 ---
 
@@ -156,6 +161,7 @@ class TestFoodAPI:
 - `api_client` — Unauthenticated APIClient
 - `user` — Test user
 - `authenticated_client` — Logged-in APIClient
+- `logged_in_page` — Playwright Page (logged in as `testadmin`)
 
 ### Test Helper Pattern
 ```python
@@ -177,7 +183,30 @@ def _make_food(**kwargs):
 | `meals/nutrients.py` | NUTRIENTS dict, THRESHOLD_SCHEMA |
 | `meals/tasks.py` | Celery tasks (PDF generation, exports) |
 | `meals/urls.py` | URL routing |
+| `meals/admin.py` | Model registration |
+| `meals/templatetags/meal_extras.py` | Custom template filters |
 | `tests/conftest.py` | Shared pytest fixtures |
+| `tests/frontend/factories.py` | Factory-boy definitions |
+| `frontend/src/` | Vue 3 SPA components |
+
+---
+
+## Frontend (Vue)
+
+**Always use `pnpm` — never `npm` or `yarn`.**
+
+```bash
+pnpm install          # install dependencies
+pnpm dev              # start Vite dev server
+pnpm build            # build to frontend/dist/
+```
+
+---
+
+## Reference
+
+For detailed technical specs (data models, API endpoints, URL maps), refer to [CLAUDE.md](file:///home/orchid/projects/meal-plan-analyzer-opencode/CLAUDE.md).
+
 
 
 ---
@@ -193,6 +222,7 @@ def _make_food(**kwargs):
 ## Management Commands
 
 ```bash
-uv run python manage.py import_foods <xlsx_file>   # import food data
+uv run python manage.py import_foods <xlsx/zip/url> # import food data
 uv run python manage.py build_scss                 # compile SCSS
 ```
+
