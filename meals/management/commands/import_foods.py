@@ -108,7 +108,9 @@ class Command(BaseCommand):
         try:
             with self._get_xlsx_path(source) as xlsx_path:
                 try:
-                    workbook = openpyxl.load_workbook(xlsx_path, data_only=True, read_only=True)
+                    workbook = openpyxl.load_workbook(
+                        xlsx_path, data_only=True, read_only=True
+                    )
                 except FileNotFoundError:
                     self.stderr.write(self.style.ERROR(f"File not found: {xlsx_path}"))
                     return
@@ -168,7 +170,12 @@ class Command(BaseCommand):
                 count = 0
 
                 for row_idx, row in enumerate(
-                    tqdm(sheet.iter_rows(min_row=2, values_only=True), desc="Importing foods", unit="item"), start=2
+                    tqdm(
+                        sheet.iter_rows(min_row=2, values_only=True),
+                        desc="Importing foods",
+                        unit="item",
+                    ),
+                    start=2,
                 ):
                     bls_code = str(row[IDX_BLS]).strip() if row[IDX_BLS] else None
                     name = str(row[IDX_NAME]).strip() if row[IDX_NAME] else None
