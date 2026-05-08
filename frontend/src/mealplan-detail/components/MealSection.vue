@@ -118,7 +118,7 @@ const nonEnergyNutrients = computed(() => props.nutrients.filter(n => n.key !== 
 
 const tableMinWidth = computed(() => {
   const visCount = nonEnergyNutrients.value.filter(n => props.visibleNutrients.includes(n.key)).length
-  return 200 + 80 + 65 + (visCount * 65) + 50
+  return 200 + 50 + 80 + 65 + (visCount * 65) + 50
 })
 
 const mealLabel = computed(() => i18n[props.mealType] || props.mealType)
