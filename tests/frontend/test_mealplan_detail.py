@@ -151,6 +151,93 @@ def test_delete_ingredient(logged_in_page, live_server, test_user, meal_plan_wit
 
 
 # ---------------------------------------------------------------------------
+# Inline delete button (column next to ingredient name)
+# ---------------------------------------------------------------------------
+
+
+def test_inline_delete_button_visible_for_saved_ingredient(
+    logged_in_page, live_server, test_user, meal_plan_with_food
+):
+    """Each saved ingredient row must have two delete buttons (inline + end-of-row)."""
+    plan, day, food, mpf = meal_plan_with_food
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    row = logged_in_page.locator(".ingredient-row[data-id]").first
+    expect(row).to_be_visible(timeout=10000)
+    expect(row.locator(".delete-btn")).to_have_count(2)
+
+
+def test_inline_delete_button_hidden_for_empty_draft_row(
+    logged_in_page, live_server, test_user
+):
+    """Draft rows with no food selected must show no delete buttons."""
+    plan = MealPlanFactory()
+    MealPlanDayFactory(meal_plan=plan)
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    # Only draft rows exist — none have a food selected
+    draft_rows = logged_in_page.locator(".ingredient-row:not([data-id])")
+    expect(draft_rows).to_have_count(3, timeout=10000)
+    for i in range(draft_rows.count()):
+        expect(draft_rows.nth(i).locator(".delete-btn")).to_have_count(0)
+
+
+def test_inline_delete_button_triggers_delete_flow(
+    logged_in_page, live_server, test_user, meal_plan_with_food
+):
+    """Clicking the inline (first) delete button opens the same confirmation modal."""
+    plan, day, food, mpf = meal_plan_with_food
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(
+        1, timeout=10000
+    )
+
+    # The inline button is first in DOM order within the row
+    row = logged_in_page.locator(".ingredient-row[data-id]").first
+    row.locator(".delete-btn").first.click()
+
+    modal = logged_in_page.locator("#deleteIngredientModal")
+    expect(modal).to_have_class(re.compile(r"active"))
+    logged_in_page.locator("#confirmDeleteIngredientBtn").click()
+
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(
+        0, timeout=10000
+    )
+
+
+def test_end_of_row_delete_button_still_works(
+    logged_in_page, live_server, test_user, meal_plan_with_food
+):
+    """Clicking the end-of-row (last) delete button still opens the confirmation modal."""
+    plan, day, food, mpf = meal_plan_with_food
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(
+        1, timeout=10000
+    )
+
+    row = logged_in_page.locator(".ingredient-row[data-id]").first
+    row.locator(".delete-btn").last.click()
+
+    modal = logged_in_page.locator("#deleteIngredientModal")
+    expect(modal).to_have_class(re.compile(r"active"))
+    logged_in_page.locator("#confirmDeleteIngredientBtn").click()
+
+    expect(logged_in_page.locator(".ingredient-row[data-id]")).to_have_count(
+        0, timeout=10000
+    )
+
+
+# ---------------------------------------------------------------------------
 # Nutrient calculation — initial render and JS recalculation
 # ---------------------------------------------------------------------------
 

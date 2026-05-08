@@ -23,6 +23,7 @@
           <thead>
             <tr>
               <th style="width: 200px;">{{ i18n.ingredient }}</th>
+              <th style="width: 50px;" class="actions-cell"></th>
               <th style="width: 80px;">{{ i18n.amountG }}</th>
               <th style="width: 65px;" class="nutrient-header">kcal</th>
               <th
@@ -54,7 +55,7 @@
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="2" style="text-align: right; padding-right: 1.5rem; color: var(--text-dim); text-transform: uppercase; font-size: 0.7rem;">{{ i18n.subtotal }}</td>
+              <td colspan="3" style="text-align: right; padding-right: 1.5rem; color: var(--text-dim); text-transform: uppercase; font-size: 0.7rem;">{{ i18n.subtotal }}</td>
               <td><div class="cell-content total-value">{{ fmt(mealTotals['energy_in_kcal'], 1) }}</div></td>
               <td
                 v-for="nut in nonEnergyNutrients"
@@ -117,7 +118,7 @@ const nonEnergyNutrients = computed(() => props.nutrients.filter(n => n.key !== 
 
 const tableMinWidth = computed(() => {
   const visCount = nonEnergyNutrients.value.filter(n => props.visibleNutrients.includes(n.key)).length
-  return 200 + 80 + 65 + (visCount * 65) + 50
+  return 200 + 50 + 80 + 65 + (visCount * 65) + 50
 })
 
 const mealLabel = computed(() => i18n[props.mealType] || props.mealType)
