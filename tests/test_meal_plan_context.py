@@ -195,7 +195,7 @@ class TestGetMealPlanContextNutrientCalculation:
 
 @pytest.mark.django_db
 class TestGetMealPlanContextThresholds:
-    """Threshold logic, is_ok flag, ref_val, and percentage tests."""
+    """Threshold logic, status field, ref_val, and percentage tests."""
 
     def _plan_with_kcal(self, kcal_per_100g, amount_in_g, thresholds):
         food = make_food(energy_in_kcal_per_100g=kcal_per_100g)
@@ -211,7 +211,7 @@ class TestGetMealPlanContextThresholds:
         return plan
 
     def test_both_min_max_within_range_is_ok(self):
-        """avg within [min, max] → is_ok = True, ref_val = midpoint."""
+        """avg within [min, max] → status='ok', ref_val = midpoint."""
         # avg = 200 kcal, min=100, max=300
         plan = self._plan_with_kcal(
             200.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}}
@@ -219,84 +219,86 @@ class TestGetMealPlanContextThresholds:
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
-        assert s["is_ok"] is True
+        assert s["status"] == "ok"
         assert s["reference_val"] == pytest.approx(200.0)  # (100+300)/2
         assert s["threshold_label"] == "100.0 - 300.0"
         assert s["percentage"] == pytest.approx(100, abs=1)
 
-    def test_both_min_max_below_min_not_ok(self):
-        """avg below min → is_ok = False."""
-        # avg = 50 kcal, min=100
+    def test_both_min_max_below_min_alert(self):
+        """avg clearly below min (< 95% of min) → status='alert'."""
+        # avg = 50 kcal, min=100 → 50 < 95 → alert
         plan = self._plan_with_kcal(
             50.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}}
         )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
-        assert s["is_ok"] is False
+        assert s["status"] == "alert"
 
-    def test_both_min_max_above_max_not_ok(self):
-        """avg above max → is_ok = False."""
-        # avg = 400 kcal, max=300
+    def test_both_min_max_above_max_alert(self):
+        """avg clearly above max (> 105% of max) → status='alert'."""
+        # avg = 400 kcal, max=300 → 400 > 315 → alert
         plan = self._plan_with_kcal(
             400.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}}
         )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
-        assert s["is_ok"] is False
+        assert s["status"] == "alert"
 
     def test_only_min_set_above_min_is_ok(self):
-        """Only min set; avg >= min → is_ok = True, ref_val = min."""
+        """Only min set; avg >= min → status='ok', ref_val = min."""
         plan = self._plan_with_kcal(
             200.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}}
         )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
-        assert s["is_ok"] is True
+        assert s["status"] == "ok"
         assert s["reference_val"] == pytest.approx(100.0)
         assert s["threshold_label"] == "> 100.0"
 
-    def test_only_min_set_below_min_not_ok(self):
-        """Only min set; avg < min → is_ok = False."""
+    def test_only_min_set_below_min_alert(self):
+        """Only min set; avg < 95% of min → status='alert'."""
+        # avg = 50 kcal, min=100 → 50 < 95 → alert
         plan = self._plan_with_kcal(
             50.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}}
         )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
-        assert s["is_ok"] is False
+        assert s["status"] == "alert"
 
     def test_only_max_set_below_max_is_ok(self):
-        """Only max set; avg <= max → is_ok = True, ref_val = max."""
+        """Only max set; avg <= max → status='ok', ref_val = max."""
         plan = self._plan_with_kcal(
             100.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}}
         )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
-        assert s["is_ok"] is True
+        assert s["status"] == "ok"
         assert s["reference_val"] == pytest.approx(300.0)
         assert s["threshold_label"] == "< 300.0"
 
-    def test_only_max_set_above_max_not_ok(self):
-        """Only max set; avg > max → is_ok = False."""
+    def test_only_max_set_above_max_alert(self):
+        """Only max set; avg > 105% of max → status='alert'."""
+        # avg = 400 kcal, max=300 → 400 > 315 → alert
         plan = self._plan_with_kcal(
             400.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}}
         )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
-        assert s["is_ok"] is False
+        assert s["status"] == "alert"
 
     def test_no_threshold_set_is_always_ok(self):
-        """When no threshold is set, is_ok = True and ref_val = None."""
+        """When no threshold is set, status='ok' and ref_val = None."""
         plan = self._plan_with_kcal(200.0, 100.0, {})
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
-        assert s["is_ok"] is True
+        assert s["status"] == "ok"
         assert s["reference_val"] is None
         assert s["percentage"] == 0
         assert s["threshold_label"] == ""
@@ -325,7 +327,7 @@ class TestGetMealPlanContextThresholds:
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
 
         assert s["reference_val"] is None
-        assert s["is_ok"] is True
+        assert s["status"] == "ok"
 
     def test_zero_ref_val_percentage_is_zero(self):
         """ref_val of 0 does not cause ZeroDivisionError; percentage = 0."""
@@ -354,6 +356,61 @@ class TestGetMealPlanContextThresholds:
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
         assert s["percentage"] == 50
+
+    # ------------------------------------------------------------------
+    # Warning zone tests (95%–100% of min / 100%–105% of max)
+    # ------------------------------------------------------------------
+
+    def test_warn_when_approaching_min_threshold(self):
+        """avg in [95% of min, min) → status='warn'."""
+        # avg = 97 kcal, min=100 → 97 >= 95 and 97 < 100 → warn
+        plan = self._plan_with_kcal(
+            97.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "warn"
+
+    def test_warn_when_slightly_exceeding_max_threshold(self):
+        """avg in (max, 105% of max] → status='warn'."""
+        # avg = 310 kcal, max=300 → 310 > 300 and 310 <= 315 → warn
+        plan = self._plan_with_kcal(
+            310.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "warn"
+
+    def test_alert_when_below_95_percent_of_min(self):
+        """avg < 95% of min → status='alert' (not warn)."""
+        # avg = 94 kcal, min=100 → 94 < 95 → alert
+        plan = self._plan_with_kcal(
+            94.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "alert"
+
+    def test_alert_when_above_105_percent_of_max(self):
+        """avg > 105% of max → status='alert' (not warn)."""
+        # avg = 316 kcal, max=300 → 316 > 315 → alert
+        plan = self._plan_with_kcal(
+            316.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "alert"
+
+    def test_alert_takes_precedence_over_warn(self):
+        """When min breach is alert-level, max warn-level does not downgrade to warn."""
+        # avg = 94 kcal (< 95% of min=100), max=90 → 94 in (90, 94.5] → max=warn
+        # min breach is alert and takes precedence
+        plan = self._plan_with_kcal(
+            94.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 90}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "alert"
 
 
 @pytest.mark.django_db

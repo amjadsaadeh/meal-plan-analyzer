@@ -193,11 +193,17 @@ def get_meal_plan_context(pk):
         if ref_val and ref_val > 0:
             percentage = (avg_val / ref_val) * 100
 
-        is_ok = True
-        if min_val is not None and avg_val < min_val:
-            is_ok = False
-        if max_val is not None and avg_val > max_val:
-            is_ok = False
+        status = "ok"
+        if min_val is not None:
+            if avg_val < min_val * 0.95:
+                status = "alert"
+            elif avg_val < min_val:
+                status = "warn"
+        if max_val is not None:
+            if avg_val > max_val * 1.05:
+                status = "alert"
+            elif avg_val > max_val and status != "alert":
+                status = "warn"
 
         summary_nutrients.append(
             {
@@ -207,7 +213,7 @@ def get_meal_plan_context(pk):
                 "reference_val": ref_val,
                 "percentage": int(percentage),
                 "threshold_label": threshold_label,
-                "is_ok": is_ok,
+                "status": status,
             }
         )
 

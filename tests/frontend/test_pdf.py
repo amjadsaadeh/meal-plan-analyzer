@@ -70,7 +70,7 @@ def test_get_meal_plan_context_nutrient_totals():
 
 
 def test_get_meal_plan_context_threshold_status():
-    """is_ok must be False when the average falls outside the defined threshold."""
+    """status must be 'alert' when the average falls clearly outside the defined threshold."""
     from meals.views import get_meal_plan_context
     from meals.models import MealPlan
 
@@ -81,14 +81,14 @@ def test_get_meal_plan_context_threshold_status():
         meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="breakfast"
     )
 
-    # Set a minimum protein threshold of 50 g — the plan has only 1 g
+    # Set a minimum protein threshold of 50 g — the plan has only 1 g (< 95% of 50)
     plan.thresholds = {"protein_in_g": {"min": 50.0, "max": None}}
     plan.save()
 
     ctx = get_meal_plan_context(plan.id)
 
     summary = {n["label"]: n for n in ctx["summary_nutrients"]}
-    assert summary["Protein"]["is_ok"] is False
+    assert summary["Protein"]["status"] == "alert"
 
 
 # ---------------------------------------------------------------------------

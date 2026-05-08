@@ -709,3 +709,90 @@ def test_apply_threshold_preset(
     expect(
         logged_in_page.locator('.threshold-min[data-nut="protein_in_g"]').first
     ).to_have_value("70")
+
+
+# ---------------------------------------------------------------------------
+# Threshold warning color (status-warn / status-under / status-over)
+# ---------------------------------------------------------------------------
+
+
+def _make_energy_plan(kcal_per_100g, thresholds):
+    """Create a plan with a single day containing one food at 100 g so total == kcal_per_100g."""
+    plan = MealPlanFactory(thresholds=thresholds)
+    day = MealPlanDayFactory(meal_plan=plan)
+    food = FoodFactory(name="Test Energy Food", energy_in_kcal_per_100g=kcal_per_100g)
+    MealPlanFoodFactory(
+        meal_plan_day=day, food=food, amount_in_g=100.0, meal_type="breakfast"
+    )
+    return plan
+
+
+def test_threshold_color_ok_within_range(logged_in_page, live_server, test_user):
+    """Value comfortably within [min, max] → no status class (default colour)."""
+    plan = _make_energy_plan(200.0, {"energy_in_kcal": {"min": 100, "max": 300}})
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    val = logged_in_page.locator(".day-summary .col-energy_in_kcal .summary-val").first
+    expect(val).to_be_visible(timeout=10000)
+    classes = val.get_attribute("class") or ""
+    assert "status-under" not in classes
+    assert "status-warn" not in classes
+    assert "status-over" not in classes
+
+
+def test_threshold_color_warn_approaching_min(logged_in_page, live_server, test_user):
+    """Value between 95% and 100% of min → status-warn (orange)."""
+    # total = 97 kcal, min = 100 → 97 ∈ [95, 100) → warn
+    plan = _make_energy_plan(97.0, {"energy_in_kcal": {"min": 100, "max": None}})
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    val = logged_in_page.locator(".day-summary .col-energy_in_kcal .summary-val").first
+    expect(val).to_be_visible(timeout=10000)
+    expect(val).to_have_class(re.compile(r"status-warn"))
+
+
+def test_threshold_color_alert_below_95_percent_of_min(
+    logged_in_page, live_server, test_user
+):
+    """Value below 95% of min → status-under (red)."""
+    # total = 50 kcal, min = 100 → 50 < 95 → alert/status-under
+    plan = _make_energy_plan(50.0, {"energy_in_kcal": {"min": 100, "max": None}})
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    val = logged_in_page.locator(".day-summary .col-energy_in_kcal .summary-val").first
+    expect(val).to_be_visible(timeout=10000)
+    expect(val).to_have_class(re.compile(r"status-under"))
+
+
+def test_threshold_color_warn_slightly_over_max(logged_in_page, live_server, test_user):
+    """Value between 100% and 105% of max → status-warn (orange)."""
+    # total = 310 kcal, max = 300 → 310 ∈ (300, 315] → warn
+    plan = _make_energy_plan(310.0, {"energy_in_kcal": {"min": None, "max": 300}})
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    val = logged_in_page.locator(".day-summary .col-energy_in_kcal .summary-val").first
+    expect(val).to_be_visible(timeout=10000)
+    expect(val).to_have_class(re.compile(r"status-warn"))
+
+
+def test_threshold_color_alert_above_105_percent_of_max(
+    logged_in_page, live_server, test_user
+):
+    """Value above 105% of max → status-over (red)."""
+    # total = 400 kcal, max = 300 → 400 > 315 → alert/status-over
+    plan = _make_energy_plan(400.0, {"energy_in_kcal": {"min": None, "max": 300}})
+
+    logged_in_page.goto(live_server.url + f"/meal-plan/{plan.id}/")
+    _wait_for_app(logged_in_page)
+
+    val = logged_in_page.locator(".day-summary .col-energy_in_kcal .summary-val").first
+    expect(val).to_be_visible(timeout=10000)
+    expect(val).to_have_class(re.compile(r"status-over"))
