@@ -186,7 +186,6 @@ def test_inline_delete_button_hidden_for_empty_draft_row(
         expect(draft_rows.nth(i).locator(".delete-btn")).to_have_count(0)
 
 
-
 def test_inline_delete_button_triggers_delete_flow(
     logged_in_page, live_server, test_user, meal_plan_with_food
 ):
