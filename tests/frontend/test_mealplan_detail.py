@@ -181,8 +181,10 @@ def test_inline_delete_button_hidden_for_empty_draft_row(
 
     # Only draft rows exist — none have a food selected
     draft_rows = logged_in_page.locator(".ingredient-row:not([data-id])")
+    expect(draft_rows).to_have_count(3, timeout=10000)
     for i in range(draft_rows.count()):
         expect(draft_rows.nth(i).locator(".delete-btn")).to_have_count(0)
+
 
 
 def test_inline_delete_button_triggers_delete_flow(
