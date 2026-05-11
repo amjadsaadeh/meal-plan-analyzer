@@ -4,7 +4,7 @@ Tests for the get_meal_plan_context() helper in meals/views.py.
 This function is the core of the PDF/preview feature.  It:
   - calculates per-item nutrient values using amount_in_g / 100 factor
   - sums daily totals and averages across days
-  - applies threshold min/max logic (is_ok flag, percentage, ref_val)
+  - applies threshold min/max logic (status field, percentage, ref_val)
   - coerces empty-string thresholds to None
   - respects the plan's visible_nutrients list
   - handles plans with no days or days with no foods gracefully
