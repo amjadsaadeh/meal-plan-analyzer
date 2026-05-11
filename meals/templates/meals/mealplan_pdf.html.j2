@@ -155,9 +155,9 @@
                     </td>
                     <td>
                         <div class="bar-container">
-                            <div class="bar {% if nutrient.is_ok %}bar-ok{% else %}bar-alert{% endif %}" style="width: {{ nutrient.percentage }}%;"></div>
+                            <div class="bar {% if nutrient.status == 'ok' %}bar-ok{% elif nutrient.status == 'warn' %}bar-warn{% else %}bar-alert{% endif %}" style="width: {{ nutrient.percentage }}%;"></div>
                         </div>
-                        <span class="{% if nutrient.is_ok %}status-ok{% else %}status-alert{% endif %}">
+                        <span class="{% if nutrient.status == 'ok' %}status-ok{% elif nutrient.status == 'warn' %}status-warn{% else %}status-alert{% endif %}">
                             {{ nutrient.percentage }}%
                         </span>
 

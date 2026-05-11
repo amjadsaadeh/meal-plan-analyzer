@@ -91,8 +91,10 @@ function thresholdClass(nutKey: string): string {
   const t = props.thresholds?.[nutKey] || { min: null, max: null }
   const min = t.min !== null && t.min !== undefined ? parseFloat(String(t.min)) : null
   const max = t.max !== null && t.max !== undefined ? parseFloat(String(t.max)) : null
-  if (min !== null && val < min) return 'status-under'
-  if (max !== null && val > max) return 'status-over'
+  if (min !== null && val < min * 0.95) return 'status-under'
+  if (min !== null && val < min)        return 'status-warn'
+  if (max !== null && val > max * 1.05) return 'status-over'
+  if (max !== null && val > max)        return 'status-warn'
   return ''
 }
 

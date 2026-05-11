@@ -11,13 +11,15 @@
 // it renders the HTML string (base_url is set in the view).
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
 
-// SCSS design tokens (no :root block needed for PDF)
+// SCSS design tokens (no :root block needed for PDF – WeasyPrint resolves
+// values at parse time so CSS custom properties don't work here).
+// KEEP IN SYNC with the SCSS variables section of _variables.scss.
 $primary:     #6AD9C6;
 $primary-hover: #4fada0;
 $text-main:   #2c3338;
 $text-dim:    #666E73;
 $success:     #41A66D;
-$warning:     #DEACA4;
+$warning:     #CF7A3A;
 $danger:      #A64143;
 $border:      #e2e8f0;
 
