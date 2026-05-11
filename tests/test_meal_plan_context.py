@@ -401,16 +401,73 @@ class TestGetMealPlanContextThresholds:
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
         assert s["status"] == "alert"
 
-    def test_alert_takes_precedence_over_warn(self):
-        """When min breach is alert-level, max warn-level does not downgrade to warn."""
-        # avg = 94 kcal (< 95% of min=100), max=90 → 94 in (90, 94.5] → max=warn
-        # min breach is alert and takes precedence
+    def test_min_alert_not_overwritten_by_max_warn_guard(self):
+        """Defensive: inverted thresholds (max < min) cannot downgrade an alert to warn.
+
+        In valid data min < max so both boundaries never fire simultaneously.
+        This tests the `status != 'alert'` guard in the max elif branch against
+        malformed data where max=90 < min=100.
+        """
+        # avg=94 → min: 94 < 95 → alert; max: 94 > 90 but NOT > 94.5 → elif fires,
+        # but guard (status != "alert") prevents downgrade → stays alert
         plan = self._plan_with_kcal(
             94.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 90}}
         )
         ctx = get_meal_plan_context(plan.pk)
         s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
         assert s["status"] == "alert"
+
+    # ------------------------------------------------------------------
+    # Boundary-value tests (exact transition points)
+    # ------------------------------------------------------------------
+
+    def test_value_exactly_at_min_boundary_is_ok(self):
+        """avg == min → ok (strict < means the boundary itself is safe)."""
+        plan = self._plan_with_kcal(
+            100.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "ok"
+
+    def test_value_exactly_at_max_boundary_is_ok(self):
+        """avg == max → ok (strict > means the boundary itself is safe)."""
+        plan = self._plan_with_kcal(
+            300.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "ok"
+
+    def test_value_at_exact_95_percent_of_min_is_warn(self):
+        """avg == 95% of min → warn (strict < so 0.95*min is inside the warn zone)."""
+        # avg=95, min=100 → 95 < 95 is False → falls to elif 95 < 100 → warn
+        plan = self._plan_with_kcal(
+            95.0, 100.0, {"energy_in_kcal": {"min": 100, "max": None}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "warn"
+
+    def test_value_at_exact_105_percent_of_max_is_warn(self):
+        """avg == 105% of max → warn (strict > so 1.05*max is inside the warn zone)."""
+        # avg=315, max=300 → 315 > 315 is False → falls to elif 315 > 300 → warn
+        plan = self._plan_with_kcal(
+            315.0, 100.0, {"energy_in_kcal": {"min": None, "max": 300}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "warn"
+
+    def test_warn_in_max_zone_when_both_thresholds_set(self):
+        """Both thresholds set; avg in (max, 1.05*max] → warn (min check does not fire)."""
+        # avg=310, min=100, max=300 → min: 310 >= min → ok; max: 310 in (300, 315] → warn
+        plan = self._plan_with_kcal(
+            310.0, 100.0, {"energy_in_kcal": {"min": 100, "max": 300}}
+        )
+        ctx = get_meal_plan_context(plan.pk)
+        s = next(n for n in ctx["summary_nutrients"] if n["label"] == "Energie")
+        assert s["status"] == "warn"
 
 
 @pytest.mark.django_db
