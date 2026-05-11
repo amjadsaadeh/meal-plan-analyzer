@@ -29,6 +29,9 @@
 }
 
 // SCSS variables (compile-time)
+// NOTE: pdf.scss copies a subset of these tokens directly (WeasyPrint
+// cannot use CSS custom properties). Keep both files in sync when
+// changing colour values here.
 $primary:           #6AD9C6;
 $primary-hover:     #4fada0;
 $primary-glow:      rgba(106, 217, 198, 0.2);
