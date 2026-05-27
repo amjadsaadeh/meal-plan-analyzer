@@ -74,11 +74,11 @@ variable "domain" {
   default = "saadeh.dev"
 }
 
-variable "k3s_master_ipv4" {
+variable "ipv4" {
   type = string
 }
 
-variable "k3s_master_ipv6" {
+variable "ipv6" {
   type = string
 }
 
@@ -93,7 +93,7 @@ resource "netcup-ccp_dns_record" "mealplananalyzer_dev_a" {
   domain_name = var.domain
   name        = "mealplananalyzer-dev"
   type        = "A"
-  value       = var.k3s_master_ipv4
+  value       = var.ipv4
   priority    = "0"
 }
 
@@ -101,6 +101,6 @@ resource "netcup-ccp_dns_record" "mealplananalyzer_dev_aaaa" {
   domain_name = var.domain
   name        = "mealplananalyzer-dev"
   type        = "AAAA"
-  value       = var.k3s_master_ipv6
+  value       = var.ipv6
   priority    = "0"
 }
