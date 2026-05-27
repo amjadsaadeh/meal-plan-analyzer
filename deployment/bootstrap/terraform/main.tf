@@ -7,7 +7,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket   = "meal-plan-analyzer-tfstate"
+    bucket   = "mealplananalyzer-dev-tfstate"
     key      = "bootstrap/terraform.tfstate"
     region   = "us-east-1" # required by S3 backend, ignored by Backblaze
     endpoint = "https://s3.eu-central-003.backblazeb2.com"
