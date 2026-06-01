@@ -1,8 +1,8 @@
 terraform {
   required_providers {
-    netcup-ccp = {
-      source  = "rincedd/netcup-ccp"
-      version = "0.0.1"
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.0"
     }
   }
 
@@ -51,27 +51,16 @@ variable "state_encryption_passphrase" {
 }
 
 # ---------------------------------------------------------------------------
-# Netcup DNS
+# Cloudflare DNS
 # ---------------------------------------------------------------------------
 
-variable "netcup_customer_number" {
+variable "cloudflare_api_token" {
   type      = string
   sensitive = true
 }
 
-variable "netcup_api_key" {
-  type      = string
-  sensitive = true
-}
-
-variable "netcup_api_password" {
-  type      = string
-  sensitive = true
-}
-
-variable "domain" {
-  type    = string
-  default = "saadeh.dev"
+variable "cloudflare_zone_id" {
+  type = string
 }
 
 variable "ipv4" {
@@ -82,25 +71,25 @@ variable "ipv6" {
   type = string
 }
 
-# Credentials via env vars: TF_VAR_netcup_customer_number, TF_VAR_netcup_api_key, TF_VAR_netcup_api_password
-provider "netcup-ccp" {
-  customer_number  = var.netcup_customer_number
-  ccp_api_key      = var.netcup_api_key
-  ccp_api_password = var.netcup_api_password
+# Credentials via env vars: TF_VAR_cloudflare_api_token
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }
 
-resource "netcup-ccp_dns_record" "mealplananalyzer_dev_a" {
-  domain_name = var.domain
-  name        = "mealplananalyzer-dev"
-  type        = "A"
-  value       = var.ipv4
-  priority    = "0"
+resource "cloudflare_dns_record" "mealplananalyzer_dev_a" {
+  zone_id = var.cloudflare_zone_id
+  name    = "mealplananalyzer-dev"
+  type    = "A"
+  content = var.ipv4
+  ttl     = 1
+  proxied = false
 }
 
-resource "netcup-ccp_dns_record" "mealplananalyzer_dev_aaaa" {
-  domain_name = var.domain
-  name        = "mealplananalyzer-dev"
-  type        = "AAAA"
-  value       = var.ipv6
-  priority    = "0"
+resource "cloudflare_dns_record" "mealplananalyzer_dev_aaaa" {
+  zone_id = var.cloudflare_zone_id
+  name    = "mealplananalyzer-dev"
+  type    = "AAAA"
+  content = var.ipv6
+  ttl     = 1
+  proxied = false
 }
