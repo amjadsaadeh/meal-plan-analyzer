@@ -56,6 +56,9 @@ jobs:
       - name: Restart deployment
         run: kubectl rollout restart deployment/meal-plan-analyzer -n meal-plan-analyzer-dev
 
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/meal-plan-analyzer -n meal-plan-analyzer-dev --timeout=600s
+
       - name: Notify success
         if: success()
         continue-on-error: true
