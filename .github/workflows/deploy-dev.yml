@@ -58,6 +58,7 @@ jobs:
 
       - name: Notify success
         if: success()
+        continue-on-error: true
         run: |
           curl -s -o /dev/null \
             -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
