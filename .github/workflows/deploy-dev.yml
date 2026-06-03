@@ -55,3 +55,28 @@ jobs:
 
       - name: Restart deployment
         run: kubectl rollout restart deployment/meal-plan-analyzer -n meal-plan-analyzer-dev
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/meal-plan-analyzer -n meal-plan-analyzer-dev --timeout=600s
+
+      - name: Notify success
+        if: success()
+        continue-on-error: true
+        run: |
+          curl -s -o /dev/null \
+            -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
+            -H "Title: Deployment succeeded" \
+            -H "Tags: white_check_mark" \
+            -d "meal-plan-analyzer dev-${{ steps.vars.outputs.sha_short }} deployed successfully to dev." \
+            "${{ secrets.NTFY_URL }}"
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          curl -s -o /dev/null \
+            -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
+            -H "Title: Deployment FAILED" \
+            -H "Tags: x,rotating_light" \
+            -H "Priority: high" \
+            -d "meal-plan-analyzer dev deployment failed. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "${{ secrets.NTFY_URL }}"
