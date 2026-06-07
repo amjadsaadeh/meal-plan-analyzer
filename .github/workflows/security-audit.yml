@@ -97,6 +97,222 @@ jobs:
             fi
           fi
 
+  safety-scan:
+    name: Safety Dependency Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Export requirements
+        run: uv export --frozen --no-dev --no-emit-project > requirements-audit.txt
+
+      - name: Run safety check
+        run: |
+          uv tool run safety check --file requirements-audit.txt --json --output safety-report.json || true
+
+      - name: Fail on vulnerabilities
+        run: |
+          python3 -c "
+          import json, sys
+          try:
+              with open('safety-report.json', 'r') as f:
+                  data = json.load(f)
+              vulns = data if isinstance(data, list) else []
+              if vulns:
+                  print(f'Found {len(vulns)} vulnerable package(s):', file=sys.stderr)
+                  for v in vulns:
+                      print(f'  - {v.get(\"package\", \"?\")} {v.get(\"installed_version\", \"?\")}: {v.get(\"vulnerability_id\", \"?\")} - {v.get(\"advisory\", \"?\")[:100]}', file=sys.stderr)
+                  sys.exit(1)
+          except FileNotFoundError:
+              print('safety-report.json not found — safety may have failed to run', file=sys.stderr)
+              sys.exit(1)
+          "
+
+      - name: Upload Safety report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: safety-report
+          path: safety-report.json
+          retention-days: 90
+
+      - name: Summarize Safety results
+        if: always()
+        run: |
+          echo "## Safety Dependency Scan" >> $GITHUB_STEP_SUMMARY
+          if [ -f safety-report.json ]; then
+            VULN_COUNT=$(python3 -c "
+          import json
+          try:
+              with open('safety-report.json', 'r') as f:
+                  data = json.load(f)
+              vulns = data if isinstance(data, list) else []
+              print(len(vulns))
+          except:
+              print(0)
+          ")
+            if [ "$VULN_COUNT" = "0" ]; then
+              echo "✅ No vulnerabilities found by Safety." >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **$VULN_COUNT vulnerability/vulnerabilities found** by Safety." >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+  bandit-scan:
+    name: Bandit Code Security Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: uv sync --frozen
+
+      - name: Run bandit
+        run: |
+          uv tool run bandit -r config/ meals/ manage.py -f json -o bandit-report.json || true
+
+      - name: Fail on high/critical issues
+        run: |
+          python3 -c "
+          import json, sys
+          try:
+              with open('bandit-report.json', 'r') as f:
+                  data = json.load(f)
+              results = data.get('results', [])
+              severity_counts = {'HIGH': 0, 'CRITICAL': 0}
+              for r in results:
+                  sev = r.get('issue_severity', '').upper()
+                  if sev in severity_counts:
+                      severity_counts[sev] += 1
+              total = severity_counts['HIGH'] + severity_counts['CRITICAL']
+              if total > 0:
+                  print(f'Found {total} high/critical issue(s):', file=sys.stderr)
+                  for r in results:
+                      sev = r.get('issue_severity', '').upper()
+                      if sev in ('HIGH', 'CRITICAL'):
+                          print(f'  - {sev}: {r.get(\"issue_text\", \"?\")} in {r.get(\"filename\", \"?\")}:{r.get(\"line_number\", \"?\")}', file=sys.stderr)
+                  sys.exit(1)
+          except FileNotFoundError:
+              print('bandit-report.json not found — bandit may have failed to run', file=sys.stderr)
+              sys.exit(1)
+          "
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-report
+          path: bandit-report.json
+          retention-days: 90
+
+      - name: Summarize Bandit results
+        if: always()
+        run: |
+          echo "## Bandit Code Security Linting" >> $GITHUB_STEP_SUMMARY
+          if [ -f bandit-report.json ]; then
+            python3 -c "
+          import json
+          try:
+              with open('bandit-report.json', 'r') as f:
+                  data = json.load(f)
+              results = data.get('results', [])
+              severity_counts = {'LOW': 0, 'MEDIUM': 0, 'HIGH': 0, 'CRITICAL': 0}
+              for r in results:
+                  sev = r.get('issue_severity', 'UNKNOWN').upper()
+                  if sev in severity_counts:
+                      severity_counts[sev] += 1
+              total = len(results)
+              if total == 0:
+                  print('✅ No security issues found by Bandit.')
+              else:
+                  print(f'⚠️ **{total} security issue(s) found** by Bandit:')
+                  for sev, count in [('CRITICAL', severity_counts['CRITICAL']), ('HIGH', severity_counts['HIGH']), ('MEDIUM', severity_counts['MEDIUM']), ('LOW', severity_counts['LOW'])]:
+                      if count > 0:
+                          emoji = '🔴' if sev in ('CRITICAL', 'HIGH') else '🟡'
+                          print(f'  - {emoji} {sev}: {count}')
+          except Exception as e:
+              print(f'Could not parse bandit report: {e}')
+          " >> $GITHUB_STEP_SUMMARY
+          fi
+
+  trivy-scan:
+    name: Trivy Container Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t meal-plan-analyzer:scan .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          image-ref: "meal-plan-analyzer:scan"
+          format: "json"
+          output: "trivy-report.json"
+          severity: "CRITICAL,HIGH"
+          exit-code: "1"
+          ignore-unfixed: false
+          vuln-type: "os,library"
+          skip-dirs: "/app/.venv"
+
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-report
+          path: trivy-report.json
+          retention-days: 90
+
+      - name: Summarize Trivy results
+        if: always()
+        run: |
+          echo "## Trivy Container Vulnerability Scan" >> $GITHUB_STEP_SUMMARY
+          if [ -f trivy-report.json ]; then
+            python3 -c "
+          import json
+          try:
+              with open('trivy-report.json', 'r') as f:
+                  data = json.load(f)
+              results = data.get('Results', [])
+              if results:
+                  vulns = results[0].get('Vulnerabilities', [])
+                  severity_counts = {}
+                  for v in vulns:
+                      sev = v.get('Severity', 'UNKNOWN')
+                      severity_counts[sev] = severity_counts.get(sev, 0) + 1
+                  total = len(vulns)
+                  if total == 0:
+                      print('✅ No vulnerabilities found by Trivy.')
+                  else:
+                      print(f'⚠️ **{total} vulnerability/vulnerabilities found** by Trivy:')
+                      for sev, count in sorted(severity_counts.items(), key=lambda x: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'].index(x[0]) if x[0] in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'] else 99):
+                          emoji = '🔴' if sev in ('CRITICAL', 'HIGH') else '🟡'
+                          print(f'  - {emoji} {sev}: {count}')
+              else:
+                  print('✅ No vulnerabilities found by Trivy.')
+          except Exception as e:
+              print(f'Could not parse trivy report: {e}')
+          " >> $GITHUB_STEP_SUMMARY
+          fi
+
   js-audit:
     name: JavaScript Dependency Audit (pnpm)
     runs-on: ubuntu-latest
@@ -160,7 +376,7 @@ jobs:
   security-summary:
     name: Security Audit Summary
     runs-on: ubuntu-latest
-    needs: [python-audit, js-audit]
+    needs: [python-audit, safety-scan, bandit-scan, trivy-scan, js-audit]
     if: always()
 
     steps:
@@ -171,6 +387,9 @@ jobs:
           echo "| Component | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Python dependencies (pip-audit) | ${{ needs.python-audit.result == 'success' && '✅ passed' || needs.python-audit.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Python dependencies (safety) | ${{ needs.safety-scan.result == 'success' && '✅ passed' || needs.safety-scan.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Python code (bandit) | ${{ needs.bandit-scan.result == 'success' && '✅ passed' || needs.bandit-scan.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Container image (trivy) | ${{ needs.trivy-scan.result == 'success' && '✅ passed' || needs.trivy-scan.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| JavaScript dependencies (pnpm audit) | ${{ needs.js-audit.result == 'success' && '✅ passed' || needs.js-audit.result == 'skipped' && '⏭️ skipped' || '❌ failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "> Full audit reports are available as workflow artifacts (retained 90 days)." >> $GITHUB_STEP_SUMMARY
