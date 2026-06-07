@@ -115,9 +115,12 @@ jobs:
       - name: Export requirements
         run: uv export --frozen --no-dev --no-emit-project > requirements-audit.txt
 
-      - name: Run safety check
+      - name: Install safety
+        run: uv tool install safety
+
+      - name: Run safety scan
         run: |
-          uv tool run safety check --file requirements-audit.txt --json --output safety-report.json || true
+          uv tool run safety scan --file requirements-audit.txt --json --save-json safety-report.json || true
 
       - name: Fail on vulnerabilities
         run: |
@@ -126,11 +129,9 @@ jobs:
           try:
               with open('safety-report.json', 'r') as f:
                   data = json.load(f)
-              vulns = data if isinstance(data, list) else []
-              if vulns:
-                  print(f'Found {len(vulns)} vulnerable package(s):', file=sys.stderr)
-                  for v in vulns:
-                      print(f'  - {v.get(\"package\", \"?\")} {v.get(\"installed_version\", \"?\")}: {v.get(\"vulnerability_id\", \"?\")} - {v.get(\"advisory\", \"?\")[:100]}', file=sys.stderr)
+              vulns = data.get('vulnerabilities_found', 0)
+              if vulns and vulns > 0:
+                  print(f'Found {vulns} vulnerable package(s)', file=sys.stderr)
                   sys.exit(1)
           except FileNotFoundError:
               print('safety-report.json not found — safety may have failed to run', file=sys.stderr)
@@ -155,8 +156,8 @@ jobs:
           try:
               with open('safety-report.json', 'r') as f:
                   data = json.load(f)
-              vulns = data if isinstance(data, list) else []
-              print(len(vulns))
+              vulns = data.get('vulnerabilities_found', 0)
+              print(vulns)
           except:
               print(0)
           ")
@@ -262,7 +263,7 @@ jobs:
           docker build -t meal-plan-analyzer:scan .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@0.20.0
         with:
           image-ref: "meal-plan-analyzer:scan"
           format: "json"
