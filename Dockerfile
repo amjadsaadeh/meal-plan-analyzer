@@ -27,17 +27,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # Final stage
-# Use python:3.12-slim which should use the latest Debian stable
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
 # Install system dependencies for WeasyPrint
 # First update and upgrade ALL existing packages to fix vulnerabilities
 # Then install required dependencies
-# Use CACHE_BUST arg to ensure fresh package upgrade (for security scanning)
-ARG CACHE_BUST=0
-RUN echo "Cache bust: ${CACHE_BUST}" && apt-get update && apt-get upgrade -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libpango-1.0-0 \
