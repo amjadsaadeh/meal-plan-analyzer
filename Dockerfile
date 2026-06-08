@@ -1,5 +1,5 @@
 # Node/Vite build stage
-FROM node:22-slim AS node-builder
+FROM node:22-bookworm-slim AS node-builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ COPY frontend/src/ frontend/src/
 RUN pnpm build
 
 # Python dependency build stage
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-20241008 AS builder
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # Final stage
-FROM python:3.12-slim-bookworm
+FROM python:3.12-bookworm-slim
 
 WORKDIR /app
 
@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangocairo-1.0-0 \
     libcairo2 \
     libgdk-pixbuf2.0-0 \
+    && apt-get upgrade -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 1000 appuser \
     && useradd --uid 1000 --gid 1000 --no-create-home --shell /sbin/nologin appuser
