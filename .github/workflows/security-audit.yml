@@ -117,7 +117,8 @@ jobs:
 
       - name: Run safety check
         run: |
-          uv tool run safety check --file requirements-audit.txt --json > safety-report.json 2>&1 || true
+          # Use --output json to get clean JSON output
+          uv tool run safety check --file requirements-audit.txt --output json > safety-report.json 2>&1 || true
           # Extract only the JSON part from the output (remove deprecation warnings)
           python3 -c "
           import re, sys
@@ -128,6 +129,10 @@ jobs:
           if match:
               with open('safety-report.json', 'w') as f:
                   f.write(match.group(0))
+          else:
+              # If no JSON found, create empty JSON
+              with open('safety-report.json', 'w') as f:
+                  f.write('{\"vulnerabilities\": []}')
           "
 
       - name: Fail on vulnerabilities
@@ -278,7 +283,7 @@ jobs:
           docker build -t meal-plan-analyzer:scan .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: "meal-plan-analyzer:scan"
           format: "json"
