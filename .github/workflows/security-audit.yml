@@ -115,12 +115,20 @@ jobs:
       - name: Export requirements
         run: uv export --frozen --no-dev --no-emit-project > requirements-audit.txt
 
-      - name: Install safety
-        run: uv tool install safety
-
-      - name: Run safety scan
+      - name: Run safety check
         run: |
-          uv tool run safety scan --file requirements-audit.txt --json --save-json safety-report.json || true
+          uv tool run safety check --file requirements-audit.txt --json > safety-report.json 2>&1 || true
+          # Extract only the JSON part from the output (remove deprecation warnings)
+          python3 -c "
+          import re, sys
+          with open('safety-report.json', 'r') as f:
+              content = f.read()
+          # Find the JSON object in the output
+          match = re.search(r'\{.*\}', content, re.DOTALL)
+          if match:
+              with open('safety-report.json', 'w') as f:
+                  f.write(match.group(0))
+          "
 
       - name: Fail on vulnerabilities
         run: |
@@ -129,12 +137,19 @@ jobs:
           try:
               with open('safety-report.json', 'r') as f:
                   data = json.load(f)
-              vulns = data.get('vulnerabilities_found', 0)
-              if vulns and vulns > 0:
-                  print(f'Found {vulns} vulnerable package(s)', file=sys.stderr)
+              # Safety CLI v3 output format
+              vulns = data.get('vulnerabilities', [])
+              affected = data.get('affected_packages', {})
+              total_vulns = len(vulns)
+              total_affected = len(affected)
+              if total_vulns > 0:
+                  print(f'Found {total_vulns} vulnerability/vulnerabilities in {total_affected} package(s)', file=sys.stderr)
                   sys.exit(1)
           except FileNotFoundError:
               print('safety-report.json not found — safety may have failed to run', file=sys.stderr)
+              sys.exit(1)
+          except json.JSONDecodeError as e:
+              print(f'safety-report.json contains invalid JSON: {e}', file=sys.stderr)
               sys.exit(1)
           "
 
@@ -156,8 +171,8 @@ jobs:
           try:
               with open('safety-report.json', 'r') as f:
                   data = json.load(f)
-              vulns = data.get('vulnerabilities_found', 0)
-              print(vulns)
+              vulns = data.get('vulnerabilities', [])
+              print(len(vulns))
           except:
               print(0)
           ")
@@ -263,7 +278,7 @@ jobs:
           docker build -t meal-plan-analyzer:scan .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.29.0
         with:
           image-ref: "meal-plan-analyzer:scan"
           format: "json"
