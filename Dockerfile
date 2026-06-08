@@ -1,5 +1,5 @@
 # Node/Vite build stage
-FROM node:22-bookworm-slim AS node-builder
+FROM node:22-slim AS node-builder
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # Final stage
-FROM python:3.12-bookworm-slim
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
