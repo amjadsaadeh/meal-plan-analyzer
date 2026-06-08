@@ -36,7 +36,7 @@ WORKDIR /app
 # Then install required dependencies
 # Use CACHE_BUST arg to ensure fresh package upgrade (for security scanning)
 ARG CACHE_BUST=0
-RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+RUN echo "Cache bust: ${CACHE_BUST}" && apt-get update && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libpango-1.0-0 \
