@@ -27,8 +27,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # Final stage
-# Use specific Python version with newer system packages
-FROM python:3.12.13-slim-bookworm
+# Use python:3.12-slim which should use the latest Debian stable
+FROM python:3.12-slim
 
 WORKDIR /app
 
