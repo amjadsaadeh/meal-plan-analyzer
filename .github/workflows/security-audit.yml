@@ -117,8 +117,8 @@ jobs:
 
       - name: Run safety check
         run: |
-          # Use --output json to get clean JSON output (stdout only, stderr to /dev/null)
-          uv tool run safety check --file requirements-audit.txt --output json > safety-report.json 2>/dev/null || true
+          # Use --output json and extract only the JSON block (deprecation warnings go to stdout too)
+          uv tool run safety check --file requirements-audit.txt --output json 2>/dev/null | awk '/^{/,/^}$/' > safety-report.json || true
 
       - name: Fail on vulnerabilities
         run: |
