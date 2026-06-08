@@ -27,8 +27,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # Final stage
-# Use python:3.12-bookworm (non-slim) which may have newer system packages
-FROM python:3.12-bookworm
+# Use specific Python version with newer system packages
+FROM python:3.12.13-slim-bookworm
 
 WORKDIR /app
 
