@@ -27,15 +27,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # Final stage
-# Try python:3.12-slim-bullseye which uses Debian 11 (Bullseye) with different packages
-FROM python:3.12-slim-bullseye
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
 # Install system dependencies for WeasyPrint
-# First update and upgrade ALL existing packages to fix vulnerabilities
+# First update and dist-upgrade ALL existing packages to fix vulnerabilities
 # Then install required dependencies
-RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+RUN apt-get update && apt-get dist-upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libpango-1.0-0 \
