@@ -32,7 +32,12 @@ FROM python:3.12-slim-bookworm
 WORKDIR /app
 
 # Install system dependencies for WeasyPrint
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# First update and upgrade ALL existing packages to fix vulnerabilities
+# Then install required dependencies
+# Use CACHE_BUST arg to ensure fresh package upgrade (for security scanning)
+ARG CACHE_BUST=0
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libpango-1.0-0 \
     libharfbuzz0b \
@@ -40,7 +45,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangocairo-1.0-0 \
     libcairo2 \
     libgdk-pixbuf2.0-0 \
-    && apt-get upgrade -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 1000 appuser \
     && useradd --uid 1000 --gid 1000 --no-create-home --shell /sbin/nologin appuser

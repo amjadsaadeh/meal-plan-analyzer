@@ -265,7 +265,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t meal-plan-analyzer:scan .
+          docker build --build-arg CACHE_BUST=$(date +%s) -t meal-plan-analyzer:scan .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
