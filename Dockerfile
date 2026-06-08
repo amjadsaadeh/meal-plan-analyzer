@@ -27,7 +27,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev
 
 # Final stage
-FROM python:3.12-slim-bookworm
+# Use python:3.13-slim which uses Debian Trixie (Debian 13) with newer system packages
+FROM python:3.13-slim
 
 WORKDIR /app
 
