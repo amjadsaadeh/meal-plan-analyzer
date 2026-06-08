@@ -14,7 +14,7 @@ COPY frontend/src/ frontend/src/
 RUN pnpm build
 
 # Python dependency build stage
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm-20241008 AS builder
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 
 WORKDIR /app
 
