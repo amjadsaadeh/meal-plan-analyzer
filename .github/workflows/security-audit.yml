@@ -117,23 +117,8 @@ jobs:
 
       - name: Run safety check
         run: |
-          # Use --output json to get clean JSON output
-          uv tool run safety check --file requirements-audit.txt --output json > safety-report.json 2>&1 || true
-          # Extract only the JSON part from the output (remove deprecation warnings)
-          python3 -c "
-          import re, sys
-          with open('safety-report.json', 'r') as f:
-              content = f.read()
-          # Find the JSON object in the output
-          match = re.search(r'\{.*\}', content, re.DOTALL)
-          if match:
-              with open('safety-report.json', 'w') as f:
-                  f.write(match.group(0))
-          else:
-              # If no JSON found, create empty JSON
-              with open('safety-report.json', 'w') as f:
-                  f.write('{\"vulnerabilities\": []}')
-          "
+          # Use --output json to get clean JSON output (stdout only, stderr to /dev/null)
+          uv tool run safety check --file requirements-audit.txt --output json > safety-report.json 2>/dev/null || true
 
       - name: Fail on vulnerabilities
         run: |
