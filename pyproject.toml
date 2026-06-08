@@ -17,7 +17,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "django>=6.0",
+    "django>=6.2",
     "djangorestframework>=3.16.1",
     "openpyxl>=3.1.5",
     "tqdm>=4.67.1",
@@ -28,6 +28,8 @@ dependencies = [
     "weasyprint>=68.0",
     "jsonschema>=4.26.0",
     "playwright==1.56.0",
+    "pillow>=12.2.0",
+    "fonttools>=4.63.0",
     "django-sass-processor>=1.4.2",
     "libsass>=0.23.0",
     "django-vite>=3.1.0",
