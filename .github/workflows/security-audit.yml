@@ -268,7 +268,7 @@ jobs:
           docker build --no-cache -t meal-plan-analyzer:scan .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: "meal-plan-analyzer:scan"
           format: "json"
@@ -298,22 +298,21 @@ jobs:
               with open('trivy-report.json', 'r') as f:
                   data = json.load(f)
               results = data.get('Results', [])
-              if results:
-                  vulns = results[0].get('Vulnerabilities', [])
-                  severity_counts = {}
-                  for v in vulns:
-                      sev = v.get('Severity', 'UNKNOWN')
-                      severity_counts[sev] = severity_counts.get(sev, 0) + 1
-                  total = len(vulns)
-                  if total == 0:
-                      print('✅ No vulnerabilities found by Trivy.')
-                  else:
-                      print(f'⚠️ **{total} vulnerability/vulnerabilities found** by Trivy:')
-                      for sev, count in sorted(severity_counts.items(), key=lambda x: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'].index(x[0]) if x[0] in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'] else 99):
-                          emoji = '🔴' if sev in ('CRITICAL', 'HIGH') else '🟡'
-                          print(f'  - {emoji} {sev}: {count}')
-              else:
+              all_vulns = []
+              for result in results:
+                  all_vulns.extend(result.get('Vulnerabilities') or [])
+              severity_counts = {}
+              for v in all_vulns:
+                  sev = v.get('Severity', 'UNKNOWN')
+                  severity_counts[sev] = severity_counts.get(sev, 0) + 1
+              total = len(all_vulns)
+              if total == 0:
                   print('✅ No vulnerabilities found by Trivy.')
+              else:
+                  print(f'⚠️ **{total} vulnerability/vulnerabilities found** by Trivy:')
+                  for sev, count in sorted(severity_counts.items(), key=lambda x: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'].index(x[0]) if x[0] in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'] else 99):
+                      emoji = '🔴' if sev in ('CRITICAL', 'HIGH') else '🟡'
+                      print(f'  - {emoji} {sev}: {count}')
           except Exception as e:
               print(f'Could not parse trivy report: {e}')
           " >> $GITHUB_STEP_SUMMARY
