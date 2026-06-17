@@ -20,3 +20,4 @@ superuser-credentials.env
 node_modules/
 frontend/dist/
 .vite/
+graphify-out/
