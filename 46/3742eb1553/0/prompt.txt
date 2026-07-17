@@ -1,0 +1,195 @@
+## Context Usage
+
+**Model:** claude-opus-4-8  
+**Tokens:** 21.8k / 1m (2%)
+
+### Estimated usage by category
+
+| Category | Tokens | Percentage |
+|----------|--------|------------|
+| System prompt | 2.8k | 0.3% |
+| System tools | 3.2k | 0.3% |
+| MCP tools (deferred) | 5k | 0.5% |
+| System tools (deferred) | 14.7k | 1.5% |
+| Custom agents | 3.1k | 0.3% |
+| Memory files | 5.7k | 0.6% |
+| Skills | 4.6k | 0.5% |
+| Messages | 2.4k | 0.2% |
+| Free space | 978.2k | 97.8% |
+
+### MCP Tools
+
+| Tool | Server | Tokens |
+|------|--------|--------|
+| mcp__claude_ai_Gmail__authenticate | claude_ai_Gmail | 168 |
+| mcp__claude_ai_Gmail__complete_authentication | claude_ai_Gmail | 218 |
+| mcp__claude_ai_Google_Calendar__authenticate | claude_ai_Google_Calendar | 177 |
+| mcp__claude_ai_Google_Calendar__complete_authentication | claude_ai_Google_Calendar | 230 |
+| mcp__claude_ai_Google_Drive__copy_file | claude_ai_Google_Drive | 418 |
+| mcp__claude_ai_Google_Drive__create_file | claude_ai_Google_Drive | 951 |
+| mcp__claude_ai_Google_Drive__download_file_content | claude_ai_Google_Drive | 385 |
+| mcp__claude_ai_Google_Drive__get_file_metadata | claude_ai_Google_Drive | 224 |
+| mcp__claude_ai_Google_Drive__get_file_permissions | claude_ai_Google_Drive | 135 |
+| mcp__claude_ai_Google_Drive__list_recent_files | claude_ai_Google_Drive | 384 |
+| mcp__claude_ai_Google_Drive__read_file_content | claude_ai_Google_Drive | 642 |
+| mcp__claude_ai_Google_Drive__search_files | claude_ai_Google_Drive | 693 |
+| mcp__ide__executeCode | ide | 252 |
+| mcp__ide__getDiagnostics | ide | 135 |
+
+### Custom Agents
+
+| Agent Type | Source | Tokens |
+|------------|--------|--------|
+| code-simplifier:code-simplifier | Plugin | 71 |
+| feature-dev:code-architect | Plugin | 80 |
+| feature-dev:code-explorer | Plugin | 74 |
+| feature-dev:code-reviewer | Plugin | 81 |
+| gsd-advisor-researcher | User | 59 |
+| gsd-ai-researcher | User | 132 |
+| gsd-assumptions-analyzer | User | 66 |
+| gsd-code-fixer | User | 78 |
+| gsd-code-reviewer | User | 73 |
+| gsd-codebase-mapper | User | 82 |
+| gsd-debug-session-manager | User | 122 |
+| gsd-debugger | User | 60 |
+| gsd-doc-classifier | User | 112 |
+| gsd-doc-synthesizer | User | 145 |
+| gsd-doc-verifier | User | 48 |
+| gsd-doc-writer | User | 61 |
+| gsd-domain-researcher | User | 130 |
+| gsd-eval-auditor | User | 146 |
+| gsd-eval-planner | User | 143 |
+| gsd-executor | User | 69 |
+| gsd-framework-selector | User | 98 |
+| gsd-integration-checker | User | 56 |
+| gsd-intel-updater | User | 40 |
+| gsd-nyquist-auditor | User | 49 |
+| gsd-pattern-mapper | User | 87 |
+| gsd-phase-researcher | User | 73 |
+| gsd-plan-checker | User | 69 |
+| gsd-planner | User | 65 |
+| gsd-project-researcher | User | 86 |
+| gsd-research-synthesizer | User | 71 |
+| gsd-roadmapper | User | 73 |
+| gsd-security-auditor | User | 70 |
+| gsd-ui-auditor | User | 76 |
+| gsd-ui-checker | User | 85 |
+| gsd-ui-researcher | User | 86 |
+| gsd-user-profiler | User | 74 |
+| gsd-verifier | User | 72 |
+
+### Memory Files
+
+| Type | Path | Tokens |
+|------|------|--------|
+| User | /home/orchid/.claude/CLAUDE.md | 101 |
+| Project | /home/orchid/projects/meal-plan-analyzer-opencode/CLAUDE.md | 4.6k |
+| AutoMem | /home/orchid/.claude/projects/-home-orchid-projects-meal-plan-analyzer-opencode/memory/MEMORY.md | 1k |
+
+### Skills
+
+| Skill | Source | Tokens |
+|-------|--------|--------|
+| graphify | User | ~120 |
+| gsd-add-tests | User | ~30 |
+| gsd-ai-integration-phase | User | ~40 |
+| gsd-audit-fix | User | ~30 |
+| gsd-audit-milestone | User | ~30 |
+| gsd-audit-uat | User | ~30 |
+| gsd-autonomous | User | ~30 |
+| gsd-capture | User | ~20 |
+| gsd-cleanup | User | ~30 |
+| gsd-code-review | User | ~40 |
+| gsd-complete-milestone | User | ~30 |
+| gsd-config | User | ~30 |
+| gsd-debug | User | ~30 |
+| gsd-discuss-phase | User | ~30 |
+| gsd-docs-update | User | ~30 |
+| gsd-eval-review | User | ~40 |
+| gsd-execute-phase | User | ~30 |
+| gsd-explore | User | ~30 |
+| gsd-extract-learnings | User | ~40 |
+| gsd-fast | User | ~30 |
+| gsd-forensics | User | ~30 |
+| gsd-graphify | User | ~30 |
+| gsd-health | User | ~30 |
+| gsd-help | User | < 20 |
+| gsd-import | User | ~40 |
+| gsd-inbox | User | ~40 |
+| gsd-ingest-docs | User | ~40 |
+| gsd-manager | User | ~30 |
+| gsd-map-codebase | User | ~30 |
+| gsd-milestone-summary | User | ~40 |
+| gsd-mvp-phase | User | ~30 |
+| gsd-new-milestone | User | ~30 |
+| gsd-new-project | User | ~30 |
+| gsd-ns-context | User | ~20 |
+| gsd-ns-ideate | User | ~20 |
+| gsd-ns-manage | User | ~20 |
+| gsd-ns-project | User | ~20 |
+| gsd-ns-review | User | ~20 |
+| gsd-ns-workflow | User | ~20 |
+| gsd-pause-work | User | ~20 |
+| gsd-phase | User | ~30 |
+| gsd-plan-phase | User | ~30 |
+| gsd-plan-review-convergence | User | ~40 |
+| gsd-pr-branch | User | ~30 |
+| gsd-profile-user | User | ~30 |
+| gsd-progress | User | ~40 |
+| gsd-quick | User | ~40 |
+| gsd-resume-work | User | ~30 |
+| gsd-review | User | ~30 |
+| gsd-review-backlog | User | ~20 |
+| gsd-secure-phase | User | ~30 |
+| gsd-settings | User | ~20 |
+| gsd-ship | User | ~30 |
+| gsd-sketch | User | ~40 |
+| gsd-spec-phase | User | ~40 |
+| gsd-spike | User | ~30 |
+| gsd-stats | User | ~30 |
+| gsd-surface | User | ~40 |
+| gsd-thread | User | ~20 |
+| gsd-ui-phase | User | ~20 |
+| gsd-ui-review | User | ~30 |
+| gsd-ultraplan-phase | User | ~40 |
+| gsd-undo | User | ~40 |
+| gsd-update | User | ~20 |
+| gsd-validate-phase | User | ~30 |
+| gsd-verify-work | User | ~20 |
+| gsd-workspace | User | ~30 |
+| gsd-workstreams | User | ~40 |
+| claude-hud:setup | Plugin (claude-hud) | < 20 |
+| claude-hud:configure | Plugin (claude-hud) | ~40 |
+| code-review:code-review | Plugin (code-review) | < 20 |
+| ralph-loop:cancel-ralph | Plugin (ralph-loop) | < 20 |
+| ralph-loop:help | Plugin (ralph-loop) | ~20 |
+| ralph-loop:ralph-loop | Plugin (ralph-loop) | < 20 |
+| feature-dev:feature-dev | Plugin (feature-dev) | ~30 |
+| brainstorming | Plugin (superpowers) | ~80 |
+| dispatching-parallel-agents | Plugin (superpowers) | ~50 |
+| executing-plans | Plugin (superpowers) | ~40 |
+| finishing-a-development-branch | Plugin (superpowers) | ~80 |
+| receiving-code-review | Plugin (superpowers) | ~90 |
+| requesting-code-review | Plugin (superpowers) | ~50 |
+| subagent-driven-development | Plugin (superpowers) | ~40 |
+| systematic-debugging | Plugin (superpowers) | ~40 |
+| test-driven-development | Plugin (superpowers) | ~40 |
+| using-git-worktrees | Plugin (superpowers) | ~80 |
+| using-superpowers | Plugin (superpowers) | ~60 |
+| verification-before-completion | Plugin (superpowers) | ~90 |
+| writing-plans | Plugin (superpowers) | ~40 |
+| writing-skills | Plugin (superpowers) | ~40 |
+| frontend-design | Plugin (frontend-design) | ~90 |
+| update-config | Built-in | ~240 |
+| keybindings-help | Built-in | ~80 |
+| verify | Built-in | ~90 |
+| code-review | Built-in | ~130 |
+| simplify | Built-in | ~60 |
+| fewer-permission-prompts | Built-in | ~60 |
+| loop | Built-in | ~110 |
+| schedule | Built-in | ~130 |
+| claude-api | Built-in | ~360 |
+| run | Built-in | ~120 |
+| init | Built-in | ~20 |
+| review | Built-in | < 20 |
+| security-review | Built-in | ~30 |
